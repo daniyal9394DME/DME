@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<!-- Supabase settings live in config.js, next to this file -->
+<script src="config.js"></script>
+<title>RIC PGT Registration</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600&family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: maroon letterhead (matches the existing DME dashboard), step rail, one card per step, fixed action bar */
+:root{
+  --bg:#F6F1E7; --surface:#FFFFFF; --sunk:#FBF8F2; --ink:#231A17; --muted:#6E625A; --line:#E2D8C8;
+  --brand:#6D1F2B; --brand-deep:#521521; --brand-soft:#F3E4E1; --gold:#B08D57;
+  --warn:#8A5A00; --warn-soft:#FBEFD6; --ok:#2F6B45; --ok-soft:#E4F1E7; --err:#A1262F;
+  --f-display:"Source Serif 4",Georgia,serif; --f-body:"Source Sans 3","Segoe UI",Roboto,Arial,sans-serif; --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#17110F; --surface:#221917; --sunk:#1C1513; --ink:#F1E9E1; --muted:#B3A398; --line:#3A2E2A;
+  --brand:#D98A92; --brand-deep:#521521; --brand-soft:#3A2224; --gold:#D1B07A;
+  --warn:#F0C070; --warn-soft:#3A2C12; --ok:#8FD3A5; --ok-soft:#173022; --err:#F08A90; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#17110F; --surface:#221917; --sunk:#1C1513; --ink:#F1E9E1; --muted:#B3A398; --line:#3A2E2A;
+  --brand:#D98A92; --brand-deep:#521521; --brand-soft:#3A2224; --gold:#D1B07A;
+  --warn:#F0C070; --warn-soft:#3A2C12; --ok:#8FD3A5; --ok-soft:#173022; --err:#F08A90; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--brand-deep)}
+.wrap{max-width:720px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.lh{background:linear-gradient(135deg,#6D1F2B,#521521);color:#fff;border-bottom:3px solid var(--gold)}
+header.lh .wrap{display:flex;align-items:center;gap:12px;padding-block:14px}
+.lh img{width:46px;height:46px;border-radius:50%;background:#fff;padding:2px;object-fit:contain;flex:none}
+.lh .t{flex:1;min-width:0}
+.lh .inst{font-size:12px;letter-spacing:.08em;text-transform:uppercase;opacity:.85;font-weight:600}
+.lh h1{font-family:var(--f-display);font-weight:600;font-size:clamp(22px,5vw,28px);margin:2px 0 0;line-height:1.15}
+.lh .sub{font-size:13px;opacity:.85}
+.rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding-block:10px}
+.rail ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.rail button{width:100%;border:none;background:none;color:var(--muted);font:500 13px var(--f-body);cursor:pointer;padding:0;text-align:left;display:grid;gap:5px}
+.rail button::before{content:"";height:4px;border-radius:2px;background:var(--line)}
+.rail button.done::before{background:var(--gold)}
+.rail button[aria-current="step"]{color:var(--ink);font-weight:600}
+.rail button[aria-current="step"]::before{background:var(--brand)}
+main{padding-block:18px 120px;display:grid;gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;display:grid;gap:16px}
+h2{font-family:var(--f-display);font-weight:600;font-size:23px;margin:0;line-height:1.2}
+.lede{color:var(--muted);margin:-8px 0 0;font-size:15px}
+.grid{display:grid;gap:14px}
+@media(min-width:560px){.grid.two{grid-template-columns:1fr 1fr}}
+label.f{display:grid;gap:5px;min-width:0}
+label.f>span,.lbl{font-size:14px;font-weight:600}
+.req::after{content:" *";color:var(--brand)}
+.hint{font-size:13px;color:var(--muted);font-weight:400}
+.err{font-size:13px;color:var(--err)}
+input,select{font:inherit;color:var(--ink);background:var(--sunk);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%;min-width:0}
+input.mono{font-family:var(--f-mono);letter-spacing:.02em}
+input[aria-invalid="true"]{border-color:var(--err)}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
+.seg{display:flex;flex-wrap:wrap;gap:8px}
+.seg button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:9px 14px;font:inherit;font-size:15px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:var(--surface)}
+.seg button:disabled{opacity:.4;cursor:not-allowed}
+.calc{background:var(--brand-soft);border-radius:8px;padding:10px 12px;font-size:14px;display:flex;flex-wrap:wrap;gap:4px 18px}
+.calc b{font-variant-numeric:tabular-nums}
+.note{border-radius:8px;padding:10px 12px;font-size:14px}
+.note.warn{background:var(--warn-soft);color:var(--warn)}
+.note.ok{background:var(--ok-soft);color:var(--ok)}
+/* documents */
+.docs{display:grid;gap:12px}
+@media(min-width:560px){.docs{grid-template-columns:1fr 1fr}}
+.doc{border:1.5px dashed var(--line);border-radius:10px;padding:14px;display:grid;gap:10px;align-content:start;background:var(--sunk);position:relative}
+.doc.has{border-style:solid;border-color:var(--ok);background:var(--surface)}
+.doc .dh{display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.doc .dh b{font-size:15px}
+.doc .prev{height:120px;border-radius:8px;background:var(--surface);border:1px solid var(--line);display:grid;place-items:center;overflow:hidden;color:var(--muted);font-size:13px;text-align:center;padding:6px}
+.doc .prev img{width:100%;height:100%;object-fit:contain}
+.doc.photo .prev{width:110px;height:136px;justify-self:center}
+.doc.photo .prev img{object-fit:cover}
+.doc .meta{font-size:12.5px;color:var(--muted);font-family:var(--f-mono);overflow-wrap:anywhere}
+.doc input[type=file]{position:absolute;width:1px;height:1px;opacity:0}
+.btn{font:600 15px var(--f-body);border-radius:8px;padding:10px 16px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink);text-align:center}
+.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--surface)}
+.btn.small{padding:6px 12px;font-size:14px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+label.btn{display:inline-block}
+dl.sum{display:grid;grid-template-columns:minmax(110px,36%) 1fr;gap:6px 14px;margin:0;font-size:15px}
+dl.sum dt{color:var(--muted)}
+dl.sum dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.check{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.check input{width:20px;height:20px;margin-top:2px;flex:none;accent-color:var(--brand)}
+.ref{font-family:var(--f-mono);font-size:20px;background:var(--sunk);border:1px dashed var(--gold);border-radius:8px;padding:10px 14px;display:inline-block}
+.steps{margin:0;padding-left:20px;display:grid;gap:6px}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom,0px);z-index:6}
+.bar .wrap{display:flex;gap:10px;align-items:center;padding-block:10px}
+.bar .saved{flex:1;font-size:13px;color:var(--muted);min-width:0}
+</style>
+
+<header class="lh"><div class="wrap">
+  <img src="data:image/jpeg;base64,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" alt="RIC logo">
+  <div class="t"><div class="inst">Rawalpindi Institute of Cardiology</div><h1>PGT Registration</h1><div class="sub">Medical Education &amp; Training · fill once when you join RIC</div></div>
+</div></header>
+<nav class="rail" aria-label="Steps"><div class="wrap"><ol id="rail"></ol></div></nav>
+<main class="wrap" id="app"></main>
+<div class="bar"><div class="wrap">
+  <button class="btn" id="back">Back</button>
+  <span class="saved" id="saved">Your typed details are kept on this phone until you submit.</span>
+  <button class="btn primary" id="next">Next</button>
+</div></div>
+
+<script>
+let SPECS=["General Cardiology","Cardiac Surgery","Anaesthesiology","Cardiothoracic Anaesthesia","Radiology","Interventional Cardiology","Paediatric Cardiology","Paediatric Cardiac Surgery","Electrophysiology"];
+let DUR={"General Cardiology":{"FCPS":5,"UHS (MD)":5},"Cardiac Surgery":{"FCPS":5,"UHS (MS)":5},"Anaesthesiology":{"FCPS":4,"UHS (MS)":5},"Cardiothoracic Anaesthesia":{"FCPS":5},"Radiology":{"FCPS":4},"Interventional Cardiology":{"FCPS":2,"UHS (MS)":2},"Paediatric Cardiology":{"FCPS":3,"UHS (MD)":3},"Paediatric Cardiac Surgery":{"FCPS":3},"Electrophysiology":{"FCPS":2}};
+let SUP=[{"n": "Prof. Dr. Musfireh Siddiqeh", "s": "Cardiac Surgery", "c": true, "u": false}, {"n": "Prof. Dr. Javed Iqbal", "s": "Cardiac Surgery", "c": true, "u": false}, {"n": "Dr. Muhammad Sohail Chaudhri", "s": "Cardiac Surgery", "c": false, "u": true}, {"n": "Dr. Qudsia Anjum Quershi", "s": "Anaesthesiology", "c": true, "u": false}, {"n": "Dr. Qudsia Anjum Quershi", "s": "Cardiothoracic Anaesthesia", "c": true, "u": false}, {"n": "Prof. Dr. Misbah Durrani", "s": "Radiology", "c": true, "u": false}, {"n": "Dr. Abdul Malik Sheikh", "s": "Paediatric Cardiology", "c": true, "u": false}, {"n": "Dr. Mahim Akmal Malik", "s": "Paediatric Cardiac Surgery", "c": true, "u": false}, {"n": "Dr. Asma Kanwal", "s": "Paediatric Cardiology", "c": true, "u": false}, {"n": "Dr. Hamid Sharif Khan", "s": "Interventional Cardiology", "c": true, "u": false}, {"n": "Dr. Muhammad Mohsin", "s": "General Cardiology", "c": true, "u": true}, {"n": "Dr. Muhammad Umar Farooq", "s": "General Cardiology", "c": true, "u": false}, {"n": "Dr. Asma Shabbir", "s": "General Cardiology", "c": false, "u": true}, {"n": "Dr. Atif Nazir", "s": "General Cardiology", "c": true, "u": false}, {"n": "Dr. Sana Ahmed", "s": "General Cardiology", "c": true, "u": true}, {"n": "Dr. Imran Iftikhar", "s": "General Cardiology", "c": true, "u": false}, {"n": "Dr. Shabana Kousar", "s": "General Cardiology", "c": true, "u": false}, {"n": "Dr. M. Abdus Salamazad", "s": "General Cardiology", "c": true, "u": false}, {"n": "Dr. Muhammad Talha bin Nazir", "s": "General Cardiology", "c": true, "u": false}, {"n": "Dr. Tanveer Ahmed Raja", "s": "General Cardiology", "c": true, "u": true}, {"n": "Dr. Waleed Ahmed", "s": "General Cardiology", "c": true, "u": false}, {"n": "Dr. Asim Javed", "s": "Interventional Cardiology", "c": true, "u": false}, {"n": "Dr. Adeel ur Rehman", "s": "Interventional Cardiology", "c": true, "u": false}, {"n": "Dr. Qurban Hussain Khan", "s": "Electrophysiology", "c": true, "u": true}];
+const PROGRAMS=["FCPS","UHS (MS)","UHS (MD)"];
+const STEPS=["Personal","Training","Posting","Documents","Submit"];
+let SITES=[["HFH","Holy Family Hospital"],["BBH","Benazir Bhutto Hospital"],["CMH","Combined Military Hospital"],["DHQ","DHQ Hospital"],["Other","Other hospital"]];
+const DUTY=[["RIC","Posted at RIC"],["Rotation","On rotation"],["Frozen","Training frozen"]];
+const DOCS=[
+ {k:"photo",l:"Passport photo",h:"Clear face, plain background. JPG or PNG.",img:1},
+ {k:"cnic",l:"CNIC copy",h:"Front and back on one page, image or PDF."},
+ {k:"pmdc",l:"PMDC registration",h:"Current PMDC certificate or card."},
+ {k:"joining",l:"Joining letter",h:"Your RIC joining letter / report."}
+];
+const MAX=5*1024*1024;
+const KEY="ric-pgt-reg-v1";
+const blank=()=>({step:0,name:"",father:"",cnic:"",pmdc:"",mobile:"",email:"",domicile:"",program:"",spec:"",sup:"",supOther:"",start:"",dur:"",year:"",comp:"",compEdited:false,duty:"",site:"",siteOther:"",rotStart:"",ret:"",frozenSince:"",ok:false,done:null});
+let S;try{S={...blank(),...JSON.parse(localStorage.getItem(KEY)||"{}")}}catch(e){S=blank()}
+const FILES={};          // files never go to localStorage
+let touched=new Set();
+const save=()=>{try{const{done,...k}=S;localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const esc=v=>String(v??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+/* ---- formatting & validation ---- */
+const fmtCnic=v=>{const d=v.replace(/\D/g,"").slice(0,13);return d.length>12?`${d.slice(0,5)}-${d.slice(5,12)}-${d.slice(12)}`:d.length>5?`${d.slice(0,5)}-${d.slice(5)}`:d};
+const fmtMob=v=>{let d=v.replace(/\D/g,"");if(d.startsWith("92"))d="0"+d.slice(2);d=d.slice(0,11);return d.length>4?`${d.slice(0,4)}-${d.slice(4)}`:d};
+const RULES={
+ name:v=>v.trim().length>=3||"Enter your full name.",
+ father:v=>v.trim().length>=3||"Enter your father's name.",
+ cnic:v=>/^\d{5}-\d{7}-\d$/.test(v)||"CNIC must be 13 digits, e.g. 37405-1234567-1.",
+ pmdc:v=>/^[0-9]{3,7}-?[A-Z]?$/i.test(v.trim())||"Enter your PMDC number, e.g. 93232-P.",
+ mobile:v=>/^03\d{2}-\d{7}$/.test(v)||"Mobile must be 11 digits starting with 03, e.g. 0335-6072567.",
+ email:v=>!v||/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)||"Check the email address.",
+ domicile:v=>v.trim().length>=2||"Enter your district of domicile.",
+ program:v=>!!v||"Choose your programme.",
+ spec:v=>!!v||"Choose your specialty.",
+ sup:v=>!!v&&(v!=="other"||S.supOther.trim().length>=3)||"Choose your supervisor.",
+ start:v=>{if(!v)return"Enter your training start date.";const d=new Date(v);return d<=new Date(Date.now()+90*864e5)&&d>=new Date("2015-01-01")||"Check the start date."},
+ dur:v=>+v>0||"Choose the training duration.",
+ comp:v=>{if(!v)return"Enter your expected completion date.";return!S.start||v>S.start||"Completion must be after the start date."},
+ duty:v=>!!v||"Choose where you are posted now.",
+ site:v=>S.duty!=="Rotation"||(!!v&&(v!=="Other"||S.siteOther.trim().length>=3))||"Choose the hospital you are rotating at.",
+ rotStart:v=>S.duty!=="Rotation"||!!v||"Enter the date your rotation started.",
+ ret:v=>{if(S.duty!=="Rotation")return true;if(!v)return"Enter your expected return date to RIC.";return!S.rotStart||v>S.rotStart||"Return must be after the rotation start."},
+ frozenSince:v=>S.duty!=="Frozen"||!!v||"Enter the date your training was frozen."
+};
+const STEPF=[["name","father","cnic","pmdc","mobile","email","domicile"],["program","spec","sup","start","dur","comp"],["duty","site","rotStart","ret","frozenSince"],[],[]];
+const errOf=k=>{const r=RULES[k](S[k]);return r===true?"":r};
+const stepOk=i=>i===3?DOCS.every(d=>FILES[d.k]):STEPF[i].every(k=>!errOf(k));
+const showErr=k=>touched.has(k)&&errOf(k);
+
+const fld=(k,label,o={})=>`<label class="f"><span class="${o.opt?"":"req"}">${label}${o.hint?` <span class="hint">${o.hint}</span>`:""}</span>
+<input id="${k}" data-k="${k}" value="${esc(S[k])}" ${o.type?`type="${o.type}"`:""} ${o.mode?`inputmode="${o.mode}"`:""} ${o.ph?`placeholder="${o.ph}"`:""} ${o.ac?`autocomplete="${o.ac}"`:""} class="${o.mono?"mono":""}" aria-invalid="${!!showErr(k)}" aria-describedby="${k}-e">
+<span class="err" id="${k}-e">${showErr(k)||""}</span></label>`;
+
+/* ---- dates ---- */
+const addYears=(s,y)=>{const d=new Date(s+"T00:00");d.setMonth(d.getMonth()+Math.round(y*12));d.setDate(d.getDate()-1);return d};
+const dfmt=d=>d.toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"});
+const yearOf=s=>{const n=Math.floor((Date.now()-new Date(s+"T00:00"))/(365.25*864e5))+1;return Math.max(1,Math.min(n,Math.ceil(+S.dur||5)))};
+const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+function autoFill(){if(S.start&&+S.dur){if(!S.compEdited)S.comp=iso(addYears(S.start,+S.dur));if(!S.year||+S.year>Math.ceil(+S.dur))S.year=String(yearOf(S.start))}}
+const session=d=>(d.getMonth()<6?"Jan ":"Jul ")+String(d.getFullYear()).slice(2);
+
+/* ---- views ---- */
+function v0(){return`<section class="card"><h2>Personal details</h2><p class="lede">Write your name exactly as on your PMDC certificate. Do not add "Dr."</p>
+${fld("name","Full name",{ph:"e.g. Ayesha Javaid",ac:"name"})}
+${fld("father","Father's name")}
+<div class="grid two">${fld("cnic","CNIC",{mode:"numeric",ph:"37405-1234567-1",mono:1})}${fld("pmdc","PMDC number",{ph:"93232-P",mono:1})}</div>
+<div class="grid two">${fld("mobile","Mobile",{type:"tel",mode:"numeric",ph:"03xx-xxxxxxx",mono:1,ac:"tel"})}${fld("email","Email",{type:"email",opt:1,hint:"optional",ac:"email"})}</div>
+${fld("domicile","Domicile (district)",{ph:"e.g. Sargodha"})}
+</section>`}
+
+function supOpts(){if(!S.spec||!S.program)return[];const fc=S.program==="FCPS";return SUP.filter(s=>s.s===S.spec&&(fc?s.c:s.u))}
+function v1(){const avail=S.spec?Object.keys(DUR[S.spec]||{}):PROGRAMS;const sups=supOpts();
+const calc=S.start&&+S.dur?(()=>{const end=addYears(S.start,+S.dur);return`<div class="calc"><span>Expected completion <b>${dfmt(end)}</b></span><span>Induction <b>${session(new Date(S.start+"T00:00"))}</b></span></div>`})():"";
+return`<section class="card"><h2>Training details</h2>
+<div class="f"><span class="lbl req">Specialty</span><select id="spec" data-k="spec"><option value="">Choose specialty</option>${SPECS.map(s=>`<option ${s===S.spec?"selected":""}>${s}</option>`).join("")}</select><span class="err">${showErr("spec")||""}</span></div>
+<div class="f"><span class="lbl req">Programme</span><div class="seg">${PROGRAMS.map(p=>`<button type="button" data-prog="${p}" aria-pressed="${S.program===p}" ${S.spec&&!avail.includes(p)?"disabled":""}>${p}</button>`).join("")}</div>
+${S.spec&&avail.length<3?`<span class="hint">${S.spec} at RIC is offered as ${avail.join(" and ")}.</span>`:""}<span class="err">${showErr("program")||""}</span></div>
+<div class="f"><span class="lbl req">Supervisor</span>
+<select id="sup" data-k="sup" ${!S.spec||!S.program?"disabled":""}><option value="">${!S.spec||!S.program?"Choose specialty and programme first":"Choose supervisor"}</option>
+${sups.map(s=>`<option ${s.n===S.sup?"selected":""}>${esc(s.n)}</option>`).join("")}<option value="other" ${S.sup==="other"?"selected":""}>My supervisor is not listed</option></select>
+<span class="hint">Shows ${S.program==="FCPS"?"CPSP":S.program?"UHS":"approved"} supervisors in your specialty.</span><span class="err">${showErr("sup")||""}</span></div>
+${S.sup==="other"?`<label class="f"><span class="req">Supervisor's name</span><input id="supOther" data-k="supOther" value="${esc(S.supOther)}" placeholder="The DME office will confirm"></label>`:""}
+<div class="grid two">${fld("start","Training start date",{type:"date",hint:"as on your RTMC / enrolment letter"})}
+<div class="f"><span class="lbl req">Duration</span><select id="dur" data-k="dur" ${!S.program?"disabled":""}><option value="">—</option>${[2,3,4,5].map(y=>`<option value="${y}" ${+S.dur===y?"selected":""}>${y} years</option>`).join("")}</select>
+<span class="hint">${S.spec&&S.program&&DUR[S.spec]?.[S.program]?`Standard for this programme: ${DUR[S.spec][S.program]} years`:"Set automatically"}</span></div></div>
+${calc}
+${S.start&&+S.dur?(()=>{const cy=yearOf(S.start),ce=iso(addYears(S.start,+S.dur));return`<div class="grid two">
+
+${fld("comp","Expected completion date",{type:"date",hint:S.comp&&S.comp!==ce?`calculated: ${dfmt(new Date(ce+"T00:00"))}`:""})}</div>
+<span class="hint">Change the completion date only if your training was extended, frozen or re-scheduled.</span>`})():""}
+</section>`}
+
+function v2(){const r=S.duty==="Rotation";return`<section class="card"><h2>Current posting</h2><p class="lede">Where you are working right now.</p>
+<div class="f"><span class="lbl req">Current status</span><div class="seg">${DUTY.map(([k,l])=>`<button type="button" data-duty="${k}" aria-pressed="${S.duty===k}">${l}</button>`).join("")}</div><span class="err">${showErr("duty")||""}</span></div>
+${S.duty==="RIC"?`<div class="note ok">Place of duty: Rawalpindi Institute of Cardiology</div>`:""}
+${r?`<div class="f"><span class="lbl req">Place of duty</span><select id="site" data-k="site"><option value="">Choose hospital</option>${SITES.map(([k,l])=>`<option value="${k}" ${S.site===k?"selected":""}>${l}${k!=="Other"?" ("+k+")":""}</option>`).join("")}</select><span class="err">${showErr("site")||""}</span></div>
+${S.site==="Other"?`<label class="f"><span class="req">Hospital name</span><input id="siteOther" data-k="siteOther" value="${esc(S.siteOther)}"></label>`:""}
+<div class="grid two">${fld("rotStart","Rotation started on",{type:"date"})}${fld("ret","Expected return to RIC",{type:"date"})}</div>`:""}
+${S.duty==="Frozen"?`${fld("frozenSince","Frozen since",{type:"date"})}<div class="note warn">The DME office will contact you to record the reason and the expected resumption date.</div>`:""}
+</section>`}
+
+function docCard(d){const f=FILES[d.k];return`<div class="doc ${d.img?"photo":""} ${f?"has":""}">
+<div class="dh"><b class="req">${d.l}</b>${f?`<span class="hint" style="color:var(--ok)">Added</span>`:""}</div>
+<div class="prev">${f?(f.url?`<img src="${f.url}" alt="${d.l} preview">`:`PDF<br>${esc(f.name)}`):d.h}</div>
+${f?`<span class="meta">${esc(f.name)} · ${(f.size/1024).toFixed(0)} KB</span>`:""}
+<span class="err" id="e-${d.k}"></span>
+<div style="display:flex;gap:8px;flex-wrap:wrap"><label class="btn small" for="file-${d.k}">${f?"Replace":"Choose file or take photo"}</label>
+<input type="file" id="file-${d.k}" data-file="${d.k}" accept="${d.img?"image/jpeg,image/png,image/webp":"image/jpeg,image/png,image/webp,application/pdf"}"></div></div>`}
+function v3(){const n=DOCS.filter(d=>FILES[d.k]).length;return`<section class="card"><h2>Documents</h2>
+<p class="lede">Upload all four. Each file up to 5 MB. A clear phone photo is fine.</p>
+<div class="docs">${DOCS.map(docCard).join("")}</div>
+<div class="note ${n===4?"ok":"warn"}">${n} of 4 documents added.</div></section>`}
+
+function v4(){const miss=STEPS.slice(0,4).map((s,i)=>stepOk(i)?null:[s,i]).filter(Boolean);const sup=S.sup==="other"?S.supOther+" (not listed)":S.sup;
+return`<section class="card"><h2>Check and submit</h2>
+${miss.length?`<div class="note warn">Still needed: ${miss.map(([s,i])=>`<button class="btn small" data-go="${i}" style="margin:4px 4px 0 0">${s}</button>`).join("")}</div>`:""}
+${FILES.photo?`<img src="${FILES.photo.url}" alt="Your photo" style="width:84px;height:104px;object-fit:cover;border-radius:6px;border:1px solid var(--line)">`:""}
+<dl class="sum"><dt>Name</dt><dd>Dr. ${esc(S.name)||"—"}</dd><dt>Father's name</dt><dd>${esc(S.father)||"—"}</dd>
+<dt>CNIC</dt><dd>${esc(S.cnic)||"—"}</dd><dt>PMDC</dt><dd>${esc(S.pmdc.toUpperCase())||"—"}</dd><dt>Mobile</dt><dd>${esc(S.mobile)||"—"}</dd>
+${S.email?`<dt>Email</dt><dd>${esc(S.email)}</dd>`:""}<dt>Domicile</dt><dd>${esc(S.domicile)||"—"}</dd>
+<dt>Programme</dt><dd>${esc(S.program)||"—"} · ${esc(S.spec)||"—"}</dd><dt>Supervisor</dt><dd>${esc(sup)||"—"}</dd>
+<dt>Training</dt><dd>${S.start?dfmt(new Date(S.start+"T00:00")):"—"}${S.start&&+S.dur?" to "+dfmt(addYears(S.start,+S.dur)):""} (${S.dur||"—"} years)</dd>
+<dt>Expected completion</dt><dd>${S.comp?dfmt(new Date(S.comp+"T00:00")):"—"}</dd>
+<dt>Posting</dt><dd>${S.duty==="RIC"?"Posted at RIC":S.duty==="Rotation"?`On rotation at ${esc(S.site==="Other"?S.siteOther:(SITES.find(x=>x[0]===S.site)||["",""])[1])}${S.rotStart?" since "+dfmt(new Date(S.rotStart+"T00:00")):""}${S.ret?", returning "+dfmt(new Date(S.ret+"T00:00")):""}`:S.duty==="Frozen"?`Training frozen${S.frozenSince?" since "+dfmt(new Date(S.frozenSince+"T00:00")):""}`:"—"}</dd>
+<dt>Documents</dt><dd>${DOCS.filter(d=>FILES[d.k]).length} of 4</dd></dl>
+<label class="check"><input type="checkbox" id="ok" ${S.ok?"checked":""}><span>The information and documents I have given are correct. I will inform the DME office of any change in my training, rotation or contact details.</span></label>
+<button class="btn primary" data-act="submit" ${miss.length||!S.ok?"disabled":""} style="justify-self:start">Submit registration</button></section>`}
+
+function vDone(){return`<section class="card"><h2>Registration received</h2>
+<p class="lede">Thank you, Dr. ${esc(S.name)}. The DME office will verify your details and documents.</p>
+<div><span class="hint">${LIVE?"Your RIC PGT ID (confirmed once the DME office verifies your registration)":"Your reference"}</span><br><span class="ref">${esc(S.done.ref)}</span></div>
+<span class="hint">Submitted ${esc(S.done.at)}. Keep this reference; quote it if you contact the DME office.</span>
+<ol class="steps"><li>The DME office checks your details against your documents.</li><li>Once verified, you get your RIC PGT number.</li><li>If anything needs correcting, the office will contact you on ${esc(S.mobile)}.</li></ol>
+${LIVE?"":`<div class="note warn">Prototype: nothing was sent. In the live version this goes into the DME app's "Pending verification" list.</div>`}
+<button class="btn" data-act="reset" style="justify-self:start">Start a new registration</button></section>`}
+
+
+/* ---------- live: lists from the DME database, submission to Supabase ---------- */
+const SUPA=(window.DME_SUPABASE&&window.DME_SUPABASE.url&&window.DME_SUPABASE.anonKey)?window.DME_SUPABASE:null,LIVE=!!SUPA;let SB=null;
+function sbReady(){if(SB)return Promise.resolve(SB);return new Promise((ok,no)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js";s.onload=()=>{SB=window.supabase.createClient(SUPA.url,SUPA.anonKey,{auth:{persistSession:false}});ok(SB)};s.onerror=()=>no(new Error("Could not connect"));document.head.append(s)})}
+if(LIVE)sbReady().then(sb=>sb.rpc("dme_public_lists")).then(({data})=>{if(!data)return;
+ if((data.specs||[]).length){const sp=data.specs.filter(x=>x.active!==false&&x.teaching!==false&&x.dur&&Object.keys(x.dur).length);if(sp.length){SPECS=sp.map(x=>x.name);DUR=Object.fromEntries(sp.map(x=>[x.name,Object.fromEntries(Object.entries(x.dur).filter(([k,v])=>+v>0).map(([k,v])=>[k,+v]))]))}}
+ if((data.faculty||[]).length)SUP=data.faculty.filter(f=>f.c||f.u);
+ if((data.sites||[]).length)SITES=[...data.sites.filter(x=>x.active!==false).map(x=>[x.short,x.name]),["Other","Other hospital"]];
+ if(!S.done)render()}).catch(()=>{});
+async function liveSubmit(b){b.disabled=true;const old=b.textContent;b.textContent="Uploading documents…";
+ const fail=m=>{b.disabled=false;b.textContent=old;let el=document.getElementById("suberr");if(!el){el=document.createElement("p");el.id="suberr";el.className="note warn";b.after(el)}el.textContent=m};
+ try{const sb=await sbReady();const folder="pgt/"+Date.now()+"-"+Math.random().toString(36).slice(2,8);const docs={};
+  for(const d of DOCS){const f=FILES[d.k];if(!f||!f.file)return fail("Attach the "+d.l.toLowerCase()+" again (files are not kept if the page was reloaded).");
+   const ext=(f.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"");const path=`${folder}/${d.k}.${ext}`;
+   const{error}=await sb.storage.from("dme-uploads").upload(path,f.file,{contentType:f.type||undefined});if(error)return fail("A document could not be uploaded. Check the connection and try again.");docs[d.k]=path}
+  b.textContent="Sending…";const p={...S,docs,sup:S.sup==="other"?"":S.sup,supOther:S.sup==="other"?S.supOther:""};delete p.done;delete p.step;delete p.ok;
+  const{data,error}=await sb.rpc("dme_submit_pgt",{p});if(error||!data)return fail("Could not send. Check the connection and try again.");
+  if(data.error)return fail(data.error==="duplicate"?"A registration with this CNIC already exists. Contact the DME office.":"Some details are missing or not valid. Check each step.");
+  S.done={ref:data.ref,at:new Date().toLocaleString("en-GB",{dateStyle:"medium",timeStyle:"short"})};save();render()}catch(e){fail("Could not send. Check the connection and try again.")}}
+const V=[v0,v1,v2,v3,v4];
+function render(){
+ document.getElementById("rail").innerHTML=STEPS.map((s,i)=>`<li><button data-go="${i}" class="${i<S.step&&stepOk(i)?"done":""}" ${i===S.step&&!S.done?'aria-current="step"':""}>${s}</button></li>`).join("");
+ document.getElementById("app").innerHTML=S.done?vDone():V[S.step]();
+ const b=document.getElementById("back"),n=document.getElementById("next");
+ b.disabled=S.step===0||!!S.done;n.hidden=S.step===4||!!S.done;n.textContent=S.step===3?"Review":"Next";
+ window.scrollTo(0,0);
+}
+const app=document.body;
+app.addEventListener("input",e=>{const k=e.target.dataset.k;if(!k||e.target.tagName==="SELECT")return;let v=e.target.value;
+ if(k==="cnic"){v=fmtCnic(v);e.target.value=v}if(k==="mobile"){v=fmtMob(v);e.target.value=v}
+ S[k]=v;save();if(touched.has(k)){const er=errOf(k);e.target.setAttribute("aria-invalid",!!er);document.getElementById(k+"-e").textContent=er}});
+app.addEventListener("focusout",e=>{const k=e.target.dataset.k;if(!k||!RULES[k])return;touched.add(k);const er=errOf(k);e.target.setAttribute("aria-invalid",!!er);const el=document.getElementById(k+"-e");if(el)el.textContent=er});
+app.addEventListener("change",e=>{const t=e.target;
+ if(t.id==="ok"){S.ok=t.checked;save();render();return}
+ if(t.dataset.file){const f=t.files[0],k=t.dataset.file,er=document.getElementById("e-"+k);if(!f)return;
+  if(f.size>MAX){er.textContent=`This file is ${(f.size/1048576).toFixed(1)} MB. Use a file under 5 MB.`;return}
+  if(!/^(image\/(jpeg|png|webp)|application\/pdf)$/.test(f.type)||(k==="photo"&&!f.type.startsWith("image/"))){er.textContent=k==="photo"?"Use a JPG or PNG photo.":"Use an image (JPG, PNG) or a PDF.";return}
+  if(FILES[k]?.url)URL.revokeObjectURL(FILES[k].url);
+  FILES[k]={file:f,type:f.type,name:f.name,size:f.size,url:f.type.startsWith("image/")?URL.createObjectURL(f):null};const y=window.scrollY;render();window.scrollTo(0,y);return}
+ if(t.dataset.k==="start"){S.start=t.value;autoFill();save();const y=window.scrollY;render();window.scrollTo(0,y);return}
+ if(t.dataset.k==="comp"){S.comp=t.value;S.compEdited=true;save();const y=window.scrollY;render();window.scrollTo(0,y);return}
+ const k=t.dataset.k;if(!k||t.tagName!=="SELECT")return;S[k]=t.value;touched.add(k);
+ if(k==="spec"){if(S.program&&!DUR[S.spec]?.[S.program])S.program="";S.sup="";if(S.program)S.dur=String(DUR[S.spec][S.program])}
+ if(k==="site"&&S.site!=="Other")S.siteOther="";
+ autoFill();
+ save();const y=window.scrollY;render();window.scrollTo(0,y)});
+app.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
+ if(b.dataset.go!=null){S.step=+b.dataset.go;save();render();return}
+ if(b.dataset.prog){S.program=b.dataset.prog;S.sup="";if(S.spec&&DUR[S.spec]?.[S.program])S.dur=String(DUR[S.spec][S.program]);touched.add("program");autoFill();save();const y=window.scrollY;render();window.scrollTo(0,y);return}
+ if(b.dataset.duty){S.duty=b.dataset.duty;touched.add("duty");save();const y=window.scrollY;render();window.scrollTo(0,y);return}
+ if(b.dataset.act==="submit"){if(LIVE)return liveSubmit(b);S.done={ref:"REG-"+Math.random().toString(16).slice(2,10).toUpperCase(),at:new Date().toLocaleString("en-GB",{dateStyle:"medium",timeStyle:"short"})};save();render();return}
+ if(b.dataset.act==="reset"){S=blank();for(const k in FILES)delete FILES[k];touched=new Set();save();render()}});
+document.getElementById("back").onclick=()=>{if(S.step>0){S.step--;save();render()}};
+document.getElementById("next").onclick=()=>{STEPF[S.step].forEach(k=>touched.add(k));
+ if(!stepOk(S.step)&&S.step<3){render();const f=document.querySelector('[aria-invalid="true"]');if(f){f.focus();f.scrollIntoView({block:"center"})}return}
+ S.step++;save();render()};
+render();
+</script>
