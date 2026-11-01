@@ -498,6 +498,10 @@ body.solo .topq,body.solo .topsearch{display:none!important}
 .pillbtn{border:0;cursor:pointer;font:inherit;font-size:12.5px}.pillbtn:hover{filter:brightness(.95);text-decoration:underline}
 .panel.flash{box-shadow:0 0 0 3px var(--brand);transition:box-shadow .3s}
 @media(max-width:700px){.dctable thead{display:none}.dctable tr{display:grid;border-top:1px solid var(--line);padding:8px 0}.dctable td{border:0;padding:4px 16px}}
+.wabtn{color:#1f7a45;border-color:#9fd3b2}.wabtn::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:#25D366;margin-right:6px;vertical-align:1px}
+.msgprev{background:#E7F7EC;border-radius:10px;padding:10px 12px;font-size:14px;display:grid;gap:4px}
+:root[data-theme="dark"] .msgprev{background:#16291F}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .msgprev{background:#16291F}}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:sl .18s ease-out}@keyframes sl{from{transform:translateX(24px)}to{transform:none}}}
 </style>
 
@@ -564,7 +568,6 @@ function seed(){const d=JSON.parse(JSON.stringify(SEED));
  if(cs)d.sups.push({id:"VX1",pid:"X001",fid:cs.id,from:"2026-07-28",to:null});if(mo)d.sups.push({id:"VX2",pid:"X002",fid:mo.id,from:"2025-07-28",to:null});
  d.audit=[{at:new Date().toISOString(),by:"Import",what:"Imported 127 PGTs, 63 faculty and 44 credentials from DME Live Database",ref:""}];
  d.pgts.filter(p=>p.example).forEach(p=>{const s=sessOf(p.start),pre=`PGT/${s.slice(4)}/${s.startsWith("Jan")?1:7}/`;p.code=pre+String(Math.max(0,...d.pgts.filter(x=>x!==p&&(x.code||"").startsWith(pre)).map(x=>+x.code.split("/")[3]||0))+1).padStart(2,"0")});
- d.audit.push({at:new Date().toISOString(),by:"Import",what:`PGT IDs rebuilt by order of registration within each induction cycle: ${d.pgts.filter(p=>p.oldCode!==undefined&&p.oldCode!==p.code).length} changed. Download "PGT ID changes" on the PGTs page for the list.`,ref:"pgts"});
  d.exams.unshift(seedPastExam(d));
  return d}
 let DB;try{DB=JSON.parse(localStorage.getItem(KEY))}catch(e){}
@@ -640,7 +643,7 @@ function checks(p,c){const f=[];
  return f}
 
 /* ---------- routing ---------- */
-const NAV=[["datacheck","Data checks"],["search","Search"],["overview","Overview"],["exits","Left training"],["tasks","Tasks"],["pgts","PGTs"],["leaves","Leave"],["verify","Verification"],["faculty","Faculty"],["supervisors","Supervisors"],["credentials","Faculty updates"],["workshops","Workshops"],["exams","Exams"],["orientation","Orientation"],["settings","Settings"],["audit","Audit log"]];
+const NAV=[["messages","WhatsApp"],["datacheck","Data checks"],["search","Search"],["overview","Overview"],["exits","Left training"],["tasks","Tasks"],["pgts","PGTs"],["leaves","Leave"],["verify","Verification"],["faculty","Faculty"],["supervisors","Supervisors"],["credentials","Faculty updates"],["workshops","Workshops"],["exams","Exams"],["orientation","Orientation"],["settings","Settings"],["audit","Audit log"]];
 let route={v:"overview",id:null};
 function parse(){const h=location.hash.slice(1);const m=h.match(/^(pgt|fac|ws|fb|task|fbedit|pfedit|pfill|prop|exam|orient|reg|rgedit|cert|certx|attend|cred)-(\w+)$/);if(m)return{v:m[1],id:m[2]};return{v:NAV.some(n=>n[0]===h)?h:"overview",id:null}}
 function go(h){if(location.hash==="#"+h)render();else location.hash=h}
@@ -654,7 +657,7 @@ function render(){
  const cur=route.v==="pgt"?"pgts":route.v==="fac"?"faculty":["ws","fb","fbedit","pfedit","pfill","prop","reg","rgedit","attend"].includes(route.v)?"workshops":route.v==="task"?"tasks":route.v==="exam"?"exams":route.v==="orient"?"orientation":route.v==="cert"?"workshops":route.v==="certx"?"exams":route.v==="cred"?"credentials":route.v;
  renderChrome(cur);if(!canSee(cur)){document.getElementById("main").innerHTML=`<div class="panel empty">You do not have access to this section. Ask the Director of Medical Education to change your access.</div>`;return}
  const m=document.getElementById("main");
- m.innerHTML=({overview:vOverview,pgts:vPgts,pgt:vPgt,verify:vVerify,faculty:vFaculty,fac:vFac,settings:vSettings,audit:vAudit,leaves:vLeaves,credentials:vCreds,workshops:vWorkshops,ws:vWs,tasks:vTasks,task:vTask,fb:vFb,fbedit:vFbEdit,pfedit:vPfEdit,pfill:vPfill,prop:vProp,exams:vExams,exam:vExam,orientation:vOrients,orient:vOrient,supervisors:vSupervisors,reg:vReg,rgedit:vRgEdit,attend:vAttend,search:vSearch,datacheck:vDataCheck,cred:()=>{if(UI.credFac!==route.id){UI.credFac=route.id;UI.credType=null}return vCreds()},exits:vExits,cert:vCertWs,certx:vCertEx}[route.v]||vOverview)();
+ m.innerHTML=({overview:vOverview,pgts:vPgts,pgt:vPgt,verify:vVerify,faculty:vFaculty,fac:vFac,settings:vSettings,audit:vAudit,leaves:vLeaves,credentials:vCreds,workshops:vWorkshops,ws:vWs,tasks:vTasks,task:vTask,fb:vFb,fbedit:vFbEdit,pfedit:vPfEdit,pfill:vPfill,prop:vProp,exams:vExams,exam:vExam,orientation:vOrients,orient:vOrient,supervisors:vSupervisors,reg:vReg,rgedit:vRgEdit,attend:vAttend,search:vSearch,datacheck:vDataCheck,messages:vMessages,cred:()=>{if(UI.credFac!==route.id){UI.credFac=route.id;UI.credType=null}return vCreds()},exits:vExits,cert:vCertWs,certx:vCertEx}[route.v]||vOverview)();
 }
 
 /* ---------- OVERVIEW ---------- */
@@ -677,7 +680,7 @@ function vPgt(){
  const c=CUR.get(p.id),f=checks(p,c),ini=p.name.split(" ").map(w=>w[0]).slice(0,2).join("");
  return`<div><a href="#${p.reg==="Pending"?"verify":"pgts"}" class="btn link" style="padding-left:0">← ${p.reg==="Pending"?"Verification":"All PGTs"}</a></div>
  <div class="panel"><div class="prof"><div class="avatar" aria-hidden="true">${esc(ini)}</div>
-  <div class="who"><div class="code">${esc(p.code)||"No PGT ID yet"}${rollOf(p)?` · roll no. ${rollOf(p)}`:""}${p.oldCode!==undefined&&p.oldCode!==p.code?` · previously ${esc(p.oldCode||"none")}`:""}</div><h2>${pgtName(p)}</h2>
+  <div class="who"><div class="code">${esc(p.code)||"No PGT ID yet"}${rollOf(p)?` · roll no. ${rollOf(p)}`:""}</div><h2>${pgtName(p)}</h2>
    <div class="meta"><span>${esc(p.spec)}</span><span>${esc(p.program)} · ${c.body}</span><span>${esc(ricLabel(p))}</span><span>Induction ${p.start?sess(p.start):"—"}</span></div>
    <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">${p.reg==="Pending"?'<span class="pill p-pend">Pending verification</span>':""}${phasePill(c)}${c.status!=="Active"&&!c.departed&&c.pk!=="pause"?`<span class="pill p-done">${c.status}</span>`:""}</div></div>
   <div class="actions">${p.reg==="Pending"?`<button class="btn primary" data-act="verify" data-id="${p.id}">Verify</button><button class="btn danger" data-act="reject" data-id="${p.id}">Reject</button>`:`
@@ -727,7 +730,7 @@ function vFaculty(){
  const rows=all.filter(([f,c])=>(!UI.fq||(f.name+" "+f.pmdc).toLowerCase().includes(UI.fq.toLowerCase()))&&(!UI.fspec||f.spec===UI.fspec)&&(UI.fcred!=="attn"||attn([f,c]))&&(UI.fcred!=="sup"||f.cpsp||f.uhs)&&(UI.fcred!=="over"||c.n>=DB.settings.overload)&&(UI.fcred!=="zero"||((f.cpsp||f.uhs)&&c.n===0)))
   .sort((a,b)=>specIdx(a[0].spec)-specIdx(b[0].spec)||DESIG.indexOf(a[0].desig)-DESIG.indexOf(b[0].desig)||a[0].name.localeCompare(b[0].name));
  const cnt=k=>all.filter(x=>k==="attn"?attn(x):k==="sup"?x[0].cpsp||x[0].uhs:k==="over"?x[1].n>=DB.settings.overload:k==="zero"?(x[0].cpsp||x[0].uhs)&&x[1].n===0:true).length;
- LAST.faculty=rows;return`<div class="head"><div><h2>Faculty directory</h2><p>${rows.length} of ${all.length} shown</p></div><div class="actions">${xbtn("faculty")}<button class="btn primary" data-act="addfac">Add faculty member</button></div></div>
+ LAST.faculty=rows;return`<div class="head"><div><h2>Faculty directory</h2><p>${rows.length} of ${all.length} shown</p></div><div class="actions">${waBtn("faculty","WhatsApp these")}${xbtn("faculty")}<button class="btn primary" data-act="addfac">Add faculty member</button></div></div>
  <div class="panel" style="display:grid;gap:10px"><div class="toolbar"><input type="search" id="fq" placeholder="Search name or PMDC number" value="${esc(UI.fq)}" aria-label="Search faculty">
   <select id="ffspec" aria-label="Department"><option value="">All departments</option>${specNames().map(s=>`<option ${UI.fspec===s?"selected":""}>${s}</option>`).join("")}</select></div>
   <div class="chips">${[["","Everyone"],["sup","Approved supervisors"],["attn","Credentials expiring or expired"],["over",`${DB.settings.overload}+ PGTs`],["zero","Supervisors with no PGTs"]].map(([k,l])=>`<button class="chip" data-fcred="${k}" aria-pressed="${UI.fcred===k}">${l}<span class="c">${cnt(k)}</span></button>`).join("")}</div></div>
@@ -1415,7 +1418,7 @@ function vPgts(){
    <div class="kpis small"><div class="kpi"><span class="n">${k("uhs").length}</span><span class="l">UHS, new inductees starting their first 6 months</span></div><div class="kpi"><span class="n">${k("fcps").length}</span><span class="l">FCPS, back after 2 years at a rotational institute</span></div><div class="kpi"><span class="n">${k("all").length}</span><span class="l">Whole training at RIC, new inductees</span></div></div>
    <div class="legend">${specs.map(s=>`<span><b>${esc(s)}</b> ${A.filter(p=>p.spec===s).length}</span>`).join("")}</div>
    <p class="subt" style="margin:0">UHS PGTs returning after their 1.5 years outside are not counted here, because they already started at RIC. ${sessKey(UI.cy)>sessKey(curSess())?"New UHS inductees for a future cycle appear once they register.":""}</p></div>`}
- return`<div class="head"><div><h2>Trainee register</h2><p>${rows.length} shown · new PGTs join through the registration link</p></div><div class="actions">${xbtn("idchanges","PGT ID changes")}${xbtn("pgts")}</div></div>
+ return`<div class="head"><div><h2>Trainee register</h2><p>${rows.length} shown · new PGTs join through the registration link</p></div><div class="actions">${waBtn("pgts","WhatsApp these")}${xbtn("pgts")}</div></div>
  <div class="panel" style="display:grid;gap:10px">
   <div class="toolbar"><input type="search" id="q" placeholder="Search name, PGT ID or supervisor" value="${esc(UI.q)}" aria-label="Search">
    <select id="fspec" aria-label="Specialty"><option value="">All specialties</option>${specNames(1).map(s=>`<option ${UI.spec===s?"selected":""}>${s}</option>`).join("")}</select>
@@ -1436,7 +1439,7 @@ function vPgts(){
 const xrow=o=>Object.values(o),xhead=o=>Object.keys(o);
 function sheetFrom(name,objs){if(!objs.length)return{name,rows:[["No rows"]]};return{name,rows:[xhead(objs[0]),...objs.map(xrow)]}}
 const EXPORTS={
- pgts:()=>({file:`RIC PGTs ${iso(TODAY)}`,sheets:[sheetFrom("PGTs",LAST.pgts.map(p=>{const c=CUR.get(p.id),a=arrival(p);return{"PGT ID":p.code,"Roll no.":rollOf(p),"Previous PGT ID":p.oldCode!==undefined&&p.oldCode!==p.code?p.oldCode:"","Name":"Dr. "+p.name,"Programme":p.program,"Specialty":p.spec,"Year at RIC":ricLabel(p),"Joined RIC permanently":ricInfo(p).join||"","Training start":p.start,"Inducted (cycle)":sessOf(p.start),"Joins RIC (cycle)":a.sess,"Completes (cycle)":sessOf(c.comp),"Route":a.route,"Status":c.leave?"On leave":c.phase,"Rotation site":c.rotSite||"","Return to RIC":c.ret||"","Supervisor":c.sup?facName(c.sup):"","Expected completion":c.comp,"Domicile":p.domicile,"Last internal exam %":(()=>{const r=pgtExams(p).filter(r=>r.m!=null).pop();return r?r.m:""})(),...(canConduct()?{"Conduct records":conductOf(p).length,"Open conduct records":conductOf(p).filter(c=>c.status==="Open").length}:{})}}))]}),
+ pgts:()=>({file:`RIC PGTs ${iso(TODAY)}`,sheets:[sheetFrom("PGTs",LAST.pgts.map(p=>{const c=CUR.get(p.id),a=arrival(p);return{"PGT ID":p.code,"Roll no.":rollOf(p),"Name":"Dr. "+p.name,"Programme":p.program,"Specialty":p.spec,"Year at RIC":ricLabel(p),"Joined RIC permanently":ricInfo(p).join||"","Training start":p.start,"Inducted (cycle)":sessOf(p.start),"Joins RIC (cycle)":a.sess,"Completes (cycle)":sessOf(c.comp),"Route":a.route,"Status":c.leave?"On leave":c.phase,"Rotation site":c.rotSite||"","Return to RIC":c.ret||"","Supervisor":c.sup?facName(c.sup):"","Expected completion":c.comp,"Domicile":p.domicile,"Last internal exam %":(()=>{const r=pgtExams(p).filter(r=>r.m!=null).pop();return r?r.m:""})(),...(canConduct()?{"Conduct records":conductOf(p).length,"Open conduct records":conductOf(p).filter(c=>c.status==="Open").length}:{})}}))]}),
  leaves:()=>({file:`RIC PGT leave ${iso(TODAY)}`,sheets:[sheetFrom("Leave",LAST.leaves.map(({l,p,s})=>({"PGT ID":p.code,"Name":"Dr. "+p.name,"Specialty":p.spec,"Leave type":l.type,"From":l.start,"To":l.end,"Days":days(P(l.end),P(l.start))+1,"State":s,"Reason":l.reason,"Entered by":l.by})))]}),
  faculty:()=>({file:`RIC faculty ${iso(TODAY)}`,sheets:[sheetFrom("Faculty",LAST.faculty.map(([f,c])=>({"Name":facName(f),"Designation":f.desig,"Department":f.spec,"Unit":f.unit,"PMDC no.":f.pmdc,"Faculty reg. no.":f.regno,"Supervisor":c.type,"Active PGTs":c.n,"CPSP PGTs":c.ncpsp,"UHS PGTs":c.nuhs,"PMDC status":c.pmdc,"PMDC expiry":c.cr[CRED[0]]?.expiry||"","CPSP cert.":f.cpsp?c.cpsp:"","CPSP expiry":c.cr[CRED[1]]?.expiry||"","UHS cert.":f.uhs?c.uhs:"","UHS expiry":c.cr[CRED[2]]?.expiry||""})))]}),
  workshops:()=>({file:`RIC workshops ${iso(TODAY)}`,sheets:[sheetFrom("Workshops",LAST.workshops.map(w=>{const F=fin(w),S=fbSummary(w);return{"Month":mLabel(w.month),"Date":w.date||"","Workshop":w.title,"Department":w.dept,"Focal person":w.focal,"Course director":w.director||w.focal,"Stage":STAGES[w.stage],"Seats":w.seats??"","Fee":w.fee??"","Registered":w.reg.registered,"Paid":w.reg.paid,"Attended":w.reg.attended,"Feedback responses":S?S.n:0,"Overall rating":S&&S.overall!=null?+S.overall.toFixed(2):"","Total income":F.totalIn,"Total expenses":F.totalOut,"Net income":F.net,"Course director share":F.dir,"DME fund":F.dme}}))]}),
@@ -1596,12 +1599,12 @@ const DESIGS={
 const meObj=()=>DB.staff.find(s=>s.name===ME)||DB.staff[0];
 const isAdmin=()=>meObj().role==="Admin";
 const seeAll=()=>isAdmin()||!!meObj().seeAll;
-const canSee=k=>{if(k==="exits")k="leaves";if(k==="datacheck")k="pgts";return k==="overview"||k==="search"||isAdmin()||(meObj().sections||[]).includes(k)};
+const canSee=k=>{if(k==="exits")k="leaves";if(k==="datacheck")k="pgts";if(k==="messages")return true;return k==="overview"||k==="search"||isAdmin()||(meObj().sections||[]).includes(k)};
 const visibleTasks=()=>seeAll()?DB.tasks:DB.tasks.filter(t=>t.assignee===ME);
 const canAssign=()=>seeAll();
 
 /* ---------- side menu ---------- */
-const NAVG=[["","overview","Dashboard"],["","tasks","Tasks"],["Postgraduate trainees","pgts","Trainee register"],["Postgraduate trainees","verify","New registrations"],["Postgraduate trainees","datacheck","Data checks"],["Postgraduate trainees","leaves","Leave"],["Postgraduate trainees","exits","Left training"],["Faculty","faculty","Faculty directory"],["Faculty","supervisors","Supervisors"],["Faculty","credentials","Credentials"],["Teaching and assessment","workshops","Workshops"],["Teaching and assessment","exams","Examinations"],["Teaching and assessment","orientation","Orientation"],["Administration","settings","Settings"],["Administration","audit","Audit log"],["Administration","search","Search"]];
+const NAVG=[["","overview","Dashboard"],["","tasks","Tasks"],["","messages","WhatsApp"],["Postgraduate trainees","pgts","Trainee register"],["Postgraduate trainees","verify","New registrations"],["Postgraduate trainees","datacheck","Data checks"],["Postgraduate trainees","leaves","Leave"],["Postgraduate trainees","exits","Left training"],["Faculty","faculty","Faculty directory"],["Faculty","supervisors","Supervisors"],["Faculty","credentials","Credentials"],["Teaching and assessment","workshops","Workshops"],["Teaching and assessment","exams","Examinations"],["Teaching and assessment","orientation","Orientation"],["Administration","settings","Settings"],["Administration","audit","Audit log"],["Administration","search","Search"]];
 function renderChrome(cur){
  const late=visibleTasks().filter(tOverdue).length,pend=DB.pgts.filter(p=>p.reg==="Pending").length,wa=DB.workshops.filter(w=>wsFlags(w).length).length;
  const badge={tasks:late?[late,"late"]:null,verify:pend?[pend,""]:null,workshops:wa?[wa,""]:null};
@@ -2054,7 +2057,7 @@ function examSpecPanel(x,specs,cands,sp,canMark){
  const C=all.filter(p=>UI.exYear===""||yOf(p)===+UI.exYear).sort((a,b)=>yOf(a)-yOf(b)||(x.roll?.[a.id]||"").localeCompare(x.roll?.[b.id]||"")||a.name.localeCompare(b.name));
  const yl=y=>y?"RIC year "+y:"UHS initial 6 months or not yet at RIC";
  return`<div class="panel flush"><div style="padding:14px 16px 0;display:grid;gap:10px"><div class="head"><h3 style="margin:0">Candidate lists by specialty${canMark?" and marks":""}</h3>
-  <div class="actions">${x.roll?xbtn(`evalbee:${x.id}:${sp}:${UI.exYear}`,`Download Evalbee list · ${esc(sp)}${UI.exYear!==""?" · "+yl(+UI.exYear):""}`):""}${xbtn(`evalbeeall:${x.id}`,"All specialties (one file each sheet)")}</div></div>
+  <div class="actions">${waBtn(`exam:${x.id}:${sp}`,"WhatsApp "+esc(sp))}${x.roll?xbtn(`evalbee:${x.id}:${sp}:${UI.exYear}`,`Download Evalbee list · ${esc(sp)}${UI.exYear!==""?" · "+yl(+UI.exYear):""}`):""}${xbtn(`evalbeeall:${x.id}`,"All specialties (one file each sheet)")}</div></div>
   <div class="chips">${specs.map(s=>`<button class="chip" data-exspec="${esc(s)}" aria-pressed="${s===sp}">${esc(s)}<span class="c">${cands.filter(p=>p.spec===s).length}</span></button>`).join("")}</div>
   <div class="chips">${[["","All years"],...yrs.map(y=>[String(y),yl(y)])].map(([k,l])=>`<button class="chip" data-exyear="${k}" aria-pressed="${UI.exYear===k}">${l}<span class="c">${k===""?all.length:all.filter(p=>yOf(p)===+k).length}</span></button>`).join("")}</div>
   <p class="subt" style="margin:0">${x.roll?"Edit any roll number before downloading. ":"Generate roll numbers first (above). "}The Evalbee file follows your template: ROLLNO, NAME, PHONENO, EMAILID${x.stage<3?". Exclude anyone not sitting, or add a PGT in the candidate list panel":""}. Phone and email fill from the PGT record in the live app; they are hidden in this prototype.</p>
@@ -2246,7 +2249,7 @@ function regFlags(w){const f=[];if(regCount(w,"Payment to verify"))f.push(`${reg
 UI.rgTab="Confirmed";
 function regPanel(w){if(w.stage<3)return"";const R=regsOf(w),pay=w.fee&&w.payMode!=="free";const fl=regFlags(w);
  const list=R.filter(r=>r.status===UI.rgTab).sort((a,b)=>a.at<b.at?-1:1);const nm=r=>esc(stripOther(r.a.name)||"—");
- return`<div class="panel" style="display:grid;gap:12px"><div class="head"><h3 style="margin:0">Registration</h3><div class="actions">${xbtn("regs:"+w.id,"Download list")}<a class="btn small" href="#attend-${w.id}">Attendance sheet</a><a class="btn small" href="#rgedit-${w.id}">Edit form</a><button class="btn small" data-act="rg-settings">Seats and payment</button></div></div>
+ return`<div class="panel" style="display:grid;gap:12px"><div class="head"><h3 style="margin:0">Registration</h3><div class="actions">${xbtn("regs:"+w.id,"Download list")}${waBtn("regs:"+w.id+":"+UI.rgTab,"WhatsApp "+UI.rgTab.toLowerCase())}<a class="btn small" href="#attend-${w.id}">Attendance sheet</a><a class="btn small" href="#rgedit-${w.id}">Edit form</a><button class="btn small" data-act="rg-settings">Seats and payment</button></div></div>
  <div class="kpis small4"><div class="kpi"><span class="n">${R.filter(holdsSeat).length}<span class="of"> / ${w.seats??"—"}</span></span><span class="l">Seats taken</span></div><div class="kpi"><span class="n">${regCount(w,"Confirmed")}</span><span class="l">Confirmed${pay?" and paid":""}</span></div><div class="kpi"><span class="n">${regCount(w,"Waiting list")}</span><span class="l">Waiting list</span></div><div class="kpi"><span class="n">${pay?money(R.filter(r=>r.status==="Confirmed"&&r.paid).length*w.fee):"Free"}</span><span class="l">Fees received</span></div></div>
  <p class="subt" style="margin:0">${!w.fee||w.payMode==="free"?"Free: the first "+(w.seats??"—")+" registrations are confirmed; the rest go to the waiting list.":w.payMode==="proof"?`Pay first: people pay ${money(w.fee)} to the RIC account and enter the transaction ID with a receipt photo. Their seat is held while you verify the payment. Without a receipt the form cannot be submitted, which stops dummy entries.`:`Seat hold: the seat is held for ${w.holdHours||48} hours; if payment is not verified by then, the seat goes to the next person on the waiting list.`} ${w.fbOpen?"":""}</p>
  ${fl.length?`<div class="flag">${fl.map(esc).join("<br>")}${regsOf(w).some(r=>r.status==="Awaiting payment"&&r.holdUntil<new Date().toISOString())?` <button class="btn small" data-act="rg-expire">Release expired holds</button>`:""}</div>`:""}
@@ -2923,7 +2926,7 @@ function vSearch(){const q=UI.gq.trim().toLowerCase(),dig=q.replace(/\D/g,"");co
  const grp=(t,rows)=>rows.length?`<div class="panel flush"><h3 style="padding:14px 16px 0;margin:0">${t} · ${rows.length}</h3><div class="slist">${rows.slice(0,25).join("")}</div>${rows.length>25?`<p class="subt" style="padding:0 16px 12px">Showing 25; type more to narrow.</p>`:""}</div>`:"";
  const row=(href,a,b)=>`<a class="srow" href="#${href}"><b>${a}</b><span class="subt">${b}</span></a>`;
  let body="";if(q.length>=2){
-  const P1=DB.pgts.filter(p=>hit(p.name)||hit(p.code)||hit(p.oldCode)||(dig.length>=4&&(rollOf(p)===dig||String(p.cnic||"").replace(/\D/g,"").includes(dig)||String(p.mobile||"").replace(/\D/g,"").includes(dig))));
+  const P1=DB.pgts.filter(p=>hit(p.name)||hit(p.code)||(dig.length>=4&&(rollOf(p)===dig||String(p.cnic||"").replace(/\D/g,"").includes(dig)||String(p.mobile||"").replace(/\D/g,"").includes(dig))));
   const F=DB.faculty.filter(f=>hit(f.name)||hit(f.pmdc)),W=DB.workshops.filter(w=>hit(w.title)||hit(w.dept)||hit(w.focal)||hit(w.director)),X=DB.exams.filter(x=>hit(x.title)||hit(x.session));
   const T=canSee("tasks")?visibleTasks().filter(t=>hit(t.title)||hit(t.details)):[];
   const R=[];DB.workshops.forEach(w=>regsOf(w).forEach(r=>{if(hit(stripOther(r.a.name))||(dig.length>=4&&String(r.a.mobile||"").replace(/\D/g,"").includes(dig))||hit(r.a.email))R.push([w,r])}));
@@ -3044,6 +3047,7 @@ const NAV_ICON={
  verify:_ic('<circle cx="9.5" cy="8" r="3.5"/><path d="M3 20c.6-3.4 3.2-5.5 6.5-5.5 1.5 0 2.8.4 3.9 1.2"/><path d="M15 18.5l2 2 4-4.5"/>'),
  leaves:_ic('<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>'),
  datacheck:_ic('<path d="M9 3.5h6l1 2h3v15H5v-15h3z"/><path d="M12 10v4M12 17h.01"/>'),
+ messages:_ic('<path d="M4 20l1.3-4A8 8 0 1 1 8.5 19z"/><path d="M9 9.5c0 3 2.5 5.5 5.5 5.5l1-1.5-2-1-1 1c-1-.4-1.6-1-2-2l1-1-1-2z"/>'),
  exits:_ic('<path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"/><path d="M14 8l4 4-4 4M9 12h9"/>'),
  faculty:_ic('<circle cx="9" cy="8" r="3.2"/><path d="M3 20c.5-3.3 3-5.4 6-5.4s5.5 2.1 6 5.4"/><circle cx="17" cy="9" r="2.4"/><path d="M16.5 14.6c2.4.2 4.1 2 4.5 4.6"/>'),
  supervisors:_ic('<circle cx="12" cy="7.5" r="3.5"/><path d="M5 20.5c.6-3.6 3.5-6 7-6s6.4 2.4 7 6"/><path d="M12 14.5l-1.3 3 1.3 1.6 1.3-1.6z"/>'),
@@ -3169,6 +3173,82 @@ function credGo(fid,type){UI.credFac=fid;UI.credType=type||null;if(route.v!=="cr
 document.addEventListener("click",e=>{const b=e.target.closest('[data-act="cr-goto"]');if(!b)return;e.preventDefault();e.stopPropagation();credGo(b.dataset.id,b.dataset.type)},true);
 document.addEventListener("click",e=>{const b=e.target.closest('[data-act="cr-mute"],[data-act="cr-pick"]');if(!b)return;e.stopPropagation();e.preventDefault();
  if(b.dataset.act==="cr-mute"){UI.credMute=!UI.credMute;render();return}credGo(b.dataset.id,null)},true);
+
+/* =====================================================================
+   V14 · WHATSAPP MESSAGES
+   Pick trainees, faculty or workshop registrants, write one message with
+   {placeholders}, then send through WhatsApp one tap per person, or copy
+   the numbers / download contacts for a broadcast list or group.
+   ===================================================================== */
+const waNum=m=>{let x=String(m||"").replace(/\D/g,"");if(x.startsWith("0092"))x=x.slice(2);if(x.startsWith("0"))x="92"+x.slice(1);if(x.length===10&&x.startsWith("3"))x="92"+x;return/^923\d{9}$/.test(x)?x:""};
+function recPgt(p){const c=CUR.get(p.id)||{};return{key:"p:"+p.id,kind:"Trainee",name:"Dr. "+p.name,mobile:p.mobile||"",href:"pgt-"+p.id,sub:`${p.code||"no ID"} · ${p.spec}`,vars:{name:"Dr. "+p.name,first:"Dr. "+p.name.split(" ")[0],pgtid:p.code||"",roll:rollOf(p)||"",specialty:p.spec,programme:p.program,supervisor:c.sup?facName(c.sup):"",year:ricLabel(p)}}}
+function recFac(f){return{key:"f:"+f.id,kind:"Faculty",name:facName(f),mobile:f.mobile||"",href:"cred-"+f.id,sub:`${f.desig||""} · ${f.spec||""}`,vars:{name:facName(f),first:facName(f),pgtid:"",roll:"",specialty:f.spec||"",programme:"",supervisor:"",year:""}}}
+function recReg(w,r){const n=stripOther(r.a.name);return{key:"r:"+w.id+":"+r.id,kind:"Registrant",name:n,mobile:r.a.mobile||"",href:"ws-"+w.id,sub:`${w.title} · ${r.status}`,vars:{name:n,first:n,pgtid:"",roll:"",specialty:stripOther(r.a.dept||r.a.spec||""),programme:"",supervisor:"",year:"",workshop:w.title,date:w.date?fd(w.date):""}}}
+const MSG_TPL=[
+ ["","Blank message",""],
+ ["exam","Exam reminder","Dear {name},\nThe six-monthly internal examination is on [date] at [time], [venue]. Your roll number is {roll}. Please bring your CNIC and arrive 30 minutes early.\nDME Office, RIC"],
+ ["orient","Orientation invitation","Dear {name},\nYou are invited to the PGT orientation on [date] at [time] in [venue]. Attendance is compulsory.\nDME Office, RIC"],
+ ["ws","Workshop reminder","Dear {name},\nThis is a reminder for the workshop {workshop} on {date}. Registration opens at [time] in [venue].\nDME Office, RIC"],
+ ["docs","Missing documents","Dear {name} ({pgtid}),\nPlease send the following to the DME office by [date]: [documents].\nDME Office, RIC"],
+ ["cred","Credential renewal","Dear {name},\nOur records show your [certificate] needs renewal. Kindly share the updated certificate with the DME office.\nDME Office, RIC"]];
+UI.msg={recs:[],text:"",sent:{},src:""};
+function msgSet(recs,src){UI.msg={recs,text:UI.msg.text||"",sent:{},src};go("messages")}
+const msgFill=(t,r)=>t.replace(/\{(\w+)\}/g,(m,k)=>r.vars[k]!=null&&r.vars[k]!==""?r.vars[k]:m);
+UI.mpick="pgts";UI.mq="";
+function vMessages(){const M=UI.msg,R=M.recs,ok=R.filter(r=>waNum(r.mobile)),no=R.filter(r=>!waNum(r.mobile));const next=ok.find(r=>!M.sent[r.key]);
+ const pool=UI.mpick==="pgts"?verified().filter(p=>CUR.get(p.id).active).map(recPgt):UI.mpick==="fac"?DB.faculty.map(recFac):DB.workshops.flatMap(w=>regsOf(w).filter(r=>r.status!=="Cancelled").map(r=>recReg(w,r)));
+ const q=UI.mq.toLowerCase(),shown=q.length>=2?pool.filter(r=>(r.name+" "+r.sub).toLowerCase().includes(q)).slice(0,12):[];
+ return`<div class="head"><div><h2>WhatsApp messages</h2><p>Choose who gets the message, write it once, then send it through WhatsApp. Each person gets their own copy with their name filled in.</p></div></div>
+ <div class="cols certcols">
+ <div style="display:grid;gap:14px;align-content:start;min-width:0">
+  <div class="panel" style="display:grid;gap:10px"><div class="head"><h3 style="margin:0">Message</h3><select id="msg-tpl" aria-label="Start from a template">${MSG_TPL.map(([k,l])=>`<option value="${k}">${l}</option>`).join("")}</select></div>
+   <textarea id="msg-text" rows="7" placeholder="Dear {name}, …">${esc(M.text)}</textarea>
+   <p class="subt" style="margin:0">Filled in for each person: <code>{name}</code> <code>{pgtid}</code> <code>{roll}</code> <code>{specialty}</code> <code>{supervisor}</code> <code>{year}</code> <code>{workshop}</code> <code>{date}</code>. Replace anything in [brackets] yourself.</p>
+   ${R.length&&M.text?`<div class="msgprev"><span class="subt">Preview for ${esc(R[0].name)}</span><div>${esc(msgFill(M.text,R[0])).replace(/\n/g,"<br>")}</div></div>`:""}</div>
+  <div class="panel" style="display:grid;gap:10px"><h3 style="margin:0">Send · ${ok.length} with a WhatsApp number</h3>
+   ${!R.length?`<p class="subt" style="margin:0">Add people on the right first.</p>`:!M.text.trim()?`<p class="subt" style="margin:0">Write the message first.</p>`:`
+   <p class="subt" style="margin:0"><b>One by one:</b> each button opens WhatsApp with this person's message ready; press send there, come back, and tap the next. ${Object.keys(M.sent).length} of ${ok.length} opened.</p>
+   ${next?`<a class="btn primary" target="_blank" rel="noopener" href="https://wa.me/${waNum(next.mobile)}?text=${encodeURIComponent(msgFill(M.text,next))}" data-wasent="${esc(next.key)}">Open WhatsApp for ${esc(next.name)} →</a>`:`<div class="flag ok">All ${ok.length} opened.</div>`}
+   <div class="actions"><button class="btn small" data-act="msg-copy">Copy all numbers</button><button class="btn small" data-act="msg-vcf">Download contacts (.vcf)</button><button class="btn small" data-act="msg-copytext">Copy message</button></div>
+   <p class="subt" style="margin:0"><b>For a broadcast or group:</b> download the contacts to your phone, then make a WhatsApp broadcast list or group from them and send the message once (it will not have names filled in).</p>`}</div>
+ </div>
+ <div style="display:grid;gap:14px;align-content:start;min-width:0">
+  <div class="panel" style="display:grid;gap:10px"><h3 style="margin:0">Add people</h3>
+   <div class="chips">${[["pgts","Trainees"],["fac","Faculty"],["regs","Workshop registrants"]].map(([k,l])=>`<button class="chip" data-mpick="${k}" aria-pressed="${UI.mpick===k}">${l}</button>`).join("")}</div>
+   <input type="search" id="mq" value="${esc(UI.mq)}" placeholder="Type a name to add one person" autocomplete="off" aria-label="Find a person">
+   ${shown.length?`<div class="slist">${shown.map(r=>`<button class="srow" data-madd="${esc(r.key)}" style="text-align:left;border:0;background:none;font:inherit;cursor:pointer"><b>${esc(r.name)}</b><span class="subt">${esc(r.sub)}${waNum(r.mobile)?"":" · no number"}</span></button>`).join("")}</div>`:""}
+   ${UI.mpick==="pgts"?`<div class="toolbar"><select id="mg-spec" aria-label="Specialty"><option value="">All specialties</option>${specNames(1).map(s=>`<option>${esc(s)}</option>`).join("")}</select><select id="mg-where" aria-label="Where">${opt([["","At RIC and on rotation"],["ric","At RIC now"],["rot","On rotation"]])}</select><button class="btn small" data-act="msg-addgroup">Add this group</button></div>`:UI.mpick==="fac"?`<div class="toolbar"><select id="mg-dept" aria-label="Department"><option value="">All departments</option>${specNames().map(s=>`<option>${esc(s)}</option>`).join("")}</select><select id="mg-ftype" aria-label="Type">${opt([["","All faculty"],["sup","Approved supervisors"]])}</select><button class="btn small" data-act="msg-addgroup">Add this group</button></div>`:`<div class="toolbar"><select id="mg-ws" aria-label="Workshop">${DB.workshops.filter(w=>regsOf(w).length).map(w=>`<option value="${w.id}">${esc(w.title)} · ${mLabel(w.month)}</option>`).join("")||'<option value="">No registrations yet</option>'}</select><select id="mg-rst" aria-label="Status">${opt([["Confirmed","Confirmed"],["Waiting list","Waiting list"],["","Everyone registered"]])}</select><button class="btn small" data-act="msg-addgroup">Add this group</button></div>`}
+   <p class="subt" style="margin:0">You can also start from the Trainee register, Faculty directory, an exam's specialty list or a workshop's registrations with their <b>WhatsApp</b> button.</p></div>
+  <div class="panel flush"><div class="head" style="padding:14px 16px 0"><h3 style="margin:0">Recipients · ${R.length}</h3>${R.length?`<button class="btn link" data-act="msg-clear">Clear all</button>`:""}</div>
+   ${no.length?`<p class="subt" style="padding:6px 16px 0;margin:0">${no.length} without a usable mobile number. Add it from their profile or Data checks.</p>`:""}
+   <div class="tblwrap" style="max-height:520px;overflow:auto"><table><tbody>${R.map(r=>`<tr><td><a href="#${r.href}">${esc(r.name)}</a><div class="subt">${esc(r.sub)}</div></td><td class="code">${waNum(r.mobile)?esc(r.mobile):'<span class="pill p-bad">no number</span>'}</td><td>${M.sent[r.key]?'<span class="pill p-ric">Opened</span>':waNum(r.mobile)&&M.text.trim()?`<a class="btn link" target="_blank" rel="noopener" href="https://wa.me/${waNum(r.mobile)}?text=${encodeURIComponent(msgFill(M.text,r))}" data-wasent="${esc(r.key)}">Send</a>`:""}</td><td><button class="btn link" data-mrm="${esc(r.key)}" aria-label="Remove">✕</button></td></tr>`).join("")||`<tr><td class="empty">Nobody yet.</td></tr>`}</tbody></table></div></div>
+ </div></div>`}
+function msgPoolFor(){if(UI.mpick==="pgts"){const s=pick("mg-spec"),w=pick("mg-where");return verified().filter(p=>{const c=CUR.get(p.id);return c.active&&(!s||p.spec===s)&&(!w||(w==="ric"?c.pk==="ric":c.pk==="rot"))}).map(recPgt)}
+ if(UI.mpick==="fac"){const d=pick("mg-dept"),t=pick("mg-ftype");return DB.faculty.filter(f=>(!d||f.spec===d)&&(!t||f.cpsp||f.uhs)).map(recFac)}
+ const w=DB.workshops.find(x=>x.id===pick("mg-ws"));if(!w)return[];const st=pick("mg-rst");return regsOf(w).filter(r=>r.status!=="Cancelled"&&(!st||r.status===st)).map(r=>recReg(w,r))}
+function msgAdd(list){const have=new Set(UI.msg.recs.map(r=>r.key));let n=0;list.forEach(r=>{if(!have.has(r.key)){UI.msg.recs.push(r);have.add(r.key);n++}});return n}
+document.addEventListener("click",async e=>{const a=e.target.closest("[data-wasent]");if(a&&route.v==="messages"){UI.msg.sent[a.dataset.wasent]=1;if(!UI.msg.logged){UI.msg.logged=1;log(`WhatsApp message started to ${UI.msg.recs.length} people: "${UI.msg.text.slice(0,60)}${UI.msg.text.length>60?"…":""}"`)}setTimeout(render,300);return}
+ const b=e.target.closest("button");if(!b||route.v!=="messages")return;const d=b.dataset;
+ if(d.mpick){UI.mpick=d.mpick;UI.mq="";render();return}
+ if(d.madd){const pool=UI.mpick==="pgts"?verified().map(recPgt):UI.mpick==="fac"?DB.faculty.map(recFac):DB.workshops.flatMap(w=>regsOf(w).map(r=>recReg(w,r)));const r=pool.find(x=>x.key===d.madd);if(r)msgAdd([r]);UI.mq="";render();return}
+ if(d.mrm){UI.msg.recs=UI.msg.recs.filter(r=>r.key!==d.mrm);render();return}
+ if(d.act==="msg-addgroup"){const n=msgAdd(msgPoolFor());toast(n?`${n} added`:"Already in the list");render();return}
+ if(d.act==="msg-clear"){UI.msg={recs:[],text:UI.msg.text,sent:{},src:""};render();return}
+ if(d.act==="msg-copy"){const t=UI.msg.recs.map(r=>waNum(r.mobile)).filter(Boolean).map(x=>"+"+x).join(", ");try{await navigator.clipboard.writeText(t);toast("Numbers copied")}catch(x){toast("Could not copy")}return}
+ if(d.act==="msg-copytext"){try{await navigator.clipboard.writeText(UI.msg.text);toast("Message copied")}catch(x){toast("Could not copy")}return}
+ if(d.act==="msg-vcf"){const v=UI.msg.recs.filter(r=>waNum(r.mobile)).map(r=>`BEGIN:VCARD\r\nVERSION:3.0\r\nFN:${r.name.replace(/[,;]/g," ")} (RIC)\r\nORG:RIC ${r.kind}\r\nTEL;TYPE=CELL:+${waNum(r.mobile)}\r\nEND:VCARD`).join("\r\n");
+  if(!DL){toast("Downloads are not available in this view");return}try{await DL.save({filename:`RIC contacts ${iso(TODAY)}.vcf`,data:new Blob([v],{type:"text/vcard"})});toast("Contacts saved")}catch(x){if(x?.code!=="declined")toast("Could not save the file")}return}});
+document.addEventListener("input",e=>{const t=e.target;if(route.v!=="messages")return;
+ if(t.id==="msg-text"){UI.msg.text=t.value;clearTimeout(UI.msgT);UI.msgT=setTimeout(()=>{const pos=t.selectionStart;render();const n=document.getElementById("msg-text");if(n){n.focus();n.setSelectionRange(pos,pos)}},600)}
+ if(t.id==="mq"){UI.mq=t.value;const pos=t.selectionStart;render();const n=document.getElementById("mq");n.focus();n.setSelectionRange(pos,pos)}});
+document.addEventListener("change",e=>{if(e.target.id==="msg-tpl"&&route.v==="messages"){const t=MSG_TPL.find(x=>x[0]===e.target.value);if(t&&t[2])UI.msg.text=t[2];render()}});
+/* WhatsApp buttons on lists */
+document.addEventListener("click",e=>{const b=e.target.closest("[data-wa]");if(!b)return;e.preventDefault();e.stopPropagation();const[k,a1,a2]=b.dataset.wa.split(":");let L=[];
+ if(k==="pgts")L=(LAST.pgts||[]).map(recPgt);if(k==="faculty")L=(LAST.faculty||[]).map(x=>recFac(Array.isArray(x)?x[0]:x));
+ if(k==="regs"){const w=DB.workshops.find(x=>x.id===a1);L=regsOf(w).filter(r=>r.status===(a2||"Confirmed")).map(r=>recReg(w,r))}
+ if(k==="exam"){const x=DB.exams.find(z=>z.id===a1);L=exCands(x).filter(p=>!a2||p.spec===a2).map(p=>({...recPgt(p),vars:{...recPgt(p).vars,roll:x.roll?.[p.id]||rollOf(p),date:x.date?fd(x.date):""}}))}
+ UI.msg={recs:[],text:UI.msg.text||"",sent:{},src:k};msgAdd(L);toast(`${L.length} added to WhatsApp message`);go("messages")},true);
+const waBtn=(k,l)=>`<button class="btn small wabtn" data-wa="${k}">${l||"WhatsApp"}</button>`;
 
 /* ---------- events ---------- */
 document.addEventListener("click",e=>{
