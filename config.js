@@ -3,6 +3,6 @@
 // Supabase: Project Settings > API Keys (publishable key, starts with sb_publishable_)
 // and the Project URL (looks like https://abcdefgh.supabase.co).
 window.DME_SUPABASE = {
-  url: "https://znpaeycsmaivwfdpbpkt.supabase.co",
-  anonKey: "sb_publishable_oBrY4L800dZSIQnbDfjRcQ_FYa0QaUc"
+  url: "",
+  anonKey: ""
 };

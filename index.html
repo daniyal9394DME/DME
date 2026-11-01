@@ -442,6 +442,53 @@ body.public .solo-card{max-width:760px}
 }
 .attsheet table td{height:34px}
 @media print{.noprint{display:none!important}.attsheet{border:none!important}}
+/* ===== v12: calmer clinical palette, white top bar, icon side menu ===== */
+:root{
+ --bg:#F3F5F8; --surface:#FFFFFF; --sunk:#F7F8FA; --ink:#1F2933; --muted:#5B6776; --line:#E1E6EC; --line2:#CDD5DE;
+ --brand:#8A2D3B; --brand-deep:#6B1F2C; --brand-soft:#F7EAEC; --gold:#B5893F; --gold-soft:#FBF4E6;
+ --ok:#2E7D4F; --ok-soft:#E6F4EB; --warn:#94600A; --warn-soft:#FDF3DE; --bad:#B3261E; --bad-soft:#FCE9E7; --info:#2C6A9B; --info-soft:#E7F0F8; --mute-soft:#EEF1F5;
+ --f-display:"Source Sans 3","Segoe UI",Roboto,Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+ --bg:#12161B; --surface:#1A2027; --sunk:#151A20; --ink:#E6EAEF; --muted:#9AA6B4; --line:#29313B; --line2:#36404C;
+ --brand:#E29AA5; --brand-deep:#6B1F2C; --brand-soft:#33222A; --gold:#D6B072; --gold-soft:#2E2618;
+ --ok:#83D0A2; --ok-soft:#16291F; --warn:#EBC27A; --warn-soft:#30260F; --bad:#F29B93; --bad-soft:#3A1E1C; --info:#8FC0E6; --info-soft:#18283A; --mute-soft:#202830}}
+:root[data-theme="dark"]{
+ --bg:#12161B; --surface:#1A2027; --sunk:#151A20; --ink:#E6EAEF; --muted:#9AA6B4; --line:#29313B; --line2:#36404C;
+ --brand:#E29AA5; --brand-deep:#6B1F2C; --brand-soft:#33222A; --gold:#D6B072; --gold-soft:#2E2618;
+ --ok:#83D0A2; --ok-soft:#16291F; --warn:#EBC27A; --warn-soft:#30260F; --bad:#F29B93; --bad-soft:#3A1E1C; --info:#8FC0E6; --info-soft:#18283A; --mute-soft:#202830}
+body::before{background:var(--surface)}
+.appbar{background:var(--surface);color:var(--ink);border-top:3px solid var(--brand);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:40}
+.appbar h1{color:var(--brand);font-weight:700;letter-spacing:.2px}
+.appbar .s{color:var(--muted);opacity:1}
+.appbar img{box-shadow:0 0 0 1px var(--line)}
+.navbtn{border:1px solid var(--line2);background:var(--surface)}.navbtn span{background:var(--ink)}.navbtn:hover{background:var(--sunk)}
+.whobox{color:var(--ink)}.whobox .s{color:var(--muted);opacity:1}
+.whobox select{background:var(--sunk);color:var(--ink);border:1px solid var(--line2)}
+.whobox .live,.whobox .live .btn.link,.sy .btn.link{color:var(--muted)}.whobox .live .btn.link:hover{color:var(--brand)}
+.sy.ok{color:var(--ok)}.sy.bad{color:var(--bad)}
+.topq{flex:0 1 380px;min-width:0;height:38px;border:1px solid var(--line2);border-radius:999px;background:var(--sunk) no-repeat 12px 50%/16px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235B6776' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='6.5'/%3E%3Cpath d='M16 16l4.5 4.5'/%3E%3C/svg%3E");padding:0 14px 0 36px;font:inherit;font-size:14px;color:var(--ink)}
+.topq:focus{outline:2px solid var(--brand-soft);border-color:var(--brand);background-color:var(--surface)}
+@media(max-width:900px){.topq{display:none}}
+@media(min-width:901px){.pgq{display:none}}
+.sidenav{background:var(--surface)}
+@media(min-width:1100px){.sidenav{top:var(--abh,64px);height:calc(100vh - var(--abh,64px))}}
+.sidenav .ng{color:var(--muted);font-size:10.5px;letter-spacing:.09em;padding:16px 12px 6px}
+.sidenav a{justify-content:flex-start;gap:10px;padding:8px 12px;color:var(--ink);font-weight:500;border-left:3px solid transparent;border-radius:0 8px 8px 0}
+.sidenav a .ni{display:grid;place-items:center;color:var(--muted);flex:none}
+.sidenav a .nl{flex:1;min-width:0}
+.sidenav a[aria-current="page"]{background:var(--brand-soft);color:var(--brand);border-left-color:var(--brand);font-weight:700}
+.sidenav a[aria-current="page"] .ni{color:var(--brand)}
+.sidenav .cnt{margin-left:auto}
+.installbox{padding:6px 16px 20px}.installbox .btn{display:inline-flex;gap:6px;align-items:center}
+.pn{color:var(--brand);cursor:pointer;text-decoration:underline;text-decoration-color:transparent;text-underline-offset:2px;transition:text-decoration-color .12s}
+.pn:hover,.pn:focus-visible{text-decoration-color:currentColor;outline:none}
+tr.click:hover td{background:var(--sunk)}
+.panel{border-color:var(--line);box-shadow:0 1px 2px rgba(16,24,40,.04)}
+h2{letter-spacing:-.2px}
+.topsearch{display:none;width:40px;height:40px;border-radius:8px;border:1px solid var(--line2);place-items:center;color:var(--ink);flex:none;margin-left:auto}
+@media(max-width:900px){.topsearch{display:grid}}
+body.solo .topq,body.solo .topsearch{display:none!important}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:sl .18s ease-out}@keyframes sl{from{transform:translateX(24px)}to{transform:none}}}
 </style>
 
@@ -449,14 +496,17 @@ body.public .solo-card{max-width:760px}
   <button class="navbtn" data-act="navtoggle" aria-label="Menu"><span></span><span></span><span></span></button>
   <img src="data:image/jpeg;base64,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" alt="RIC logo">
   <div class="t"><h1>DME Office</h1><div class="s"><span class="hide-sm">Rawalpindi Institute of Cardiology · </span><span id="crumb"></span></div></div>
-  <div id="userbox"></div>
+  <input id="topq" class="topq" type="search" placeholder="Search trainees, faculty, workshops…  ( / )" aria-label="Search" autocomplete="off"><a class="topsearch" href="#search" aria-label="Search"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/></svg></a><div id="userbox"></div>
 </div></div>
 <div class="proto"><div class="wrap"><span><b>Prototype.</b> Real PGT and faculty records from the Google Sheet. CNIC, PMDC, mobile and email are hidden here. Changes you make stay in this browser only.</span><button class="btn small" data-act="resetdb">Reset to sheet data</button></div></div>
-<div class="shell"><aside class="sidenav" aria-label="Sections"><nav id="nav"></nav></aside><div class="navscrim" data-act="navclose"></div><main class="wrap" id="main"></main></div>
+<div class="shell"><aside class="sidenav" aria-label="Sections"><nav id="nav"></nav><div id="installbox" class="installbox"></div></aside><div class="navscrim" data-act="navclose"></div><main class="wrap" id="main"></main></div>
 <div id="overlay"></div>
 
 <!-- Supabase settings live in config.js, next to this file -->
 <script src="config.js"></script>
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#FFFFFF">
+<link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="DME Office"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
@@ -567,7 +617,7 @@ function facCur(f){
 const credPill=s=>`<span class="pill ${s==="Registered"||s==="Certified"?"p-ric":s==="Expiring Soon"?"p-pause":s==="Expired"?"p-bad":"p-done"}">${s}</span>`;
 const phasePill=c=>{const L=c.leave&&c.active;return`<span class="pill p-${L?"leave":c.pk}">${L?"On leave · "+esc(c.leave.type):esc(c.phase)}${c.rotSite&&!L?" · "+c.rotSite:""}</span>`};
 const dayCell=(n,red,amb)=>n==null?"—":`<span class="days ${n<=red?"d-red":n<=amb?"d-amb":""}">${n}</span>`;
-const pgtName=p=>`Dr. ${esc(p.name)}`;
+const pgtName=p=>`<span class="pn" data-pid="${p.id}" tabindex="0">Dr. ${esc(p.name)}</span>`;
 
 /* ---------- checks (replaces Data Quality Flags) ---------- */
 function checks(p,c){const f=[];
@@ -651,11 +701,11 @@ function vVerify(){
   return`<div class="panel" style="display:grid;gap:12px"><div class="prof"><div class="avatar" aria-hidden="true">${esc(p.name.split(" ").map(w=>w[0]).join("").slice(0,2))}</div>
    <div class="who"><h2 style="font-size:22px">${pgtName(p)} ${p.example?'<span class="pill p-done" style="vertical-align:4px">Example</span>':""}</h2><div class="meta"><span>${esc(p.spec)} · ${esc(p.program)}</span><span>Submitted ${fd(p.submitted)}</span></div></div>
    <div class="actions"><button class="btn primary" data-act="verify" data-id="${p.id}">Verify</button><button class="btn danger" data-act="reject" data-id="${p.id}">Reject</button><a class="btn" href="#pgt-${p.id}">Open</a></div></div>
-   <dl class="kv"><dt>Training</dt><dd>${fd(p.start)} · ${p.dur} years</dd><dt>Supervisor</dt><dd>${esc(facName(c.sup))}</dd><dt>Posting</dt><dd>${c.pk==="rot"?"On rotation at "+esc(c.rotSite):"At RIC"}</dd><dt>Domicile</dt><dd>${esc(p.domicile)}</dd>
+   <dl class="kv"><dt>Training</dt><dd>${fd(p.start)} · ${p.dur} years</dd><dt>Supervisor</dt><dd>${facLink(c.sup)}</dd><dt>Posting</dt><dd>${c.pk==="rot"?"On rotation at "+esc(c.rotSite):"At RIC"}</dd><dt>Domicile</dt><dd>${esc(p.domicile)}</dd>
    <dt>PGT ID</dt><dd class="code">${p.code||nextCode(p)} <span class="subt">reserved in order of registration · roll no. ${rollOf(p)||"—"}</span></dd></dl>
    ${issues.length?`<div class="flag">${issues.map(esc).join("<br>")}</div>`:`<div class="flag ok">Declared year and completion match the calculated values.</div>`}
    <div class="docs">${docsHtml(p)}</div></div>`};
- return`<div class="head"><div><h2>Verification</h2><p>Registrations submitted through the PGT link. Check details against the documents, then verify.</p></div></div>${LIVE?`<div class="panel"><div class="toolbar"><span class="subt">PGT registration link</span><input id="pgtlink" readonly class="linkbox" value="${esc(pubBase().replace(/[^/]*$/,"")+"register.html")}"><button class="btn small" data-act="pgt-copy">Copy</button></div></div>`:""}
+ return`<div class="head"><div><h2>New registrations</h2><p>Registrations submitted through the PGT link. Check details against the documents, then verify.</p></div></div>${LIVE?`<div class="panel"><div class="toolbar"><span class="subt">PGT registration link</span><input id="pgtlink" readonly class="linkbox" value="${esc(pubBase().replace(/[^/]*$/,"")+"register.html")}"><button class="btn small" data-act="pgt-copy">Copy</button></div></div>`:""}
  ${pend.length?pend.map(card).join(""):`<div class="panel empty">No registrations waiting. New submissions from the registration link appear here.</div>`}
  ${rej.length?`<div class="panel flush"><h3>Rejected</h3><div class="tblwrap"><table><thead><tr><th>Name</th><th>Reason</th><th></th></tr></thead><tbody>${rej.map(p=>`<tr><td>${pgtName(p)}</td><td class="wrapcell">${esc(p.rejection)}</td><td><button class="btn small" data-act="reopen" data-id="${p.id}">Move back to pending</button></td></tr>`).join("")}</tbody></table></div></div>`:""}`}
 function nextCode(p){if(!p.start)return"—";const d=P(p.start),yy=String(d.getFullYear()).slice(2),m=d.getMonth()<6?1:7;const pre=`PGT/${yy}/${m}/`;
@@ -668,7 +718,7 @@ function vFaculty(){
  const rows=all.filter(([f,c])=>(!UI.fq||(f.name+" "+f.pmdc).toLowerCase().includes(UI.fq.toLowerCase()))&&(!UI.fspec||f.spec===UI.fspec)&&(UI.fcred!=="attn"||attn([f,c]))&&(UI.fcred!=="sup"||f.cpsp||f.uhs)&&(UI.fcred!=="over"||c.n>=DB.settings.overload)&&(UI.fcred!=="zero"||((f.cpsp||f.uhs)&&c.n===0)))
   .sort((a,b)=>specIdx(a[0].spec)-specIdx(b[0].spec)||DESIG.indexOf(a[0].desig)-DESIG.indexOf(b[0].desig)||a[0].name.localeCompare(b[0].name));
  const cnt=k=>all.filter(x=>k==="attn"?attn(x):k==="sup"?x[0].cpsp||x[0].uhs:k==="over"?x[1].n>=DB.settings.overload:k==="zero"?(x[0].cpsp||x[0].uhs)&&x[1].n===0:true).length;
- LAST.faculty=rows;return`<div class="head"><div><h2>Faculty</h2><p>${rows.length} of ${all.length} shown</p></div><div class="actions">${xbtn("faculty")}<button class="btn primary" data-act="addfac">Add faculty member</button></div></div>
+ LAST.faculty=rows;return`<div class="head"><div><h2>Faculty directory</h2><p>${rows.length} of ${all.length} shown</p></div><div class="actions">${xbtn("faculty")}<button class="btn primary" data-act="addfac">Add faculty member</button></div></div>
  <div class="panel" style="display:grid;gap:10px"><div class="toolbar"><input type="search" id="fq" placeholder="Search name or PMDC number" value="${esc(UI.fq)}" aria-label="Search faculty">
   <select id="ffspec" aria-label="Department"><option value="">All departments</option>${specNames().map(s=>`<option ${UI.fspec===s?"selected":""}>${s}</option>`).join("")}</select></div>
   <div class="chips">${[["","Everyone"],["sup","Approved supervisors"],["attn","Credentials expiring or expired"],["over",`${DB.settings.overload}+ PGTs`],["zero","Supervisors with no PGTs"]].map(([k,l])=>`<button class="chip" data-fcred="${k}" aria-pressed="${UI.fcred===k}">${l}<span class="c">${cnt(k)}</span></button>`).join("")}</div></div>
@@ -856,7 +906,7 @@ function vCreds(){
  const f=facById(UI.credFac);const c=f&&facCur(f);
  const reg=DB.faculty.filter(x=>x.active!==false).map(x=>{const k=facCur(x);return[x,credIssues(x,k)]}).filter(x=>x[1].some(i=>i[0]!=="mute")).sort((a,b)=>specIdx(a[0].spec)-specIdx(b[0].spec));
  const hist=f?DB.creds.filter(x=>x.fid===f.id).sort((a,b)=>(a.issue||"")<(b.issue||"")?1:-1):[];
- return`<div class="head"><div><h2>Faculty updates</h2><p>Record supervisor approval, upload certificates and update PMDC and registration details.</p></div></div>
+ return`<div class="head"><div><h2>Credentials</h2><p>Record supervisor approval, upload certificates and update PMDC and registration details.</p></div></div>
  <div class="panel" style="display:grid;gap:8px"><label class="f">Faculty member<input id="cr-fac" list="cr-facs" placeholder="Start typing a name" autocomplete="off" value="${f?esc(facLabel(f)):""}"><datalist id="cr-facs">${DB.faculty.map(x=>`<option value="${esc(facLabel(x))}">`).join("")}</datalist></label>
   ${f?"":`<p class="code" style="margin:0">Choose a faculty member, or tap "Update" in the register below.</p>`}</div>
  ${f?`<div class="panel"><div class="prof"><div class="avatar" aria-hidden="true">${esc(f.name.split(" ").map(w=>w[0]).slice(0,2).join(""))}</div>
@@ -1036,7 +1086,7 @@ function vWs(){
   <div class="actions"><a class="btn ${w.certs<w.reg.attended?"primary":""}" href="#cert-${w.id}">${w.certs<w.reg.attended?`Make certificates (${w.reg.attended-w.certs} to issue)`:"Certificates"}</a><button class="btn ${w.certs>=w.reg.attended?"primary":""}" data-act="ws-close">Finalise report and close</button></div>`;
  return`<div><a href="#workshops" class="btn link" style="padding-left:0">← All workshops</a></div>
  <div class="panel" style="display:grid;gap:14px"><div class="prof"><div class="who"><div class="code">${mLabel(w.month)}${w.date?" · "+fd(w.date):""}</div><h2>${esc(w.title)} ${w.example?'<span class="pill p-done" style="vertical-align:5px">Example</span>':""}</h2>
-  <div class="meta"><span>${esc(w.dept)}</span><span>Focal person: ${esc(w.focal)||"not assigned"}</span><span>Course director: ${esc(w.director||w.focal)||"not set"}</span>${w.series?`<span>Series: ${esc(w.series)}</span>`:""}</div></div>
+  <div class="meta"><span>${esc(w.dept)}</span><span>Focal person: ${nameLink(w.focal)||"not assigned"}</span><span>Course director: ${nameLink(w.director||w.focal)||"not set"}</span>${w.series?`<span>Series: ${esc(w.series)}</span>`:""}</div></div>
   <div class="actions">${w.proposal?`<a class="btn" href="#prop-${w.id}">Proposal</a>`:""}${w.stage>=4?`<a class="btn" href="#cert-${w.id}">Certificates</a>`:""}<button class="btn" data-act="ws-edit">Edit details</button>${w.stage>0&&w.stage<6?`<button class="btn" data-act="ws-back">Move back a step</button>`:""}<button class="btn" data-act="t-new" data-link="ws-${w.id}" data-title="${esc(w.title)}: ">Add task</button><button class="btn danger" data-act="ws-del">Delete</button></div></div>
   <div class="stepper">${STAGES.map((s,i)=>`<div class="${i<w.stage?"done":i===w.stage?"now":""}">${s}</div>`).join("")}</div></div>
  ${fl.length?`<div class="flag">${fl.map(esc).join("<br>")}</div>`:""}
@@ -1356,7 +1406,7 @@ function vPgts(){
    <div class="kpis small"><div class="kpi"><span class="n">${k("uhs").length}</span><span class="l">UHS, new inductees starting their first 6 months</span></div><div class="kpi"><span class="n">${k("fcps").length}</span><span class="l">FCPS, back after 2 years at a rotational institute</span></div><div class="kpi"><span class="n">${k("all").length}</span><span class="l">Whole training at RIC, new inductees</span></div></div>
    <div class="legend">${specs.map(s=>`<span><b>${esc(s)}</b> ${A.filter(p=>p.spec===s).length}</span>`).join("")}</div>
    <p class="subt" style="margin:0">UHS PGTs returning after their 1.5 years outside are not counted here, because they already started at RIC. ${sessKey(UI.cy)>sessKey(curSess())?"New UHS inductees for a future cycle appear once they register.":""}</p></div>`}
- return`<div class="head"><div><h2>PGTs</h2><p>${rows.length} shown · new PGTs join through the registration link</p></div><div class="actions">${xbtn("idchanges","PGT ID changes")}${xbtn("pgts")}</div></div>
+ return`<div class="head"><div><h2>Trainee register</h2><p>${rows.length} shown · new PGTs join through the registration link</p></div><div class="actions">${xbtn("idchanges","PGT ID changes")}${xbtn("pgts")}</div></div>
  <div class="panel" style="display:grid;gap:10px">
   <div class="toolbar"><input type="search" id="q" placeholder="Search name, PGT ID or supervisor" value="${esc(UI.q)}" aria-label="Search">
    <select id="fspec" aria-label="Specialty"><option value="">All specialties</option>${specNames(1).map(s=>`<option ${UI.spec===s?"selected":""}>${s}</option>`).join("")}</select>
@@ -1370,7 +1420,7 @@ function vPgts(){
  </div>
  ${summary}
  <div class="panel flush"><div class="tblwrap"><table><thead><tr>${th("code","PGT ID")}${th("name","Name")}${th("spec","Specialty")}<th>Prog.</th>${th("ry","Year at RIC")}${th("ind","Inducted")}${th("arr","Joins RIC")}${th("comp","Completes")}<th>Status</th>${th("sup","Supervisor")}<th>Expected completion</th></tr></thead><tbody>
- ${rows.map(p=>{const c=CUR.get(p.id),a=arrival(p);return`<tr class="click" data-href="pgt-${p.id}"><td class="code">${esc(p.code)||"—"}</td><td>${pgtName(p)}${conductBadge(p)}</td><td>${esc(p.spec)}</td><td>${esc(p.program)}</td><td>${(()=>{const r=ricInfo(p);return r.y?`<span class="pill p-ric">Year ${r.y}</span>`:`<span class="subt">${r.label}</span>`})()}</td><td>${sessOf(p.start)||"—"}</td><td title="${esc(a.route)}">${a.sess||"—"}${a.kind==="fcps"?' <span class="subt">after 2 yrs</span>':""}</td><td>${sessOf(c.comp)||"—"}</td><td>${phasePill(c)}</td><td>${c.sup?esc(facName(c.sup)):'<span class="pill p-bad">None</span>'}</td><td>${fd(c.comp)}</td></tr>`}).join("")||`<tr><td colspan="12" class="empty">No PGTs match these filters.</td></tr>`}
+ ${rows.map(p=>{const c=CUR.get(p.id),a=arrival(p);return`<tr class="click" data-href="pgt-${p.id}"><td class="code">${esc(p.code)||"—"}</td><td>${pgtName(p)}${conductBadge(p)}</td><td>${esc(p.spec)}</td><td>${esc(p.program)}</td><td>${(()=>{const r=ricInfo(p);return r.y?`<span class="pill p-ric">Year ${r.y}</span>`:`<span class="subt">${r.label}</span>`})()}</td><td>${sessOf(p.start)||"—"}</td><td title="${esc(a.route)}">${a.sess||"—"}${a.kind==="fcps"?' <span class="subt">after 2 yrs</span>':""}</td><td>${sessOf(c.comp)||"—"}</td><td>${phasePill(c)}</td><td>${c.sup?facLink(c.sup):'<span class="pill p-bad">None</span>'}</td><td>${fd(c.comp)}</td></tr>`}).join("")||`<tr><td colspan="12" class="empty">No PGTs match these filters.</td></tr>`}
  </tbody></table></div></div>`}
 
 /* ---------- Excel export ---------- */
@@ -1415,7 +1465,7 @@ function exStats(x,s){const C=exCands(x).filter(p=>!s||p.spec===s),sat=C.filter(
  return{n:C.length,sat:sat.length,abs:C.filter(p=>x.absent[p.id]).length,mean:m.length?m.reduce((a,b)=>a+b,0)/m.length:null,max:m.length?Math.max(...m):null,pass:m.filter(v=>v>=x.passMark).length,rate:m.length?Math.round(m.filter(v=>v>=x.passMark).length/m.length*100):null,pending:C.filter(p=>!x.absent[p.id]&&x.marks[p.id]==null).length}}
 function exFlags(x){const f=[],to=days(P(x.month+"-01"),TODAY);if(x.stage===0&&to<=45)f.push(`Papers not requested; exam month starts in ${Math.max(to,0)} days`);if(x.stage===1){const s=exSpecs(x).filter(s=>!(x.papers[s]||{}).final);if(s.length&&to<=21)f.push(`${s.length} specialty papers not final`)}if(!x.date&&x.stage<3&&to<=30)f.push("Exam date not set");if(x.stage===3)f.push("Results not entered");return f}
 function vExams(){const X=DB.exams.slice().sort((a,b)=>a.month<b.month?1:-1);
- return`<div class="head"><div><h2>PGT examinations</h2><p>Six-monthly internal examination for all specialties (Nov/Dec and Jun/Jul).</p></div><button class="btn primary" data-act="ex-new">New examination</button></div>
+ return`<div class="head"><div><h2>Examinations</h2><p>Six-monthly internal examination for all specialties (Nov/Dec and Jun/Jul).</p></div><button class="btn primary" data-act="ex-new">New examination</button></div>
  <div class="panel flush"><div class="tblwrap"><table><thead><tr><th>Session</th><th>Examination</th><th>Date</th><th>Progress</th><th class="num">Candidates</th><th class="num">Mean %</th><th class="num">Pass rate</th><th>Attention</th></tr></thead><tbody>
  ${X.map(x=>{const st=exStats(x);return`<tr class="click" data-href="exam-${x.id}"><td>${esc(x.session)}</td><td>${esc(x.title)}</td><td>${x.date?fd(x.date):mLabel(x.month)}</td><td><span class="pill ${["p-done","p-rot","p-rot","p-leave","p-pend","p-ric"][x.stage]}">${EX_STAGES[x.stage]}</span></td><td class="num">${st.n}</td><td class="num">${st.mean==null?"—":st.mean.toFixed(1)}</td><td class="num">${st.rate==null?"—":st.rate+"%"}</td><td class="wrapcell">${exFlags(x).map(f=>`<span class="d-red" style="font-size:13px;display:block">${esc(f)}</span>`).join("")||"—"}</td></tr>`}).join("")||`<tr><td colspan="8" class="empty">No examinations yet.</td></tr>`}
  </tbody></table></div></div>`}
@@ -1542,7 +1592,7 @@ const visibleTasks=()=>seeAll()?DB.tasks:DB.tasks.filter(t=>t.assignee===ME);
 const canAssign=()=>seeAll();
 
 /* ---------- side menu ---------- */
-const NAVG=[["","search","Search"],["","overview","Overview"],["","tasks","Tasks"],["People","pgts","PGTs"],["People","verify","Verification"],["People","faculty","Faculty"],["People","supervisors","Supervisors"],["People","credentials","Faculty updates"],["Leave and exits","leaves","Leave"],["Leave and exits","exits","Left training"],["Programmes","workshops","Workshops"],["Programmes","exams","Exams"],["Programmes","orientation","Orientation"],["Admin","settings","Settings"],["Admin","audit","Audit log"]];
+const NAVG=[["","overview","Dashboard"],["","tasks","Tasks"],["Postgraduate trainees","pgts","Trainee register"],["Postgraduate trainees","verify","New registrations"],["Postgraduate trainees","leaves","Leave"],["Postgraduate trainees","exits","Left training"],["Faculty","faculty","Faculty directory"],["Faculty","supervisors","Supervisors"],["Faculty","credentials","Credentials"],["Teaching and assessment","workshops","Workshops"],["Teaching and assessment","exams","Examinations"],["Teaching and assessment","orientation","Orientation"],["Administration","settings","Settings"],["Administration","audit","Audit log"],["Administration","search","Search"]];
 function renderChrome(cur){
  const late=visibleTasks().filter(tOverdue).length,pend=DB.pgts.filter(p=>p.reg==="Pending").length,wa=DB.workshops.filter(w=>wsFlags(w).length).length;
  const badge={tasks:late?[late,"late"]:null,verify:pend?[pend,""]:null,workshops:wa?[wa,""]:null};
@@ -1637,7 +1687,7 @@ function vOverview(){
  if(canSee("pgts"))cards.push(card("Active PGTs by specialty",A.length,"pgts",`<div class="legend" style="margin-bottom:6px"><span><i style="background:var(--brand)"></i>FCPS</span><span><i style="background:var(--gold)"></i>UHS</span></div>${bySpec.map(([s,a,b])=>`<div class="spec-row sm"><span>${s}</span><span class="bar"><span class="track" style="max-width:${(a+b)/mx*100}%"><i style="width:${a/(a+b)*100}%;background:var(--brand)"></i><i style="width:${b/(a+b)*100}%;background:var(--gold)"></i></span></span><span class="v">${a+b}</span></div>`).join("")}`,"wide"));
  if(canSee("credentials"))cards.push(card("Faculty credentials",credBad.length,"credentials",olist(credBad.slice(0,5).map(([f,c])=>oli("fac-"+f.id,esc(facName(f)),esc(credIssues(f,c).filter(i=>i[0]!=="mute")[0][1]),"")),"All supervisor credentials are current.")));
  if(seeAll()&&canSee("tasks"))cards.push(card("Team workload",null,"tasks",olist(DB.staff.map(s=>{const m=openT.filter(t=>t.assignee===s.name),av=m.length?Math.round(m.reduce((a,t)=>a+tProg(t),0)/m.length):0;return oli("tasks",esc(s.name),`${m.length} open${m.filter(tOverdue).length?` · <span class="d-red">${m.filter(tOverdue).length} overdue</span>`:""}`,m.length?progBar(av,1):"")}),"")));
- return`<div class="head"><div><h2>Overview</h2><p>${TODAY.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"})} · ${esc(ME)}</p></div><div class="actions">${canSee("tasks")?`<button class="btn" data-act="t-new">New task</button>`:""}${canSee("leaves")?`<a class="btn" href="#leaves">Add leave</a>`:""}${canSee("workshops")?`<button class="btn" data-act="ws-add">Add workshop</button>`:""}</div></div>
+ return`<div class="head"><div><h2>Dashboard</h2><p>${TODAY.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"})} · ${esc(ME)}</p></div><div class="actions">${canSee("tasks")?`<button class="btn" data-act="t-new">New task</button>`:""}${canSee("leaves")?`<a class="btn" href="#leaves">Add leave</a>`:""}${canSee("workshops")?`<button class="btn" data-act="ws-add">Add workshop</button>`:""}</div></div>
  <div class="kpis">
   ${kp("pgts",A.length,"Active PGTs",`${atRic} at RIC · ${onRot} rotation · ${onLeave.length} leave`,"pgts")}
   ${kp("faculty",sups.length,"Approved supervisors",`of ${fac.length} faculty`,"faculty")}
@@ -2139,7 +2189,7 @@ function trendChart(X){const specs=[...new Set(X.flatMap(x=>exSpecs(x).filter(s=
  </svg></div>`}
 function vExams(){const X=DB.exams.slice().sort((a,b)=>a.month<b.month?1:-1),done=X.filter(x=>exVals(x).length).reverse();
  const pick=DB.exams.find(x=>x.id===UI.exPick)||done[done.length-1];const all=X.flatMap(x=>exCands(x).filter(p=>x.marks[p.id]!=null).map(p=>p.id));
- return`<div class="head"><div><h2>PGT examinations</h2><p>Six-monthly internal examination for all specialties. Upload Evalbee result files inside each exam.</p></div><button class="btn primary" data-act="ex-new">New examination</button></div>
+ return`<div class="head"><div><h2>Examinations</h2><p>Six-monthly internal examination for all specialties. Upload Evalbee result files inside each exam.</p></div><button class="btn primary" data-act="ex-new">New examination</button></div>
  <div class="kpis"><div class="kpi"><span class="n">${done.length}</span><span class="l">Exams with results</span><span class="sub">${X.length} on record</span></div><div class="kpi"><span class="n">${new Set(all).size}</span><span class="l">PGTs with results</span><span class="sub">${all.length} papers marked</span></div>
   ${pick?(()=>{const S=statsOf(exVals(pick),pick.passMark);return`<div class="kpi"><span class="n">${S.rate}%</span><span class="l">Pass rate · ${esc(pick.session)}</span><span class="sub">${S.pass} of ${S.n} at ${pick.passMark}%</span></div><div class="kpi"><span class="n">${S.mean.toFixed(1)}</span><span class="l">Mean % · ${esc(pick.session)}</span><span class="sub">median ${S.med.toFixed(1)}</span></div>`})():""}</div>
  ${done.length?`<div class="panel" style="display:grid;gap:10px"><div class="head"><h3 style="margin:0">Results by specialty</h3><select id="ex-pick" aria-label="Exam">${done.slice().reverse().map(x=>`<option value="${x.id}" ${pick===x?"selected":""}>${esc(x.title)} · ${esc(x.session)}</option>`).join("")}</select></div>
@@ -2753,7 +2803,7 @@ function renderChrome(cur){
  const late=visibleTasks().filter(tOverdue).length,pend=DB.pgts.filter(p=>p.reg==="Pending").length,wa=DB.workshops.filter(w=>wsFlags(w).length).length;
  const badge={tasks:late?[late,"late"]:null,verify:pend?[pend,""]:null,workshops:wa?[wa,""]:null};
  let g=null,h="";NAVG.filter(n=>canSee(n[1])).forEach(([grp,k,l])=>{if(grp!==g){h+=grp?`<div class="ng">${grp}</div>`:"";g=grp}
-  h+=`<a href="#${k}" ${k===cur?'aria-current="page"':""}><span>${l}</span>${badge[k]?`<span class="cnt ${badge[k][1]}">${badge[k][0]}</span>`:""}</a>`});
+  h+=`<a href="#${k}" ${k===cur?'aria-current="page"':""} title="${l}"><span class="ni" aria-hidden="true">${NAV_ICON[k]||""}</span><span class="nl">${l}</span>${badge[k]?`<span class="cnt ${badge[k][1]}">${badge[k][0]}</span>`:""}</a>`});
  document.getElementById("nav").innerHTML=h;const m=meObj();
  document.getElementById("userbox").innerHTML=LIVE?`<div class="whobox"><span class="live" id="syncst"></span><b>${esc(ME)}</b><span class="live"><span class="hide-sm">${esc(m.desig||m.role||SYNC.role)}${SYNC.role==="Viewer"?" · view only":""} · </span><button class="btn link" data-act="lg-pw">Password</button> · <button class="btn link" data-act="lg-out">Sign out</button></span></div>`
   :`<label class="whobox"><span class="s">Signed in as · prototype switch</span><select id="whoami" aria-label="Signed in as">${DB.staff.map(s=>`<option ${s.name===ME?"selected":""}>${esc(s.name)}</option>`).join("")}</select><span class="s">${esc(m.desig||m.role)}${seeAll()&&!isAdmin()?" · sees all tasks":""}</span></label>`;
@@ -2875,7 +2925,7 @@ function vSearch(){const q=UI.gq.trim().toLowerCase(),dig=q.replace(/\D/g,"");co
    +grp("Tasks",T.map(t=>row("task-"+t.id,esc(t.title),`${esc(t.assignee)} · ${esc(t.status)}`)));
   if(!body)body=`<div class="panel empty">Nothing found for “${esc(UI.gq)}”.</div>`}
  return`<div class="head"><div><h2>Search</h2><p>PGTs by name, PGT ID, roll number, CNIC or mobile; faculty; workshops and registrants; exams; tasks. Press / anywhere to come here.</p></div></div>
- <div class="panel"><input type="search" id="gq" value="${esc(UI.gq)}" placeholder="Type at least 2 letters or 4 digits" aria-label="Search everything" autocomplete="off" style="width:100%;font-size:16px"></div>${body}`}
+ <div class="panel pgq"><input type="search" id="gq" value="${esc(UI.gq)}" placeholder="Type at least 2 letters or 4 digits" aria-label="Search everything" autocomplete="off" style="width:100%;font-size:16px"></div>${body}`}
 document.addEventListener("input",e=>{if(e.target.id==="gq"){UI.gq=e.target.value;const pos=e.target.selectionStart;render();const n=document.getElementById("gq");if(n){n.focus();n.setSelectionRange(pos,pos)}}});
 document.addEventListener("keydown",e=>{if(e.key==="/"&&!e.ctrlKey&&!e.metaKey&&!e.target.closest("input,textarea,select,[contenteditable]")&&DB&&DB.pgts&&!document.body.classList.contains("solo")){e.preventDefault();if(route.v!=="search")go("search");setTimeout(()=>document.getElementById("gq")?.focus(),30)}});
 window.addEventListener("hashchange",()=>{if(route.v==="search")setTimeout(()=>document.getElementById("gq")?.focus(),30)});
@@ -2971,6 +3021,76 @@ function signinCell(s,i){if(s.me)return'<span class="subt">Director</span>';if(!
  if(row&&row.uid&&row.invite===s.invite)return`<span class="pill p-ric">Signed in</span>${isAdmin()?` <button class="btn link" data-act="tm-code" data-i="${i}">Reset login</button>`:""}`;
  return s.invite?`<span class="subt">Invite code</span> <b class="code" style="letter-spacing:1px">${esc(s.invite)}</b>${isAdmin()?` <button class="btn link" data-act="tm-code" data-i="${i}">New code</button>`:""}`:`${isAdmin()?`<button class="btn link" data-act="tm-code" data-i="${i}">Make invite code</button>`:"—"}`}
 window.addEventListener("hashchange",()=>{if(route.v==="settings")refreshStaffRows()});
+
+/* =====================================================================
+   V12 · EASIER TO USE: menu icons, clickable names, back returns to the
+   same spot, search in the top bar, install as an app
+   ===================================================================== */
+const _ic=d=>`<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const NAV_ICON={
+ search:_ic('<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>'),
+ overview:_ic('<rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/>'),
+ tasks:_ic('<path d="M4 6.5l1.8 1.8L9 5"/><path d="M12 7h8"/><path d="M4 13.5l1.8 1.8L9 12"/><path d="M12 14h8"/><path d="M12 19.5h8"/>'),
+ pgts:_ic('<path d="M2.5 9L12 4.5 21.5 9 12 13.5z"/><path d="M6.5 11v4.5c0 1.6 2.5 3 5.5 3s5.5-1.4 5.5-3V11"/><path d="M21.5 9v5"/>'),
+ verify:_ic('<circle cx="9.5" cy="8" r="3.5"/><path d="M3 20c.6-3.4 3.2-5.5 6.5-5.5 1.5 0 2.8.4 3.9 1.2"/><path d="M15 18.5l2 2 4-4.5"/>'),
+ leaves:_ic('<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/>'),
+ exits:_ic('<path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4"/><path d="M14 8l4 4-4 4M9 12h9"/>'),
+ faculty:_ic('<circle cx="9" cy="8" r="3.2"/><path d="M3 20c.5-3.3 3-5.4 6-5.4s5.5 2.1 6 5.4"/><circle cx="17" cy="9" r="2.4"/><path d="M16.5 14.6c2.4.2 4.1 2 4.5 4.6"/>'),
+ supervisors:_ic('<circle cx="12" cy="7.5" r="3.5"/><path d="M5 20.5c.6-3.6 3.5-6 7-6s6.4 2.4 7 6"/><path d="M12 14.5l-1.3 3 1.3 1.6 1.3-1.6z"/>'),
+ credentials:_ic('<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="11" r="2"/><path d="M5.5 16c.5-1.5 1.6-2.3 3-2.3s2.5.8 3 2.3M14 10h4.5M14 13.5h3"/>'),
+ workshops:_ic('<rect x="3" y="4" width="18" height="12" rx="1.5"/><path d="M12 16v4M8 20.5h8M7 12l3-3 2.5 2.5L17 7"/>'),
+ exams:_ic('<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M8.5 11l2 2 4-4M8.5 16.5h7"/>'),
+ orientation:_ic('<circle cx="12" cy="12" r="8.5"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>'),
+ settings:_ic('<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'),
+ audit:_ic('<path d="M3.5 12a8.5 8.5 0 1 0 2.5-6"/><path d="M3.5 4v4h4M12 7.5V12l3 2"/>')};
+
+/* ---------- names open profiles ---------- */
+const facLink=f=>f?`<span class="pn" data-fid="${f.id}">${esc(facName(f))}</span>`:"—";
+function nameLink(s){const n=stripOther(String(s||""));if(!n)return"";const key=n.toLowerCase().replace(/^(prof\.?\s*)?(dr\.?\s*)?/,"").trim();
+ const f=DB.faculty.find(f=>facName(f).toLowerCase()===n.toLowerCase()||f.name.toLowerCase()===key);return f?facLink(f):esc(n)}
+document.addEventListener("click",e=>{const n=e.target.closest(".pn");if(!n||e.target.closest("a"))return;if(document.body.classList.contains("solo"))return;
+ e.stopPropagation();e.preventDefault();go(n.dataset.pid?"pgt-"+n.dataset.pid:"fac-"+n.dataset.fid)},true);
+document.addEventListener("keydown",e=>{if(e.key==="Enter"&&e.target.classList&&e.target.classList.contains("pn"))e.target.click()});
+
+/* ---------- back goes exactly where you were ---------- */
+const NAVSTACK=[];let navPending=null;
+function curHash(){return location.hash.slice(1)||"overview"}
+NAVSTACK.push({h:curHash(),y:0,t:""});
+window.addEventListener("scroll",()=>{const top=NAVSTACK[NAVSTACK.length-1];if(top&&top.h===curHash())top.y=window.scrollY},{passive:true});
+window.addEventListener("hashchange",()=>{const h=curHash(),prev=NAVSTACK[NAVSTACK.length-2];
+ if(prev&&prev.h===h){NAVSTACK.pop();const y=prev.y;requestAnimationFrame(()=>{window.scrollTo(0,y);requestAnimationFrame(()=>window.scrollTo(0,y))})}
+ else if(NAVSTACK[NAVSTACK.length-1]?.h!==h){NAVSTACK.push({h,y:0,t:pageTitle()});if(NAVSTACK.length>60)NAVSTACK.shift()}
+ setTimeout(fixBackLinks,0)});
+let lastTitle="";
+const pageTitle=()=>{const h=document.querySelector("main h2");return h?h.textContent.trim().replace(/\s+Example$/,""):""};
+new MutationObserver(()=>{const top=NAVSTACK[NAVSTACK.length-1];if(top&&top.h===curHash())top.t=pageTitle();fixBackLinks()}).observe(document.getElementById("main"),{childList:true});
+/* "← All PGTs" style links go back to the page you came from, and say so */
+function fixBackLinks(){const prev=NAVSTACK[NAVSTACK.length-2];document.querySelectorAll("main a.btn.link").forEach(a=>{if(!a.textContent.trim().startsWith("←"))return;
+ if(prev&&prev.h!==curHash()){a.dataset.back="1";a.textContent="← Back to "+(prev.t||NAVG.find(n=>n[1]===prev.h)?.[2]||"previous page")}})}
+document.addEventListener("click",e=>{const a=e.target.closest('a[data-back="1"]');if(a&&NAVSTACK.length>1){e.preventDefault();history.back()}});
+
+/* ---------- search box in the top bar ---------- */
+document.addEventListener("input",e=>{if(e.target.id!=="topq")return;UI.gq=e.target.value;if(route.v!=="search"){if(UI.gq.trim().length>=2)go("search")}else render()});
+document.addEventListener("keydown",e=>{if(e.target.id==="topq"&&e.key==="Escape"){e.target.value="";UI.gq="";e.target.blur();if(route.v==="search")history.back()}});
+window.addEventListener("hashchange",()=>{const t=document.getElementById("topq");if(t&&route.v!=="search"&&document.activeElement!==t)t.value=""});
+document.addEventListener("keydown",e=>{const t=document.getElementById("topq");if(e.key==="/"&&t&&t.offsetParent&&!e.target.closest("input,textarea,select,[contenteditable]")){e.preventDefault();e.stopImmediatePropagation();t.focus()}},true);
+
+/* ---------- install as an app ---------- */
+let installEvt=null;
+const isStandalone=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
+const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=e;installBtn()});
+window.addEventListener("appinstalled",()=>{installEvt=null;installBtn();toast("DME Office installed")});
+function installBtn(){const box=document.getElementById("installbox");if(!box)return;const live=typeof LIVE!=="undefined"&&LIVE;
+ if(isStandalone()||!live){box.innerHTML="";return}
+ box.innerHTML=installEvt?`<button class="btn small" data-act="app-install">${NAV_ICON.overview.replace('width="18" height="18"','width="15" height="15"')} Install app</button>`:isIOS()?`<span class="subt">To install on iPhone or iPad: tap Share, then <b>Add to Home Screen</b>.</span>`:""}
+document.addEventListener("click",async e=>{if(!e.target.closest('[data-act="app-install"]')||!installEvt)return;installEvt.prompt();await installEvt.userChoice.catch(()=>{});installEvt=null;installBtn()});
+if(typeof LIVE!=="undefined"&&LIVE&&"serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))navigator.serviceWorker.register("sw.js").catch(()=>{});
+setTimeout(installBtn,0);
+window.addEventListener("hashchange",()=>{if(route.v==="search"){const t=document.getElementById("topq");if(t&&t.offsetParent){t.value=UI.gq;setTimeout(()=>t.focus(),40)}}});
+/* keep the side menu just under the top bar, whatever its height */
+function setAbh(){const a=document.querySelector(".appbar");if(a)document.documentElement.style.setProperty("--abh",a.offsetHeight+"px")}
+window.addEventListener("resize",setAbh);window.addEventListener("hashchange",()=>setTimeout(setAbh,0));setTimeout(setAbh,0);setTimeout(setAbh,800);
 
 /* ---------- events ---------- */
 document.addEventListener("click",e=>{
