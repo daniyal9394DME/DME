@@ -502,6 +502,9 @@ body.solo .topq,body.solo .topsearch{display:none!important}
 .msgprev{background:#E7F7EC;border-radius:10px;padding:10px 12px;font-size:14px;display:grid;gap:4px}
 :root[data-theme="dark"] .msgprev{background:#16291F}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .msgprev{background:#16291F}}
+.bioft input,.bioft select{padding:6px 8px;font-size:13px;min-width:0}
+.bioft td{padding:4px}
+.bioft td:first-child input{min-width:140px}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:sl .18s ease-out}@keyframes sl{from{transform:translateX(24px)}to{transform:none}}}
 </style>
 
@@ -701,7 +704,7 @@ function vPgt(){
    <div class="panel"><h3>Personal</h3><dl class="kv"><dt>Domicile</dt><dd>${esc(p.domicile)||"—"}</dd>
     ${personalHtml(p)}
     ${p.notes?`<dt>Notes</dt><dd>${esc(p.notes)}</dd>`:""}</dl></div>
-   <div class="panel"><h3>Documents</h3><div class="docs">${docsHtml(p)}</div></div>
+   ${bioPanel(p)}<div class="panel"><h3>Documents</h3><div class="docs">${docsHtml(p)}</div></div>
   </div>
  </div>`}
 
@@ -712,7 +715,7 @@ function vVerify(){
   const issues=[];if(p.declYear&&p.declYear!==calcYear)issues.push(`Declared Year ${p.declYear}, calculated Year ${calcYear}`);if(p.declComp&&p.declComp!==calcComp)issues.push(`Declared completion ${fd(p.declComp)}, calculated ${fd(calcComp)}. The declared date will be kept as the official date.`);
   return`<div class="panel" style="display:grid;gap:12px"><div class="prof"><div class="avatar" aria-hidden="true">${esc(p.name.split(" ").map(w=>w[0]).join("").slice(0,2))}</div>
    <div class="who"><h2 style="font-size:22px">${pgtName(p)} ${p.example?'<span class="pill p-done" style="vertical-align:4px">Example</span>':""}</h2><div class="meta"><span>${esc(p.spec)} · ${esc(p.program)}</span><span>Submitted ${fd(p.submitted)}</span></div></div>
-   <div class="actions"><button class="btn primary" data-act="verify" data-id="${p.id}">Verify</button><button class="btn danger" data-act="reject" data-id="${p.id}">Reject</button><a class="btn" href="#pgt-${p.id}">Open</a></div></div>
+   <div class="actions"><button class="btn primary" data-act="verify" data-id="${p.id}">Verify</button><button class="btn danger" data-act="reject" data-id="${p.id}">Reject</button>${p.bio?`<button class="btn" data-act="bio-pdf" data-id="${p.id}">Bio data PDF</button>`:""}<a class="btn" href="#pgt-${p.id}">Open</a></div></div>
    <dl class="kv"><dt>Training</dt><dd>${fd(p.start)} · ${p.dur} years</dd><dt>Supervisor</dt><dd>${facLink(c.sup)}</dd><dt>Posting</dt><dd>${c.pk==="rot"?"On rotation at "+esc(c.rotSite):"At RIC"}</dd><dt>Domicile</dt><dd>${esc(p.domicile)}</dd>
    <dt>PGT ID</dt><dd class="code">${p.code||nextCode(p)} <span class="subt">reserved in order of registration · roll no. ${rollOf(p)||"—"}</span></dd></dl>
    ${issues.length?`<div class="flag">${issues.map(esc).join("<br>")}</div>`:`<div class="flag ok">Declared year and completion match the calculated values.</div>`}
@@ -814,9 +817,10 @@ function sheetEditPgt(p){const c=CUR.get(p.id);openSheet(`Edit details · Dr. ${
  <div class="grid2"><label class="f">Training start<input type="date" name="start" value="${p.start||""}"></label><label class="f">Duration (years)<input type="number" step="0.5" min="1" max="7" name="dur" value="${p.dur||""}"></label></div>
  <label class="f">Completion date override <span class="h">leave blank to use start + duration (${fd(p.start&&p.dur?iso(new Date(addM(p.start,Math.round(p.dur*12))-864e5)):null)})</span><input type="date" name="override" value="${p.override||""}"></label>
  <label class="f">Domicile<input name="domicile" value="${esc(p.domicile)}"></label>
+ ${typeof contactEditHtml==="function"?contactEditHtml(p):""}
  <label class="f">Notes<textarea name="notes">${esc(p.notes)}</textarea></label>`,()=>{
  const name=fv("name").replace(/^(dr\.?\s+)+/i,"");if(name.length<3)return fail("Enter the full name.");const dur=+fv("dur");if(fv("dur")&&(dur<1||dur>7))return fail("Duration must be 1 to 7 years.");
- const before=JSON.stringify(p);Object.assign(p,{name,program:fv("program"),spec:fv("spec"),start:fv("start")||null,dur:dur||null,override:fv("override")||null,domicile:fv("domicile"),notes:fv("notes")});
+ const before=JSON.stringify(p);Object.assign(p,{name,program:fv("program"),spec:fv("spec"),start:fv("start")||null,dur:dur||null,override:fv("override")||null,domicile:fv("domicile"),notes:fv("notes")});if(typeof contactEditRead==="function"){const e=contactEditRead(p);if(e)return fail(e)}
  if(JSON.stringify(p)!==before)log(`Edited details of Dr. ${p.name}`,"pgt-"+p.id);toast("Details saved");return true})}
 function sheetReject(p){openSheet(`Reject registration`,`<p style="margin:0">Dr. ${esc(p.name)} will be told what to correct. The record is kept so they do not need to start again.</p>
  <label class="f">Reason<textarea name="r" placeholder="e.g. CNIC copy unreadable; upload a clearer copy"></textarea></label>`,()=>{if(fv("r").length<5)return fail("Give a reason the PGT can act on.");p.reg="Rejected";p.rejection=fv("r");log(`Rejected registration of Dr. ${p.name}: ${fv("r")}`);toast("Registration rejected");go("verify");return true},"Reject")}
@@ -992,12 +996,13 @@ function seedWorkshops(){
   ["2027-11","Anaesthesia TOACS","Anaesthesiology",""],["2027-12","Interventional Cardiology TOACS","Interventional Cardiology",""],["2028-01","Inotropes & Vasopressors","Critical Care",""]];
  const ws=plan.map(([m,t,d,f],i)=>blankWs({id:"W"+String(i+1).padStart(2,"0"),title:t,dept:d,focal:f,director:f,month:m,placeholder:true}));
  ["2026-12","2027-02","2027-04","2027-06","2027-08","2027-10"].forEach((m,i)=>ws.push(blankWs({id:"WB"+(i+1),title:"Research Bootcamp",dept:"Research Cell",focal:"",month:m,notes:"Every two months from Oct 2026",series:"Research Bootcamp",placeholder:true})));
- ws.push(blankWs({id:"WX1",title:"Basics of ECG Interpretation",dept:"General Cardiology",focal:"Example focal person",director:"Example course director",month:"2026-09",date:"2026-09-19",venue:"Auditorium",format:"Lectures + hands-on",stage:6,seats:40,fee:2000,example:true,
+ ws.push(seedExampleWs());
+ return ws}
+function seedExampleWs(){return blankWs({id:"WX1",title:"Basics of ECG Interpretation",dept:"General Cardiology",focal:"Example focal person",director:"Example course director",month:"2026-09",date:"2026-09-19",venue:"Auditorium",format:"Lectures + hands-on",stage:6,seats:40,fee:2000,example:true,
   reg:{registered:40,paid:32,attended:38},incomes:[{id:"I1",source:"Sponsorship",note:"Refreshments sponsor",amount:10000}],
   expenses:[{id:"E1",cat:"Refreshments",item:"Tea and lunch, 45 people",amount:18000},{id:"E2",cat:"Printing & stationery",item:"Handouts and folders",amount:4500},{id:"E3",cat:"Certificates",item:"Certificate printing",amount:2000},{id:"E4",cat:"Consumables",item:"ECG paper and electrodes",amount:12000}],
   certs:38,check:{cme:true,pub:true,regpage:true,fb:true},proposal:exampleProposal(),fbResp:exampleResponses(31),fbOpen:false,
-  log:[{at:"2026-07-10T09:00:00Z",by:SELF,what:"Proposal link sent"},{at:"2026-07-21T09:00:00Z",by:"Focal person",what:"Proposal F-06 submitted"},{at:"2026-07-24T09:00:00Z",by:SELF,what:"Approved · 40 seats, PKR 2,000"},{at:"2026-09-19T15:00:00Z",by:SELF,what:"Marked conducted · 38 attended"},{at:"2026-09-25T10:00:00Z",by:SELF,what:"38 certificates issued; workshop closed"}]}));
- return ws}
+  log:[{at:"2026-07-10T09:00:00Z",by:SELF,what:"Proposal link sent"},{at:"2026-07-21T09:00:00Z",by:"Focal person",what:"Proposal F-06 submitted"},{at:"2026-07-24T09:00:00Z",by:SELF,what:"Approved · 40 seats, PKR 2,000"},{at:"2026-09-19T15:00:00Z",by:SELF,what:"Marked conducted · 38 attended"},{at:"2026-09-25T10:00:00Z",by:SELF,what:"38 certificates issued; workshop closed"}]})}
 const FIXTURES=()=>{const out=[];for(let y=TODAY.getFullYear()-1;y<=TODAY.getFullYear()+2;y++){
  out.push({month:`${y}-02`,t:"PGT orientation (first week)"},{month:`${y}-08`,t:"PGT orientation (first week)"},{month:`${y}-06`,t:"Internal PGT exam (Jun/Jul)"},{month:`${y}-11`,t:"Internal PGT exam (Nov/Dec)"})}return out};
 const wsMonthStart=w=>P(w.month+"-01");
@@ -1042,7 +1047,7 @@ function vWorkshops(){
  const nowM=months[1],fx=FIXTURES(),cl=clashes(W.filter(w=>w.stage<6));
  return`<div class="head"><div><h2>Workshops</h2><p>DME Annual Academic Calendar · proposals, approval, registration, feedback, finance, certificates</p></div>
   <div class="actions">${xbtn("workshops")}<button class="btn" data-act="ws-resched">Reschedule</button><button class="btn primary" data-act="ws-add">Add workshop</button></div></div>
- ${W.some(w=>w.placeholder)?`<div class="flag info">Workshop months are a draft spread. Use <b>Reschedule</b> to set the real months for all workshops in one go.</div>`:""}
+ ${calPanel()}${W.some(w=>w.placeholder)&&!calPanel()?`<div class="flag info">Workshop months are a draft spread. Use <b>Reschedule</b> to set the real months for all workshops in one go.</div>`:""}
  <div class="kpis">
   <button class="kpi" data-wsf="upcoming"><span class="n">${W.filter(w=>w.stage<5).length}</span><span class="l">Upcoming</span></button>
   <button class="kpi" data-wsf="1"><span class="n">${W.filter(w=>w.stage===1).length}</span><span class="l">Proposals awaited</span></button>
@@ -1228,7 +1233,7 @@ function vSettings(){const S=DB.settings;const num=(k,l)=>`<label class="f">${l}
    ${DB.leaveTypes.map((t,i)=>`<tr><td>${esc(t.name)}</td><td class="num">${DB.leaves.filter(l=>l.type===t.name).length}</td><td><span class="pill ${t.active?"p-ric":"p-done"}">${t.active?"In use":"Retired"}</span></td><td><button class="btn link" data-act="lt-edit" data-i="${i}">Rename</button><button class="btn link" data-act="lt-toggle" data-i="${i}">${t.active?"Retire":"Restore"}</button></td></tr>`).join("")}
    </tbody></table></div><p class="code" style="padding:0 16px 14px;margin:8px 0 0">Retired items stay on old records but are not offered for new entries.</p></div>
  </div>
- ${exitTypesPanel()}
+ ${exitTypesPanel()}${contactImportPanel()}${updPanel()}
  <div class="cols two">
   <div class="panel" id="set-units" style="display:grid;gap:10px"><h3 style="margin:0">Units</h3><div class="chips">${DB.units.map(u=>{const n=DB.faculty.filter(f=>f.unit===u).length;return`<span class="chip">${esc(u)}<span class="c">${n} faculty</span><button class="btn link" style="padding:0" data-act="unit-rm" data-v="${esc(u)}" aria-label="Remove ${esc(u)}">✕</button></span>`}).join("")}</div>
    <div class="toolbar"><input id="newunit" placeholder="e.g. Unit 5" aria-label="New unit"><button class="btn small" data-act="unit-add">Add unit</button></div></div>
@@ -1287,7 +1292,7 @@ const T_PILL={"To do":"p-done","In progress":"p-rot","Waiting":"p-pause","Done":
 function seedTasks(){const t=(o)=>({id:uid("T"),details:"",by:"Dr. Daniyal Ahmad Kamal",created:"2026-10-27",priority:"Normal",status:"To do",progress:0,link:"",check:[],notes:[],doneAt:null,...o});
  const add=n=>iso(new Date(TODAY.getTime()+n*864e5));
  return[
-  t({title:"Send the Basics of CPB proposal link to Dr. Muhammad Azam",assignee:"Dr. Daniyal Ahmad Kamal",due:add(3),priority:"High",link:"ws-W01",details:"Workshop is in November. The 8-week proposal lead time has already passed."}),
+  t({title:"Send the Basics of CPB proposal link to Dr. Muhammad Azam",assignee:"Dr. Daniyal Ahmad Kamal",due:add(3),priority:"High",link:"ws-W06",details:"Workshop is in May 2027. Send the proposal link at least 8 weeks before."}),
   t({title:"Get HoD signatures on the DME Annual Academic Calendar",assignee:"Data Entry Operator",due:add(7),priority:"High",status:"In progress",link:"workshops",
     check:[["Cardiac Surgery",1],["General Cardiology",1],["Anaesthesiology",0],["Paediatric Cardiology",0],["Interventional Cardiology",0],["Research Cell",0],["Infection Prevention & Control",0]].map(([t,d])=>({t,done:!!d}))}),
   t({title:"Collect PMDC faculty registration certificates",assignee:"Training Officer",due:add(30),status:"In progress",progress:20,link:"credentials",details:"Most faculty have no PMDC faculty registration on file. Upload each one in Faculty updates."}),
@@ -2676,7 +2681,9 @@ window.addEventListener("hashchange",()=>{if(route.v!=="cert"&&route.v!=="certx"
    Prototype mode (no Supabase settings) keeps working exactly as before.
    ===================================================================== */
 var SYNC={on:false};
-const SUPA=(window.DME_SUPABASE&&window.DME_SUPABASE.url&&window.DME_SUPABASE.anonKey)?window.DME_SUPABASE:null;
+/* Supabase settings: from config.js, or saved on this device from the setup screen */
+const SUPA=(()=>{let c=window.DME_SUPABASE||{};if(!(c.url&&(c.anonKey||c.key))){try{const l=JSON.parse(localStorage.getItem("dme-supabase")||"null");if(l&&l.url&&l.anonKey)c=l}catch(e){}}
+ const url=String(c.url||"").trim().replace(/\/+$/,"").replace(/\/(rest|auth)\/v1$/,""),key=String(c.anonKey||c.key||"").trim();return url&&key?{url,anonKey:key}:null})();
 const LIVE=!!SUPA;
 const ARR_COLLS=["pgts","faculty","creds","status","rots","sups","leaves","workshops","tasks","exams","orients","conduct","audit"];
 const SUPA_JS="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js";
@@ -2684,8 +2691,19 @@ const pubBase=()=>location.origin+location.pathname;
 function pubLink(kind,w){if(LIVE)return`${pubBase()}?${kind}=${encodeURIComponent(w.id)}`;return`https://dme.ric.example/${{reg:"register",fb:"feedback",prop:"proposal"}[kind]}/${w.id.toLowerCase()}`}
 
 /* ---------- boot ---------- */
+function atobSafe(k){try{return atob(String(k).split(".")[1].replace(/-/g,"+").replace(/_/g,"/"))}catch(e){return""}}
 function bootApp(){
- if(!LIVE&&!SEED.pgts.length){document.body.classList.add("solo");document.getElementById("main").innerHTML=`<div class="panel solo-card"><h2>Supabase settings missing</h2><p>Open <b>index.html</b> in a text editor, find <code>DME_SUPABASE</code> near the top, and paste the Project URL and anon public key between the quotes. Then upload the file again.</p></div>`;return}
+ if(!LIVE&&!SEED.pgts.length){document.body.classList.add("solo");const c=window.DME_SUPABASE;
+  const why=!c?"The file <b>config.js</b> was not found next to index.html. Upload config.js to the same place on GitHub.":!String(c.url||"").trim()?"<b>config.js</b> was found, but the Project URL in it is empty.":"<b>config.js</b> was found, but the key in it is empty.";
+  document.getElementById("main").innerHTML=`<div class="panel solo-card"><h2>Connect to Supabase</h2><p>${why}</p>
+  <p class="subt" style="margin:0">Fix it in GitHub: open <b>config.js</b> → pencil icon → paste the two values between the quotes → Commit changes. Or paste them below to connect this device now.</p>
+  <form id="cfgf" style="display:grid;gap:10px" novalidate><label class="f">Project URL<input name="u" placeholder="https://abcdefgh.supabase.co" autocomplete="off"></label><label class="f">Publishable (anon) key<input name="k" placeholder="sb_publishable_… or eyJ…" autocomplete="off"></label>
+  <div class="err" id="cfgerr" role="alert"></div><div class="actions"><button class="btn primary" type="submit">Connect</button></div></form></div>`;
+  document.getElementById("cfgf").onsubmit=ev=>{ev.preventDefault();const u=ev.target.u.value.trim(),k=ev.target.k.value.trim(),er=document.getElementById("cfgerr");
+   if(!/^https:\/\/[a-z0-9-]+\.supabase\.co\/?/i.test(u))return er.textContent="The URL should look like https://abcdefgh.supabase.co (Project Settings → Data API).";
+   if(/^sb_secret_/i.test(k)||/service_role/i.test(atobSafe(k)))return er.textContent="That is the secret key. Use the publishable (anon) key instead.";
+   if(k.length<20)return er.textContent="Paste the whole key.";
+   try{localStorage.setItem("dme-supabase",JSON.stringify({url:u,anonKey:k}))}catch(x){}location.reload()};return}
  if(!LIVE){if(!DB||!DB.pgts)DB=seed();if(migrate9(DB))persist();if(!DB.staff.some(s=>s.name===ME))ME=DB.staff[0].name;route=parse();render();return}
  document.body.classList.add("live");DB=null;try{localStorage.removeItem(KEY)}catch(e){}
  const q=new URLSearchParams(location.search);const pk=["reg","fb","prop"].find(k=>q.get(k));
@@ -2693,7 +2711,7 @@ function bootApp(){
  loadScript(SUPA_JS).then(()=>{SYNC.sb=window.supabase.createClient(SUPA.url,SUPA.anonKey,{auth:{persistSession:true,detectSessionInUrl:true}});
   if(pk)return publicPage(pk,q.get(pk));
   SYNC.sb.auth.onAuthStateChange((ev,ses)=>{if(ev==="PASSWORD_RECOVERY")return setPasswordScreen(true);if(ev==="SIGNED_OUT"){location.hash="";location.reload()}});
-  return SYNC.sb.auth.getSession().then(({data})=>data.session?afterLogin(data.session):loginScreen())}).catch(e=>screen(`<h2>Cannot connect</h2><p>${esc(e.message||e)}</p><p class="subt">Check the internet connection and reload the page.</p>`))}
+  return SYNC.sb.auth.getSession().then(({data})=>data.session?afterLogin(data.session):loginScreen())}).catch(e=>screen(`<h2>Cannot connect</h2><p>${esc(e.message||e)}</p><p class="subt">Check the internet connection and reload the page.</p>${localStorage.getItem("dme-supabase")?`<div class="actions"><button class="btn" onclick="localStorage.removeItem('dme-supabase');location.reload()">Change the Supabase settings</button></div>`:""}`))}
 function loadScript(src){return new Promise((ok,no)=>{if([...document.scripts].some(s=>s.src===src&&s.dataset.ok))return ok();const s=document.createElement("script");s.src=src;s.onload=()=>{s.dataset.ok=1;ok()};s.onerror=()=>no(new Error("Could not load "+src));document.head.append(s)})}
 function screen(html){document.body.classList.add("solo");document.getElementById("main").innerHTML=`<div class="panel solo-card">${html}</div>`;const n=document.getElementById("nav");if(n)n.innerHTML="";const u=document.getElementById("userbox");if(u)u.innerHTML=""}
 
@@ -2825,10 +2843,10 @@ function renderChrome(cur){
 /* ---------- stored files (PGT documents, receipts) ---------- */
 async function openStored(path){if(!LIVE||!path){toast("Files open in the live app");return}const w=window.open("","_blank");
  const{data,error}=await SYNC.sb.storage.from("dme-uploads").createSignedUrl(path,300);if(error||!data){if(w)w.close();toast("Could not open the file");return}if(w)w.location=data.signedUrl;else location.href=data.signedUrl}
-const DOC_L=[["photo","Photo"],["cnic","CNIC copy"],["pmdc","PMDC copy"],["joining","Joining letter"]];
-function docsHtml(p){return DOC_L.map(([k,l])=>{const path=p.docs&&p.docs[k];return`<div class="doc"><b>${l}</b>${path?`<button class="btn link" data-act="doc-open" data-path="${esc(path)}">Open</button>`:p.example?"Uploaded":"Not on file"}</div>`}).join("")}
-function personalHtml(p){const v=x=>x?esc(x):'<span class="subt">not recorded</span>';if(!LIVE&&!p.cnic){const h='<dd class="masked">hidden in prototype</dd>';return["Father's name","CNIC","PMDC","Mobile · email"].map(t=>`<dt>${t}</dt>${h}`).join("")}
- return`<dt>Father's name</dt><dd>${v(p.father)}</dd><dt>CNIC</dt><dd>${v(p.cnic)}</dd><dt>PMDC</dt><dd>${v(p.pmdc)}</dd><dt>Mobile · email</dt><dd>${v([p.mobile,p.email].filter(Boolean).join(" · "))}</dd>`}
+const DOC_L=[["photo","Photo"],["cnic","CNIC copy"],["pmdc","PMDC copy"],["joining","Joining letter"],["passport","Passport copy"]];
+function docsHtml(p){return DOC_L.filter(([k])=>k!=="passport"||(p.docs&&p.docs.passport)).map(([k,l])=>{const path=p.docs&&p.docs[k];return`<div class="doc"><b>${l}</b>${path?`<button class="btn link" data-act="doc-open" data-path="${esc(path)}">Open</button>`:p.example?"Uploaded":"Not on file"}</div>`}).join("")}
+function personalHtml(p){const v=x=>x?esc(x):'<span class="subt">not recorded</span>';if(!LIVE&&!p.cnic){const h='<dd class="masked">hidden in prototype</dd>';return["Father's name","CNIC","PMDC","Mobile","Email"].map(t=>`<dt>${t}</dt>${h}`).join("")}
+ return`<dt>Father's name</dt><dd>${v(p.father)}</dd><dt>CNIC</dt><dd>${v(p.cnic)}</dd><dt>PMDC</dt><dd>${v(p.pmdc)}</dd><dt>Mobile</dt><dd>${v([p.mobile,p.mobile2].filter(Boolean).join(" · "))}</dd><dt>Email</dt><dd>${v([p.email,p.emailAlt].filter(Boolean).join(" · "))}</dd>${p.passport?`<dt>Passport</dt><dd>${esc(p.passport)}</dd>`:""}`}
 
 /* =====================================================================
    PUBLIC PAGES (registration, feedback, proposal) — no sign-in
@@ -3181,7 +3199,7 @@ document.addEventListener("click",e=>{const b=e.target.closest('[data-act="cr-mu
    the numbers / download contacts for a broadcast list or group.
    ===================================================================== */
 const waNum=m=>{let x=String(m||"").replace(/\D/g,"");if(x.startsWith("0092"))x=x.slice(2);if(x.startsWith("0"))x="92"+x.slice(1);if(x.length===10&&x.startsWith("3"))x="92"+x;return/^923\d{9}$/.test(x)?x:""};
-function recPgt(p){const c=CUR.get(p.id)||{};return{key:"p:"+p.id,kind:"Trainee",name:"Dr. "+p.name,mobile:p.mobile||"",href:"pgt-"+p.id,sub:`${p.code||"no ID"} · ${p.spec}`,vars:{name:"Dr. "+p.name,first:"Dr. "+p.name.split(" ")[0],pgtid:p.code||"",roll:rollOf(p)||"",specialty:p.spec,programme:p.program,supervisor:c.sup?facName(c.sup):"",year:ricLabel(p)}}}
+function recPgt(p){const c=CUR.get(p.id)||{};return{key:"p:"+p.id,kind:"Trainee",name:"Dr. "+p.name,mobile:p.mobile||p.mobile2||"",href:"pgt-"+p.id,sub:`${p.code||"no ID"} · ${p.spec}`,vars:{name:"Dr. "+p.name,first:"Dr. "+p.name.split(" ")[0],pgtid:p.code||"",roll:rollOf(p)||"",specialty:p.spec,programme:p.program,supervisor:c.sup?facName(c.sup):"",year:ricLabel(p)}}}
 function recFac(f){return{key:"f:"+f.id,kind:"Faculty",name:facName(f),mobile:f.mobile||"",href:"cred-"+f.id,sub:`${f.desig||""} · ${f.spec||""}`,vars:{name:facName(f),first:facName(f),pgtid:"",roll:"",specialty:f.spec||"",programme:"",supervisor:"",year:""}}}
 function recReg(w,r){const n=stripOther(r.a.name);return{key:"r:"+w.id+":"+r.id,kind:"Registrant",name:n,mobile:r.a.mobile||"",href:"ws-"+w.id,sub:`${w.title} · ${r.status}`,vars:{name:n,first:n,pgtid:"",roll:"",specialty:stripOther(r.a.dept||r.a.spec||""),programme:"",supervisor:"",year:"",workshop:w.title,date:w.date?fd(w.date):""}}}
 const MSG_TPL=[
@@ -3249,6 +3267,250 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-wa]");if(!
  if(k==="exam"){const x=DB.exams.find(z=>z.id===a1);L=exCands(x).filter(p=>!a2||p.spec===a2).map(p=>({...recPgt(p),vars:{...recPgt(p).vars,roll:x.roll?.[p.id]||rollOf(p),date:x.date?fd(x.date):""}}))}
  UI.msg={recs:[],text:UI.msg.text||"",sent:{},src:k};msgAdd(L);toast(`${L.length} added to WhatsApp message`);go("messages")},true);
 const waBtn=(k,l)=>`<button class="btn small wabtn" data-wa="${k}">${l||"WhatsApp"}</button>`;
+/* =====================================================================
+   V15 · update trainee contact details from the setup file
+   (for a database that was set up before the file carried them)
+   ===================================================================== */
+function contactImportPanel(){if(!isAdmin())return"";const miss=verified().filter(p=>!p.mobile).length;
+ return`<div class="panel" id="set-import" style="display:grid;gap:10px"><h3 style="margin:0">Update trainee details from the data file</h3>
+ <p class="subt" style="margin:0">Choose <b>dme-initial-data.json</b>. It fills in mobile, email, CNIC, PMDC number and father's name for trainees whose record is missing them. Nothing else is changed, and details already entered in the app are kept. ${miss} trainees have no mobile number at present.</p>
+ <label class="f">Data file<input type="file" id="ci-file" accept=".json,application/json"></label><p class="status" id="ci-st"></p></div>`}
+document.addEventListener("change",async e=>{if(e.target.id!=="ci-file"||!e.target.files[0])return;const st=document.getElementById("ci-st");
+ let j;try{j=JSON.parse(await e.target.files[0].text())}catch(x){st.textContent="That file could not be read.";st.className="status warn";return}
+ const src=(j.seed&&j.seed.pgts)||j.pgts;if(!Array.isArray(src)){st.textContent="That is not the DME data file.";st.className="status warn";return}
+ const F=["mobile","email","cnic","pmdc","father"];let people=0,fields=0;
+ src.forEach(s=>{const p=DB.pgts.find(x=>x.id===s.id)||DB.pgts.find(x=>x.name.toLowerCase()===String(s.name||"").toLowerCase()&&x.spec===s.spec);if(!p)return;let n=0;
+  F.forEach(k=>{if(s[k]&&!p[k]){p[k]=s[k];n++}});if(n){people++;fields+=n}});
+ e.target.value="";if(!people){st.textContent="Nothing to add: every trainee in the file already has these details.";st.className="status ok";return}
+ log(`Contact details added from ${e.target.files?.[0]?.name||"the data file"}: ${people} trainees, ${fields} details`);
+ const y=window.scrollY;render();window.scrollTo(0,y);const s2=document.getElementById("ci-st");if(s2){s2.textContent=`Added ${fields} details for ${people} trainees.`;s2.className="status ok"}});
+
+/* =====================================================================
+   V16 · apply a trainee update file (e.g. the HR list, Nov 2026).
+   A change is applied only when the app still holds the old value,
+   so anything edited in the app since is never overwritten.
+   ===================================================================== */
+UI.upd=null;
+const UPD_L={mobile:"Mobile",mobile2:"Second mobile",email:"Email",emailAlt:"Alternate email",cnic:"CNIC",passport:"Passport no.",name:"Name",notes:"Notes",domicile:"Domicile",father:"Father's name",pmdc:"PMDC no."};
+const updNorm=v=>String(v??"").trim().toLowerCase();
+function updPlan(j){const out={apply:[],done:[],clash:[],add:[],dup:[]};
+ (j.changes||[]).forEach(c=>{const p=DB.pgts.find(x=>x.id===c.id)||DB.pgts.find(x=>updNorm(x.name)===updNorm(c.name));if(!p){out.clash.push({c,why:"trainee not found"});return}
+  const cur=p[c.field];if(updNorm(cur)===updNorm(c.to))out.done.push({c,p});else if(!cur||updNorm(cur)===updNorm(c.from)||(c.field==="notes"&&!String(cur).includes(c.to.trim())))out.apply.push({c,p});else out.clash.push({c,p,why:"changed in the app to “"+cur+"”"})});
+ (j.add||[]).forEach(a=>{const dg=s=>String(s||"").replace(/\D/g,"");const ex=DB.pgts.find(x=>(dg(a.pgt.cnic)&&dg(x.cnic)===dg(a.pgt.cnic))||updNorm(x.name)===updNorm(a.pgt.name));(ex?out.dup:out.add).push(a)});
+ return out}
+function updPanel(){if(!isAdmin())return"";const u=UI.upd;
+ let body=`<p class="subt" style="margin:0">Choose a trainee update file (for example <b>dme-trainee-update-nov2026.json</b>). You will see every change before anything is saved. A value is only replaced if it has not been edited in the app since.</p>
+ <label class="f">Update file<input type="file" id="upd-file" accept=".json,application/json"></label>`;
+ if(u){const P=u.plan,row=x=>`<tr><td>${esc(x.p?x.p.name:x.c.name)}</td><td>${UPD_L[x.c.field]||esc(x.c.field)}</td><td>${esc(x.c.from||"—")}</td><td><b>${esc(x.c.to)}</b></td><td class="subt">${esc(x.why||x.c.why||"")}</td></tr>`;
+  body+=`<div class="status ${P.apply.length||P.add.length?"":"ok"}" style="display:block"><b>${esc(u.title)}</b>: ${P.apply.length} changes to make${P.add.length?`, ${P.add.length} new trainee${P.add.length>1?"s":""} to add`:""}. ${P.done.length} already done${P.clash.length?`, ${P.clash.length} skipped because the app has a newer value`:""}${P.dup.length?`, ${P.dup.length} new trainee already in the app`:""}.</div>
+  ${P.apply.length||P.clash.length?`<div class="tblwrap" style="max-height:340px;overflow:auto"><table><thead><tr><th>Trainee</th><th>Detail</th><th>Now</th><th>Will become</th><th>Reason</th></tr></thead><tbody>${P.apply.map(row).join("")}${P.clash.map(x=>row(x).replace("<tr>",'<tr style="opacity:.6">')).join("")}</tbody></table></div>`:""}
+  ${P.add.map(a=>`<p style="margin:0">New: <b>Dr. ${esc(a.pgt.name)}</b>, ${esc(a.pgt.spec)}. Added to <b>New registrations</b> for you to verify.</p>`).join("")}
+  <div style="display:flex;gap:8px;flex-wrap:wrap">${P.apply.length||P.add.length?`<button class="btn primary" data-act="upd-go">Apply ${P.apply.length+P.add.length} updates</button>`:""}<button class="btn" data-act="upd-x">Close</button></div>`}
+ return`<div class="panel" id="set-upd" style="display:grid;gap:10px"><h3 style="margin:0">Apply a trainee update file</h3>${body}</div>`}
+document.addEventListener("change",async e=>{if(e.target.id!=="upd-file"||!e.target.files[0])return;let j;
+ try{j=JSON.parse(await e.target.files[0].text())}catch(x){toast("That file could not be read");return}
+ if(j.kind!=="dme-pgt-update"){toast("That is not a trainee update file");return}
+ UI.upd={title:j.title||"Update",j,plan:updPlan(j)};const y=window.scrollY;render();window.scrollTo(0,y)});
+document.addEventListener("click",e=>{const a=e.target.closest("[data-act]");if(!a)return;
+ if(a.dataset.act==="upd-x"){UI.upd=null;const y=window.scrollY;render();window.scrollTo(0,y)}
+ if(a.dataset.act==="upd-go"&&UI.upd){const P=updPlan(UI.upd.j);let n=0;
+  P.apply.forEach(({c,p})=>{if(c.field==="notes")p.notes=((p.notes||"")+" "+c.to.replace(p.notes||"","")).trim();else p[c.field]=c.to;n++});
+  P.add.forEach(a=>{const r={...a.pgt};if(DB.pgts.some(x=>x.id===r.id))r.id=uid("P");if(DB.pgts.some(x=>x.code===r.code))r.code=nextCode(r);DB.pgts.push(r);
+   DB.status.push({...a.status,id:uid("S"),pid:r.id});if(a.sup&&DB.faculty.some(f=>f.id===a.sup.fid))DB.sups.push({...a.sup,id:uid("V"),pid:r.id});n++});
+  log(`${UI.upd.title}: ${P.apply.length} trainee details updated${P.add.length?`, ${P.add.length} new trainee added for verification`:""}`);
+  UI.upd=null;toast(`${n} updates applied`);const y=window.scrollY;render();window.scrollTo(0,y)}});
+
+/* ---------- contact details in "Edit details" (hidden in the prototype) ---------- */
+const CE_F=[["father","Father's name"],["cnic","CNIC","xxxxx-xxxxxxx-x"],["passport","Passport no.","foreign nationals"],["pmdc","PMDC no."],["mobile","Mobile","03xx-xxxxxxx"],["mobile2","Second mobile","optional"],["email","Email"],["emailAlt","Alternate email","optional"]];
+function contactEditHtml(p){if(!LIVE&&!p.cnic)return"";return`<div class="grid2">${CE_F.map(([k,l,h])=>`<label class="f">${l}${h?` <span class="h">${h}</span>`:""}<input name="ce-${k}" value="${esc(p[k]||"")}"></label>`).join("")}</div>`}
+function contactEditRead(p){if(!document.querySelector('[name="ce-mobile"]'))return"";const g=k=>(document.querySelector(`[name="ce-${k}"]`)?.value||"").trim();
+ const mob=v=>{let x=v.replace(/\D/g,"");if(x.startsWith("92"))x="0"+x.slice(2);if(x.length===10&&x[0]==="3")x="0"+x;return x.length===11?x.slice(0,4)+"-"+x.slice(4):v};
+ for(const k of["mobile","mobile2"])if(g(k)&&mob(g(k)).length!==12)return"Enter mobile numbers as 03xx-xxxxxxx.";
+ for(const k of["email","emailAlt"])if(g(k)&&!/^\S+@\S+\.\S+$/.test(g(k)))return"Check the email address.";
+ const cn=g("cnic").replace(/\D/g,"");if(g("cnic")&&cn.length!==13&&!g("passport"))return"A CNIC has 13 digits. For a foreign national, enter the passport number instead.";
+ const v={father:g("father"),cnic:cn.length===13?cn.replace(/^(\d{5})(\d{7})(\d)$/,"$1-$2-$3"):g("cnic"),passport:g("passport"),pmdc:g("pmdc").toUpperCase(),mobile:g("mobile")?mob(g("mobile")):"",mobile2:g("mobile2")?mob(g("mobile2")):"",email:g("email").toLowerCase(),emailAlt:g("emailAlt").toLowerCase()};
+ const ch=Object.keys(v).filter(k=>(p[k]||"")!==v[k]);ch.forEach(k=>{if(v[k])p[k]=v[k];else delete p[k]});
+ if(ch.length)log(`Contact details of Dr. ${p.name} edited: ${ch.map(k=>CE_F.find(f=>f[0]===k)[1]).join(", ")}`,"pgt-"+p.id);return""}
+
+/* =====================================================================
+   BIO DATA FORM (RIC-RWP-HRM-F-04) — shared by the PGT registration
+   form and the DME Office app. Builds a filled PDF in the layout of
+   the paper form. Needs jsPDF (window.jspdf).
+   ===================================================================== */
+const BIO_MARITAL=["Single","Married","Divorced","Widowed"];
+const BIO_REL=["Father","Mother","Spouse","Son","Daughter","Brother","Sister","Guardian","Other"];
+const BIO_JSPDF="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+function bioLoadPdf(){if(window.jspdf)return Promise.resolve();return new Promise((ok,no)=>{const s=document.createElement("script");s.src=BIO_JSPDF;s.onload=()=>ok();s.onerror=()=>no(new Error("Could not load the PDF tool. Check the connection."));document.head.append(s)})}
+function bioDate(s){if(!s)return"";const d=new Date(s+"T00:00");return isNaN(d)?s:d.toLocaleDateString("en-GB",{day:"2-digit",month:"2-digit",year:"numeric"}).replace(/\//g,"-")}
+/* r = {name,father,cnic,domicile,mobile,mobile2,email,bio:{dob,marital,religion,sect,passport,otherNat,resNo,curAddr,permAddr,bank,account,family:[{name,rel,cnic,passport,age,nat}]}}
+   photo = data URL (jpeg/png) or null; meta = {ref, at} */
+async function bioPdf(r,photo,meta){await bioLoadPdf();const{jsPDF}=window.jspdf;const doc=new jsPDF({unit:"pt",format:"letter"});
+ const b=r.bio||{},L=36,R=576,W=R-L,UP=v=>String(v??"").trim().toUpperCase();
+ const BLUE=[198,217,241],LINE=[90,90,90];doc.setDrawColor(...LINE);doc.setLineWidth(.6);
+ // title
+ doc.setFont("times","bold");doc.setFontSize(12.5);const tc=(L+452)/2;
+ [["RAWALPINDI INSTITUTE OF CARDIOLOGY",50],["BIO DATA FORM",65]].forEach(([t,y])=>{doc.text(t,tc,y,{align:"center"});const w=doc.getTextWidth(t);doc.line(tc-w/2,y+1.5,tc+w/2,y+1.5)});
+ // photo box
+ const px=468,py=30,pw=108,ph=128;doc.rect(px,py,pw,ph);
+ if(photo){try{const fmt=/^data:image\/png/.test(photo)?"PNG":"JPEG";const ip=doc.getImageProperties(photo);const s=Math.max(pw/ip.width,ph/ip.height);
+   // cover-fit inside the box, clipped
+   const iw=ip.width*s,ih=ip.height*s;let src=photo;
+   if(Math.abs(iw-pw)>1||Math.abs(ih-ph)>1){src=await bioCrop(photo,pw/ph)}
+   doc.addImage(src,"JPEG",px+.5,py+.5,pw-1,ph-1);doc.rect(px,py,pw,ph)}catch(e){console.warn(e);photo=null}}
+ if(!photo){doc.setFont("helvetica","bold");doc.setFontSize(9);doc.text("Picture",px+pw/2,py+50,{align:"center"});doc.setFont("helvetica","normal");doc.setFontSize(7);
+  doc.text(["(With Blue","Background & No","Side Pose)"],px+pw/2,py+62,{align:"center"})}
+ // documents
+ doc.setFont("times","bold");doc.setFontSize(10);doc.text("Following Documents must attach.",L,95);
+ doc.text("1.   CNIC Copy.",L+22,108);doc.text("2.   Passport Copy.",L+22,120);
+ // employee information table
+ let y=166;const c1=24,c2=168,vx=L+c1+c2;
+ const band=(t,yy)=>{doc.setFillColor(...BLUE);doc.rect(L,yy,W,15,"FD");doc.setFont("times","bold");doc.setFontSize(10.5);doc.text(t,L+4,yy+11);
+  const w=doc.getTextWidth(t);doc.setFontSize(6.5);doc.text("(IN CAPITAL LETTERS)",L+8+w,yy+10.5)};
+ band("Employee Information:",y);y+=15;
+ const mob=[r.mobile,r.mobile2].filter(Boolean).join(" / ");
+ const rows=[["Name",UP(r.name?"Dr. "+r.name.replace(/^dr\.?\s*/i,""):"")],["Father Name",UP(r.father)],["Date of Birth",bioDate(b.dob)],["Marital Status",UP(b.marital)],["CNIC",r.cnic||""],["Religion",UP(b.religion)],
+  ["Domicile",UP(r.domicile)],["Sect",UP(b.sect)],["Passport Number",UP(b.passport||r.passport)],["Mobile No",mob,"(Bio-Metric Verified & Should be on Whatsapp)"],["Other Nationality (If Any)",UP(b.otherNat)],
+  ["Residence No/Guardian No",b.resNo||""],["Email Address",String(r.email||"").toLowerCase()],["Current Address",UP(b.curAddr)],["Permanent Address",UP(b.permAddr),"(As per CNIC)"],["Bank Name & Account #",UP([b.bank,b.account].filter(Boolean).join(", A/C ")),"(Salary)"]];
+ rows.forEach(([l,v,sub],i)=>{doc.setFont("helvetica","normal");doc.setFontSize(9.5);const lines=doc.splitTextToSize(v||"",R-vx-8);
+  const lab=doc.setFont("times","normal").setFontSize(10.5)&&doc.splitTextToSize(l,c2-8);const subl=sub?doc.setFontSize(6.5)&&doc.splitTextToSize(sub,c2-8):[];
+  const h=Math.max(17,lines.length*11+6,lab.length*12+subl.length*8+5);
+  doc.rect(L,y,c1,h);doc.rect(L+c1,y,c2,h);doc.rect(vx,y,R-vx,h);
+  doc.setFont("times","normal");doc.setFontSize(10.5);doc.text(String(i+1),L+c1/2,y+12,{align:"center"});
+  doc.text(lab,L+c1+4,y+12);if(sub){doc.setFontSize(6.5);if(l.length<20&&subl.length===1&&doc.getTextWidth(sub)+doc.setFontSize(10.5).getTextWidth(l)<c2-14){const w=doc.getTextWidth(l);doc.setFontSize(6.5);doc.text(sub,L+c1+8+w,y+12)}else{doc.setFontSize(6.5);doc.text(subl,L+c1+4,y+12+lab.length*12-3)}}
+  doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.text(lines,vx+5,y+12);y+=h});
+ // family table
+ y+=12;const FC=[["Sr #",30],["Name of Family Member",142],["Relation",62],["CNIC #",92],["Passport #",66],["Age",34],["Other Nationality (if any)",114]];
+ doc.rect(L,y,FC[0][1],15);doc.setFillColor(...BLUE);doc.rect(L+FC[0][1],y,W-FC[0][1],15,"FD");doc.setFont("times","bold");doc.setFontSize(10.5);doc.text("Family Information:",L+FC[0][1]+4,y+11);
+ {const w=doc.getTextWidth("Family Information:");doc.setFontSize(6.5);doc.text("(IN CAPITAL LETTERS)",L+FC[0][1]+8+w,y+10.5)}y+=15;
+ let x=L;doc.setFont("times","bold");doc.setFontSize(9.5);FC.forEach(([t,w])=>{doc.rect(x,y,w,26);const tl=doc.splitTextToSize(t,w-6);doc.text(tl,x+w/2,y+(tl.length>1?10:16),{align:"center"});x+=w});y+=26;
+ const fam=(b.family||[]).filter(f=>f&&f.name);const n=Math.max(7,fam.length);
+ for(let i=0;i<n;i++){const f=fam[i]||{};const vals=[String(i+1),UP(f.name),UP(f.rel),f.cnic||"",UP(f.passport),f.age?String(f.age):"",UP(f.nat)];
+  doc.setFont("helvetica","normal");doc.setFontSize(8.5);const cells=vals.map((v,j)=>doc.splitTextToSize(v,FC[j][1]-6));const h=Math.max(16,...cells.map(c=>c.length*10+5));
+  x=L;FC.forEach(([t,w],j)=>{doc.rect(x,y,w,h);doc.setFont(j===0?"times":"helvetica","normal");doc.setFontSize(j===0?10:8.5);doc.text(cells[j],j===0?x+w/2:x+3,y+11,j===0?{align:"center"}:undefined);x+=w});y+=h}
+ // undertaking and signature
+ y+=12;doc.setFont("times","normal");doc.setFontSize(9);
+ doc.text(doc.splitTextToSize("I hereby undertake that I have read above information (provided by me) and I will responsible if declared false/fake at any stage.",W),L,y);
+ const sy=Math.max(y+58,700);doc.setLineWidth(.6);doc.line(R-130,sy,R,sy);doc.setFontSize(10.5);doc.text("Employee's Signature",R-65,sy+13,{align:"center"});
+ if(meta&&(meta.at||meta.ref)){doc.setFont("helvetica","normal");doc.setFontSize(7.5);doc.setTextColor(90);
+  doc.text(`Filled online through the RIC DME PGT registration${meta.at?" on "+meta.at:""}${meta.ref?", ref. "+meta.ref:""}. Undertaking accepted online; sign above when printed.`,L,sy+13,{maxWidth:R-L-150});doc.setTextColor(0)}
+ doc.setDrawColor(0);doc.setLineWidth(.5);doc.line(L,752,R-60,752);doc.setFont("helvetica","normal");doc.setFontSize(10);doc.text("RIC-RWP-HRM-F-04",L,766);
+ return doc}
+function bioFileName(r){return"Bio-data-"+String(r.name||"PGT").replace(/^dr\.?\s*/i,"").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"")+".pdf"}
+/* read a File or Blob as a data URL, downsized for the PDF photo */
+function bioPhotoData(blob){return new Promise(ok=>{if(!blob)return ok(null);const u=URL.createObjectURL(blob),im=new Image();im.onload=()=>{const s=Math.min(1,600/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);ok(c.toDataURL("image/jpeg",.88))};im.onerror=()=>{URL.revokeObjectURL(u);ok(null)};im.src=u})}
+/* crop a photo to the box shape (centre), as JPEG */
+function bioCrop(src,ratio){return new Promise(ok=>{const im=new Image();im.onload=()=>{let w=im.width,h=im.height;if(w/h>ratio)w=h*ratio;else h=w/ratio;const c=document.createElement("canvas");c.width=Math.round(w);c.height=Math.round(h);
+ const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(im,(im.width-w)/2,(im.height-h)/2,w,h,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",.9))};im.onerror=()=>ok(src);im.src=src})}
+
+/* =====================================================================
+   V16 · BIO DATA (form RIC-RWP-HRM-F-04): shown on the trainee profile,
+   editable by the office, printable as the filled form
+   ===================================================================== */
+VIEW_ACTS.add("bio-pdf");
+const BIO_KV=[["dob","Date of birth"],["marital","Marital status"],["religion","Religion"],["sect","Sect"],["passport","Passport no."],["otherNat","Other nationality"],["resNo","Residence / guardian no."],["curAddr","Current address"],["permAddr","Permanent address (CNIC)"],["bank","Salary bank"],["account","Account no. / IBAN"]];
+const bioHas=b=>b&&(BIO_KV.some(([k])=>b[k])||(b.family||[]).length);
+function bioPanel(p){if(!LIVE&&!p.bio)return"";const b=p.bio||{};
+ const kv=BIO_KV.filter(([k])=>b[k]).map(([k,l])=>`<dt>${l}</dt><dd>${esc(k==="dob"?fd(b[k]):b[k])}</dd>`).join("");
+ const fam=(b.family||[]).filter(f=>f.name);
+ return`<div class="panel"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><h3 style="margin:0">Bio data</h3>
+  <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn small" data-act="bio-pdf" data-id="${p.id}">Bio data form (PDF)</button><button class="btn small" data-act="bio-edit" data-id="${p.id}">${bioHas(b)?"Edit":"Enter from paper form"}</button></div></div>
+  ${bioHas(b)?`<dl class="kv" style="margin-top:10px">${kv}</dl>
+  ${fam.length?`<div class="tblwrap" style="margin-top:8px"><table><thead><tr><th>Family member</th><th>Relation</th><th>CNIC</th><th>Age</th></tr></thead><tbody>${fam.map(f=>`<tr><td>${esc(f.name)}${f.passport?`<div class="subt">Passport ${esc(f.passport)}</div>`:""}${f.nat?`<div class="subt">${esc(f.nat)}</div>`:""}</td><td>${esc(f.rel)}</td><td class="code">${esc(f.cnic||"—")}</td><td>${esc(f.age??"")}</td></tr>`).join("")}</tbody></table></div>`:""}`
+  :`<p class="subt" style="margin:8px 0 0">Not on file yet. Trainees who register through the PGT link fill this in themselves. For earlier trainees, enter it from their paper bio data form, or print a blank form with their known details filled in.</p>`}</div>`}
+function sheetBio(p){const b=p.bio||{},fam=[...(b.family||[])];while(fam.length<7)fam.push({});const n=(k)=>`name="bio-${k}"`;
+ openSheet(`Bio data · Dr. ${p.name}`,`<p class="subt" style="margin:0">Name, father's name, CNIC, domicile, mobile and email come from the trainee's record (Edit details).</p>
+ <div class="grid2"><label class="f">Date of birth<input type="date" ${n("dob")} value="${esc(b.dob||"")}"></label><label class="f">Marital status<select ${n("marital")}>${opt(["",...BIO_MARITAL],b.marital||"")}</select></label></div>
+ <div class="grid2"><label class="f">Religion<input ${n("religion")} value="${esc(b.religion||"")}"></label><label class="f">Sect<input ${n("sect")} value="${esc(b.sect||"")}"></label></div>
+ <div class="grid2"><label class="f">Passport no.<input ${n("passport")} value="${esc(b.passport||p.passport||"")}"></label><label class="f">Other nationality<input ${n("otherNat")} value="${esc(b.otherNat||"")}"></label></div>
+ <label class="f">Residence / guardian no.<input ${n("resNo")} value="${esc(b.resNo||"")}"></label>
+ <label class="f">Current address<textarea ${n("curAddr")} rows="2">${esc(b.curAddr||"")}</textarea></label>
+ <label class="f">Permanent address (as on CNIC)<textarea ${n("permAddr")} rows="2">${esc(b.permAddr||"")}</textarea></label>
+ <div class="grid2"><label class="f">Salary bank<input ${n("bank")} value="${esc(b.bank||"")}"></label><label class="f">Account no. / IBAN<input ${n("account")} value="${esc(b.account||"")}"></label></div>
+ <h3 style="margin:6px 0 0">Family</h3><div class="tblwrap"><table class="bioft"><thead><tr><th>Name</th><th>Relation</th><th>CNIC</th><th>Passport</th><th>Age</th><th>Other nationality</th></tr></thead><tbody>
+ ${fam.map((f,i)=>`<tr><td><input name="bf-${i}-name" value="${esc(f.name||"")}" aria-label="Name ${i+1}"></td><td><select name="bf-${i}-rel" aria-label="Relation ${i+1}">${opt(["",...BIO_REL],f.rel||"")}</select></td><td><input name="bf-${i}-cnic" value="${esc(f.cnic||"")}" aria-label="CNIC ${i+1}" style="width:130px"></td><td><input name="bf-${i}-passport" value="${esc(f.passport||"")}" aria-label="Passport ${i+1}" style="width:100px"></td><td><input name="bf-${i}-age" value="${esc(f.age??"")}" inputmode="numeric" aria-label="Age ${i+1}" style="width:56px"></td><td><input name="bf-${i}-nat" value="${esc(f.nat||"")}" aria-label="Nationality ${i+1}" style="width:110px"></td></tr>`).join("")}
+ </tbody></table></div>`,()=>{
+  const nb={};BIO_KV.forEach(([k])=>{const v=fv("bio-"+k);if(v)nb[k]=k==="passport"?v.replace(/\s/g,"").toUpperCase():v});
+  const fl=[];for(let i=0;i<fam.length;i++){const g=k=>fv(`bf-${i}-${k}`);if(!g("name"))continue;const c=g("cnic").replace(/\D/g,"");
+   if(c&&c.length!==13)return fail(`Family member ${i+1}: a CNIC has 13 digits.`);if(!g("rel"))return fail(`Family member ${i+1}: choose the relation.`);
+   fl.push({name:g("name"),rel:g("rel"),cnic:c?c.replace(/^(\d{5})(\d{7})(\d)$/,"$1-$2-$3"):"",passport:g("passport").toUpperCase(),age:g("age")===""?"":+g("age").replace(/\D/g,""),nat:g("nat")})}
+  if(fl.length)nb.family=fl;const before=JSON.stringify(p.bio||{});if(JSON.stringify(nb)===before){toast("No changes");return true}
+  p.bio=nb;if(nb.passport&&!p.passport)p.passport=nb.passport;log(`Bio data of Dr. ${p.name} ${before==="{}"?"entered":"edited"}`,"pgt-"+p.id);toast("Bio data saved");return true})}
+async function bioPdfFor(p,btn){const t=btn&&btn.textContent;if(btn){btn.disabled=true;btn.textContent="Preparing…"}
+ try{let ph=null;if(LIVE&&p.docs&&p.docs.photo){try{const{data}=await SYNC.sb.storage.from("dme-uploads").download(p.docs.photo);ph=await bioPhotoData(data)}catch(e){}}
+  const doc=await bioPdf(p,ph,{ref:p.code||"",at:p.submitted?fd(p.submitted):""});doc.save(bioFileName(p))}catch(e){toast(e.message||"Could not make the PDF")}
+ if(btn){btn.disabled=false;btn.textContent=t}}
+document.addEventListener("click",e=>{const a=e.target.closest('[data-act="bio-edit"],[data-act="bio-pdf"]');if(!a)return;const p=DB.pgts.find(x=>x.id===a.dataset.id);if(!p)return;
+ if(a.dataset.act==="bio-edit")sheetBio(p);else bioPdfFor(p,a)});
+
+/* =====================================================================
+   V17 · SIGNED ANNUAL ACADEMIC CALENDAR (Oct 2026 – Dec 2027)
+   One-click update of the workshop list to the calendar signed by the
+   HoDs, the Executive Director and the DME. TTE moved to Dec 2026 on
+   the Director's instruction (3 Nov 2026).
+   ===================================================================== */
+const CAL_ID="2026-27";
+const CAL_ITEMS=[
+ {re:/transthoracic|\btte\b/i,month:"2026-12",title:"Basics of Transthoracic Echocardiography",dept:"General Cardiology",focal:"Dr. Iman Iftikhar, Dr. Sana Sarfraz",note:"Moved from Nov 2026 to Dec 2026 on the Director's instruction."},
+ {re:/invasive lines/i,month:"2026-12",title:"Invasive Lines and Monitoring",dept:"Cardiothoracic Anaesthesia",focal:"Dr. Palwasha"},
+ {re:/conduits/i,month:"2027-01",title:"Conduits in CABG",dept:"Cardiac Surgery",focal:"Dr. Muhammad Azam / Dr. Alifa"},
+ {re:/transoesophageal|transesophageal|\btee\b/i,month:"2027-03",title:"Transoesophageal Echocardiography",dept:"General Cardiology",focal:"Dr. Adeel Ur Rehman, Dr. Sana Sarfraz"},
+ {re:/coronary angiography/i,month:"2027-04",title:"Basics of Coronary Angiography",dept:"Interventional Cardiology",focal:"Dr. Muhammad Umar Farooq"},
+ {re:/cardiopulmonary bypass|\bcpb\b/i,month:"2027-05",title:"Basics of Cardiopulmonary Bypass",dept:"Cardiac Surgery",focal:"Dr. Muhammad Azam",note:"Joint workshop: Cardiac Surgery, Cardiac Anaesthesia and Cardiac Perfusion."},
+ {re:/inotrop/i,month:"2027-06",title:"Inotropes and Vasopressors",dept:"Cardiothoracic Anaesthesia",focal:"Dr. Amna"},
+ {re:/infection/i,month:"2027-07",title:"Infection Prevention and Control",dept:"Infection Prevention & Control",focal:"Dr. Musab"},
+ {re:/paediatric echo|pediatric echo/i,month:"2027-08",title:"Basics of Paediatric Echocardiography",dept:"Paediatric Cardiology",focal:"Dr. Asma Kanwal"},
+ {re:/anastomosis/i,month:"2027-09",title:"Anastomosis in Cardiac Surgery",dept:"Cardiac Surgery",focal:"Dr. Muhammad Azam / Dr. Muhammad Sohail Chaudhri"},
+ {re:/airway/i,month:"2027-10",title:"Airway Management",dept:"Cardiothoracic Anaesthesia",focal:"Dr. Yasmeen Azeem"},
+ {re:/balloon pump|\biabp\b/i,month:"2027-11",title:"Intra-Aortic Balloon Pump",dept:"Cardiac Surgery",focal:"Dr. Muhammad Azam / Dr. Wajeeha"}];
+const CAL_BOOT={months:["2026-10","2026-11","2027-03","2027-07","2027-12"],title:"Research Bootcamp",dept:"Research Cell",focal:"Dr. Asma Shabbir"};
+const CAL_DROP=/toacs|basics of cardiac anaesthesia|basics of cardiac anesthesia/i;
+const calFirst=f=>String(f||"").split(/\s*[\/,]\s*/)[0].trim();
+const isBoot=w=>w.series==="Research Bootcamp"||/research boot ?camp/i.test(w.title);
+const wsBusy=w=>w.stage>0||(w.regs||[]).length||w.proposal;
+
+function calPlan(){const W=DB.workshops.filter(w=>!w.example),used=new Set(),ops=[];
+ // only the month changes; the focal person and course director are filled in only where missing
+ const upd=(w,it,extra)=>{const ch={};
+  if(w.month!==it.month)ch.month=it.month;
+  if(!(w.focal||"").trim())ch.focal=it.focal;if(!(w.director||"").trim())ch.director=calFirst(it.focal);
+  if(it.note&&ch.month&&!(w.notes||"").includes(it.note))ch.notes=((w.notes||"")+" "+it.note).trim();
+  if(ch.month&&w.date&&!w.date.startsWith(ch.month))ch.date=null;
+  if(Object.keys(ch).length||w.placeholder)ops.push({t:"upd",w,ch,...extra})};
+ CAL_ITEMS.forEach(it=>{const c=W.filter(w=>!used.has(w)&&!isBoot(w)&&it.re.test(w.title)).sort((a,b)=>Math.abs(+P(a.month+"-01")-+P(it.month+"-01"))-Math.abs(+P(b.month+"-01")-+P(it.month+"-01")));
+  if(c.length){used.add(c[0]);upd(c[0],it)}else ops.push({t:"add",rec:{title:it.title,dept:it.dept,focal:it.focal,director:calFirst(it.focal),month:it.month,notes:it.note||""}})});
+ const boots=W.filter(isBoot).sort((a,b)=>a.month<b.month?-1:1),need=[...CAL_BOOT.months];
+ boots.filter(w=>need.includes(w.month)).forEach(w=>{need.splice(need.indexOf(w.month),1);used.add(w);upd(w,{...CAL_BOOT,month:w.month})});
+ boots.filter(w=>!used.has(w)).forEach(w=>{if(need.length&&!wsBusy(w)){used.add(w);upd(w,{...CAL_BOOT,month:need.shift()})}else if(w.stage>=5){used.add(w)}});
+ need.forEach(m=>ops.push({t:"add",rec:{title:CAL_BOOT.title,dept:CAL_BOOT.dept,focal:CAL_BOOT.focal,director:CAL_BOOT.focal,month:m,series:"Research Bootcamp",notes:""}}));
+ W.filter(w=>!used.has(w)).forEach(w=>{const off=CAL_DROP.test(w.title)||isBoot(w);
+  if(w.stage<5)ops.push({t:"keep",w,why:"not on the signed calendar"})});
+ return ops}
+const calDone=()=>DB.settings.calApplied===CAL_ID||DB.workshops.some(w=>w.cal===CAL_ID);
+function calPanel(){if(calDone()||isViewer())return"";const ops=calPlan(),real=ops.filter(o=>o.t!=="keep");if(!real.length)return"";
+ const L={month:"month",focal:"focal person",director:"course director",notes:"note",date:"fixed date cleared (not in the new month)"};
+ const row=o=>o.t==="upd"?`<tr><td>${esc(o.w.title)}</td><td>${mLabel(o.w.month)}</td><td><b>${mLabel(o.ch.month||o.w.month)}</b></td><td class="subt">${Object.keys(o.ch).filter(k=>k!=="title"&&k!=="month").map(k=>k==="focal"?"focal: "+esc(o.ch.focal):k==="director"?"":L[k]).filter(Boolean).join(" · ")||"month confirmed"}</td></tr>`
+  :o.t==="add"?`<tr><td><b>${esc(o.rec.title)}</b><div class="subt">new on the calendar</div></td><td>—</td><td><b>${mLabel(o.rec.month)}</b></td><td class="subt">focal: ${esc(o.rec.focal)}</td></tr>`
+  :o.t==="del"?`<tr style="opacity:.7"><td><s>${esc(o.w.title)}</s><div class="subt">not on the signed calendar; will be removed</div></td><td>${mLabel(o.w.month)}</td><td>—</td><td></td></tr>`
+  :`<tr style="opacity:.7"><td>${esc(o.w.title)}<div class="subt">${esc(o.why)}; left as it is</div></td><td>${mLabel(o.w.month)}</td><td>${mLabel(o.w.month)}</td><td></td></tr>`;
+ const n=k=>ops.filter(o=>o.t===k).length;
+ return`<div class="panel" id="calupd" style="display:grid;gap:10px;border-color:var(--gold)"><div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center">
+  <div><h3 style="margin:0">Update to the signed Annual Academic Calendar (Oct 2026 – Dec 2027)</h3><p class="subt" style="margin:4px 0 0">${n("upd")} workshops get their calendar month, ${n("add")} on the calendar are added. Focal persons are filled in only where none is recorded. Nothing is deleted, and titles, proposals, registrations and finances stay as they are. Transthoracic Echocardiography goes to December 2026.</p></div>
+  <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="cal-show">${UI.calShow?"Hide changes":"See changes"}</button><button class="btn primary" data-act="cal-apply">Apply calendar</button></div></div>
+  ${UI.calShow?`<div class="tblwrap"><table><thead><tr><th>Workshop</th><th>Now</th><th>Signed calendar</th><th>Also</th></tr></thead><tbody>${ops.sort((a,b)=>((a.ch&&a.ch.month)||(a.rec&&a.rec.month)||a.w.month).localeCompare((b.ch&&b.ch.month)||(b.rec&&b.rec.month)||b.w.month)).map(row).join("")}</tbody></table></div>`:""}
+  <p class="subt" style="margin:0">Exams (Jun/Jul and Nov/Dec) and PGT orientation (first week of Feb and Aug) are already fixed in the calendar view.</p></div>`}
+function calApply(){const ops=calPlan();let m=0,a=0,d=0;
+ ops.forEach(o=>{if(o.t==="upd"){const from=o.w.month;Object.assign(o.w,o.ch);delete o.w.placeholder;o.w.cal=CAL_ID;wlog(o.w,"Set to the signed Annual Academic Calendar"+(o.ch.month?` (moved from ${mLabel(from)} to ${mLabel(o.w.month)})`:""));m++}
+  if(o.t==="add"){const nw=blankWs({id:uid("W"),...o.rec,cal:CAL_ID});DB.workshops.push(nw);wlog(nw,"Added from the signed Annual Academic Calendar");a++}
+  if(o.t==="del"){DB.workshops=DB.workshops.filter(x=>x!==o.w);log(`Removed ${o.w.title} (${mLabel(o.w.month)}): not on the signed Annual Academic Calendar`);d++}});
+ DB.settings.calApplied=CAL_ID;log(`Workshop list set to the signed Annual Academic Calendar Oct 2026 – Dec 2027: ${m} updated, ${a} added, ${d} removed`);persist();UI.calShow=false;toast("Calendar applied");render()}
+document.addEventListener("click",e=>{const b=e.target.closest('[data-act="cal-show"],[data-act="cal-apply"]');if(!b)return;
+ if(b.dataset.act==="cal-show"){UI.calShow=!UI.calShow;const y=window.scrollY;render();window.scrollTo(0,y);return}
+ if(b.dataset.armed!=="1"){b.dataset.armed="1";b.textContent="Tap again to apply";return}calApply()});
+/* new installs start from the signed calendar */
+function seedWorkshops(){const ws=[];let i=0;
+ CAL_ITEMS.forEach(it=>ws.push(blankWs({id:"W"+String(++i).padStart(2,"0"),title:it.title,dept:it.dept,focal:it.focal,director:calFirst(it.focal),month:it.month,notes:it.note||"",cal:CAL_ID})));
+ CAL_BOOT.months.forEach((m,k)=>ws.push(blankWs({id:"WB"+(k+1),title:CAL_BOOT.title,dept:CAL_BOOT.dept,focal:CAL_BOOT.focal,director:CAL_BOOT.focal,month:m,series:"Research Bootcamp",cal:CAL_ID})));
+ ws.push(seedExampleWs());return ws}
 
 /* ---------- events ---------- */
 document.addEventListener("click",e=>{
@@ -3266,7 +3528,7 @@ document.addEventListener("click",e=>{
  if(a==="close"){closeSheet();return}
  if(a==="save"){if(SHEET&&SHEET.onSave()!==false){persist();closeSheet();render()}return}
  if(a==="leave")sheetLeave(p);if(a==="status")sheetStatus(p);if(a==="rot")sheetRot(p);if(a==="sup")sheetSup(p);if(a==="editpgt")sheetEditPgt(p);if(a==="reject")sheetReject(p);
- if(a==="verify"){p.code=p.code||nextCode(p);p.reg="Verified";if(p.declComp){const cc=iso(new Date(addM(p.start,Math.round(p.dur*12))-864e5));if(p.declComp!==cc)p.override=p.declComp}log(`Verified registration of Dr. ${p.name}; PGT ID ${p.code}`,"pgt-"+p.id);persist();toast(`Verified · ${p.code}`);go("pgt-"+p.id);return}
+ if(a==="verify"){if(!p.code||p.code==="—"||DB.pgts.some(x=>x!==p&&x.code===p.code))p.code=nextCode(p);p.reg="Verified";if(p.declComp){const cc=iso(new Date(addM(p.start,Math.round(p.dur*12))-864e5));if(p.declComp!==cc)p.override=p.declComp}log(`Verified registration of Dr. ${p.name}; PGT ID ${p.code}`,"pgt-"+p.id);persist();toast(`Verified · ${p.code}`);go("pgt-"+p.id);return}
  if(a==="reopen"){p.reg="Pending";log(`Moved Dr. ${p.name} back to pending`);persist();render();return}
  if(a==="addfac")sheetFac();if(a==="editfac")sheetFac(facById(d.id));if(a==="addcred")sheetCred(facById(d.id));
  if(a==="resetdb"){if(b.dataset.armed!=="1"){b.dataset.armed="1";b.textContent="Tap again to discard your changes";setTimeout(()=>{if(b.isConnected){b.dataset.armed="";b.textContent="Reset to sheet data"}},3000);return}

@@ -33,7 +33,8 @@ header.lh .wrap{display:flex;align-items:center;gap:12px;padding-block:14px}
 .lh h1{font-family:var(--f-display);font-weight:600;font-size:clamp(22px,5vw,28px);margin:2px 0 0;line-height:1.15}
 .lh .sub{font-size:13px;opacity:.85}
 .rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);padding-block:10px}
-.rail ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.rail ol{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+@media(max-width:480px){.rail button{font-size:11px}}
 .rail button{width:100%;border:none;background:none;color:var(--muted);font:500 13px var(--f-body);cursor:pointer;padding:0;text-align:left;display:grid;gap:5px}
 .rail button::before{content:"";height:4px;border-radius:2px;background:var(--line)}
 .rail button.done::before{background:var(--gold)}
@@ -44,16 +45,21 @@ main{padding-block:18px 120px;display:grid;gap:14px}
 h2{font-family:var(--f-display);font-weight:600;font-size:23px;margin:0;line-height:1.2}
 .lede{color:var(--muted);margin:-8px 0 0;font-size:15px}
 .grid{display:grid;gap:14px}
-@media(min-width:560px){.grid.two{grid-template-columns:1fr 1fr}}
+@media(min-width:560px){.grid.two{grid-template-columns:1fr 1fr}.grid.three{grid-template-columns:1.4fr .6fr 1fr}}
+.grid.three{display:grid;gap:14px}
+fieldset.fam{border:1px solid var(--line);border-radius:10px;padding:12px 14px 14px;margin:0;display:grid;gap:12px;min-width:0}
+fieldset.fam legend{font-weight:600;font-size:14px;padding:0 6px;display:flex;align-items:center}
+fieldset.fam .err:empty{display:none}
 label.f{display:grid;gap:5px;min-width:0}
 label.f>span,.lbl{font-size:14px;font-weight:600}
 .req::after{content:" *";color:var(--brand)}
 .hint{font-size:13px;color:var(--muted);font-weight:400}
 .err{font-size:13px;color:var(--err)}
-input,select{font:inherit;color:var(--ink);background:var(--sunk);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%;min-width:0}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--sunk);border:1px solid var(--line);border-radius:8px;padding:10px 12px;width:100%;min-width:0}
 input.mono{font-family:var(--f-mono);letter-spacing:.02em}
-input[aria-invalid="true"]{border-color:var(--err)}
-input:focus,select:focus,button:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
+input[aria-invalid="true"],textarea[aria-invalid="true"],select[aria-invalid="true"]{border-color:var(--err)}
+textarea{resize:vertical}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:2px solid var(--brand);outline-offset:1px}
 .seg{display:flex;flex-wrap:wrap;gap:8px}
 .seg button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:8px;padding:9px 14px;font:inherit;font-size:15px;cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--brand);border-color:var(--brand);color:var(--surface)}
@@ -106,23 +112,97 @@ dl.sum dd{margin:0;min-width:0;overflow-wrap:anywhere}
 </div></div>
 
 <script>
+
+/* =====================================================================
+   BIO DATA FORM (RIC-RWP-HRM-F-04) — shared by the PGT registration
+   form and the DME Office app. Builds a filled PDF in the layout of
+   the paper form. Needs jsPDF (window.jspdf).
+   ===================================================================== */
+const BIO_MARITAL=["Single","Married","Divorced","Widowed"];
+const BIO_REL=["Father","Mother","Spouse","Son","Daughter","Brother","Sister","Guardian","Other"];
+const BIO_JSPDF="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js";
+function bioLoadPdf(){if(window.jspdf)return Promise.resolve();return new Promise((ok,no)=>{const s=document.createElement("script");s.src=BIO_JSPDF;s.onload=()=>ok();s.onerror=()=>no(new Error("Could not load the PDF tool. Check the connection."));document.head.append(s)})}
+function bioDate(s){if(!s)return"";const d=new Date(s+"T00:00");return isNaN(d)?s:d.toLocaleDateString("en-GB",{day:"2-digit",month:"2-digit",year:"numeric"}).replace(/\//g,"-")}
+/* r = {name,father,cnic,domicile,mobile,mobile2,email,bio:{dob,marital,religion,sect,passport,otherNat,resNo,curAddr,permAddr,bank,account,family:[{name,rel,cnic,passport,age,nat}]}}
+   photo = data URL (jpeg/png) or null; meta = {ref, at} */
+async function bioPdf(r,photo,meta){await bioLoadPdf();const{jsPDF}=window.jspdf;const doc=new jsPDF({unit:"pt",format:"letter"});
+ const b=r.bio||{},L=36,R=576,W=R-L,UP=v=>String(v??"").trim().toUpperCase();
+ const BLUE=[198,217,241],LINE=[90,90,90];doc.setDrawColor(...LINE);doc.setLineWidth(.6);
+ // title
+ doc.setFont("times","bold");doc.setFontSize(12.5);const tc=(L+452)/2;
+ [["RAWALPINDI INSTITUTE OF CARDIOLOGY",50],["BIO DATA FORM",65]].forEach(([t,y])=>{doc.text(t,tc,y,{align:"center"});const w=doc.getTextWidth(t);doc.line(tc-w/2,y+1.5,tc+w/2,y+1.5)});
+ // photo box
+ const px=468,py=30,pw=108,ph=128;doc.rect(px,py,pw,ph);
+ if(photo){try{const fmt=/^data:image\/png/.test(photo)?"PNG":"JPEG";const ip=doc.getImageProperties(photo);const s=Math.max(pw/ip.width,ph/ip.height);
+   // cover-fit inside the box, clipped
+   const iw=ip.width*s,ih=ip.height*s;let src=photo;
+   if(Math.abs(iw-pw)>1||Math.abs(ih-ph)>1){src=await bioCrop(photo,pw/ph)}
+   doc.addImage(src,"JPEG",px+.5,py+.5,pw-1,ph-1);doc.rect(px,py,pw,ph)}catch(e){console.warn(e);photo=null}}
+ if(!photo){doc.setFont("helvetica","bold");doc.setFontSize(9);doc.text("Picture",px+pw/2,py+50,{align:"center"});doc.setFont("helvetica","normal");doc.setFontSize(7);
+  doc.text(["(With Blue","Background & No","Side Pose)"],px+pw/2,py+62,{align:"center"})}
+ // documents
+ doc.setFont("times","bold");doc.setFontSize(10);doc.text("Following Documents must attach.",L,95);
+ doc.text("1.   CNIC Copy.",L+22,108);doc.text("2.   Passport Copy.",L+22,120);
+ // employee information table
+ let y=166;const c1=24,c2=168,vx=L+c1+c2;
+ const band=(t,yy)=>{doc.setFillColor(...BLUE);doc.rect(L,yy,W,15,"FD");doc.setFont("times","bold");doc.setFontSize(10.5);doc.text(t,L+4,yy+11);
+  const w=doc.getTextWidth(t);doc.setFontSize(6.5);doc.text("(IN CAPITAL LETTERS)",L+8+w,yy+10.5)};
+ band("Employee Information:",y);y+=15;
+ const mob=[r.mobile,r.mobile2].filter(Boolean).join(" / ");
+ const rows=[["Name",UP(r.name?"Dr. "+r.name.replace(/^dr\.?\s*/i,""):"")],["Father Name",UP(r.father)],["Date of Birth",bioDate(b.dob)],["Marital Status",UP(b.marital)],["CNIC",r.cnic||""],["Religion",UP(b.religion)],
+  ["Domicile",UP(r.domicile)],["Sect",UP(b.sect)],["Passport Number",UP(b.passport||r.passport)],["Mobile No",mob,"(Bio-Metric Verified & Should be on Whatsapp)"],["Other Nationality (If Any)",UP(b.otherNat)],
+  ["Residence No/Guardian No",b.resNo||""],["Email Address",String(r.email||"").toLowerCase()],["Current Address",UP(b.curAddr)],["Permanent Address",UP(b.permAddr),"(As per CNIC)"],["Bank Name & Account #",UP([b.bank,b.account].filter(Boolean).join(", A/C ")),"(Salary)"]];
+ rows.forEach(([l,v,sub],i)=>{doc.setFont("helvetica","normal");doc.setFontSize(9.5);const lines=doc.splitTextToSize(v||"",R-vx-8);
+  const lab=doc.setFont("times","normal").setFontSize(10.5)&&doc.splitTextToSize(l,c2-8);const subl=sub?doc.setFontSize(6.5)&&doc.splitTextToSize(sub,c2-8):[];
+  const h=Math.max(17,lines.length*11+6,lab.length*12+subl.length*8+5);
+  doc.rect(L,y,c1,h);doc.rect(L+c1,y,c2,h);doc.rect(vx,y,R-vx,h);
+  doc.setFont("times","normal");doc.setFontSize(10.5);doc.text(String(i+1),L+c1/2,y+12,{align:"center"});
+  doc.text(lab,L+c1+4,y+12);if(sub){doc.setFontSize(6.5);if(l.length<20&&subl.length===1&&doc.getTextWidth(sub)+doc.setFontSize(10.5).getTextWidth(l)<c2-14){const w=doc.getTextWidth(l);doc.setFontSize(6.5);doc.text(sub,L+c1+8+w,y+12)}else{doc.setFontSize(6.5);doc.text(subl,L+c1+4,y+12+lab.length*12-3)}}
+  doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.text(lines,vx+5,y+12);y+=h});
+ // family table
+ y+=12;const FC=[["Sr #",30],["Name of Family Member",142],["Relation",62],["CNIC #",92],["Passport #",66],["Age",34],["Other Nationality (if any)",114]];
+ doc.rect(L,y,FC[0][1],15);doc.setFillColor(...BLUE);doc.rect(L+FC[0][1],y,W-FC[0][1],15,"FD");doc.setFont("times","bold");doc.setFontSize(10.5);doc.text("Family Information:",L+FC[0][1]+4,y+11);
+ {const w=doc.getTextWidth("Family Information:");doc.setFontSize(6.5);doc.text("(IN CAPITAL LETTERS)",L+FC[0][1]+8+w,y+10.5)}y+=15;
+ let x=L;doc.setFont("times","bold");doc.setFontSize(9.5);FC.forEach(([t,w])=>{doc.rect(x,y,w,26);const tl=doc.splitTextToSize(t,w-6);doc.text(tl,x+w/2,y+(tl.length>1?10:16),{align:"center"});x+=w});y+=26;
+ const fam=(b.family||[]).filter(f=>f&&f.name);const n=Math.max(7,fam.length);
+ for(let i=0;i<n;i++){const f=fam[i]||{};const vals=[String(i+1),UP(f.name),UP(f.rel),f.cnic||"",UP(f.passport),f.age?String(f.age):"",UP(f.nat)];
+  doc.setFont("helvetica","normal");doc.setFontSize(8.5);const cells=vals.map((v,j)=>doc.splitTextToSize(v,FC[j][1]-6));const h=Math.max(16,...cells.map(c=>c.length*10+5));
+  x=L;FC.forEach(([t,w],j)=>{doc.rect(x,y,w,h);doc.setFont(j===0?"times":"helvetica","normal");doc.setFontSize(j===0?10:8.5);doc.text(cells[j],j===0?x+w/2:x+3,y+11,j===0?{align:"center"}:undefined);x+=w});y+=h}
+ // undertaking and signature
+ y+=12;doc.setFont("times","normal");doc.setFontSize(9);
+ doc.text(doc.splitTextToSize("I hereby undertake that I have read above information (provided by me) and I will responsible if declared false/fake at any stage.",W),L,y);
+ const sy=Math.max(y+58,700);doc.setLineWidth(.6);doc.line(R-130,sy,R,sy);doc.setFontSize(10.5);doc.text("Employee's Signature",R-65,sy+13,{align:"center"});
+ if(meta&&(meta.at||meta.ref)){doc.setFont("helvetica","normal");doc.setFontSize(7.5);doc.setTextColor(90);
+  doc.text(`Filled online through the RIC DME PGT registration${meta.at?" on "+meta.at:""}${meta.ref?", ref. "+meta.ref:""}. Undertaking accepted online; sign above when printed.`,L,sy+13,{maxWidth:R-L-150});doc.setTextColor(0)}
+ doc.setDrawColor(0);doc.setLineWidth(.5);doc.line(L,752,R-60,752);doc.setFont("helvetica","normal");doc.setFontSize(10);doc.text("RIC-RWP-HRM-F-04",L,766);
+ return doc}
+function bioFileName(r){return"Bio-data-"+String(r.name||"PGT").replace(/^dr\.?\s*/i,"").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"")+".pdf"}
+/* read a File or Blob as a data URL, downsized for the PDF photo */
+function bioPhotoData(blob){return new Promise(ok=>{if(!blob)return ok(null);const u=URL.createObjectURL(blob),im=new Image();im.onload=()=>{const s=Math.min(1,600/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);ok(c.toDataURL("image/jpeg",.88))};im.onerror=()=>{URL.revokeObjectURL(u);ok(null)};im.src=u})}
+/* crop a photo to the box shape (centre), as JPEG */
+function bioCrop(src,ratio){return new Promise(ok=>{const im=new Image();im.onload=()=>{let w=im.width,h=im.height;if(w/h>ratio)w=h*ratio;else h=w/ratio;const c=document.createElement("canvas");c.width=Math.round(w);c.height=Math.round(h);
+ const g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);g.drawImage(im,(im.width-w)/2,(im.height-h)/2,w,h,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",.9))};im.onerror=()=>ok(src);im.src=src})}
+
 let SPECS=["General Cardiology","Cardiac Surgery","Anaesthesiology","Cardiothoracic Anaesthesia","Radiology","Interventional Cardiology","Paediatric Cardiology","Paediatric Cardiac Surgery","Electrophysiology"];
 let DUR={"General Cardiology":{"FCPS":5,"UHS (MD)":5},"Cardiac Surgery":{"FCPS":5,"UHS (MS)":5},"Anaesthesiology":{"FCPS":4,"UHS (MS)":5},"Cardiothoracic Anaesthesia":{"FCPS":5},"Radiology":{"FCPS":4},"Interventional Cardiology":{"FCPS":2,"UHS (MS)":2},"Paediatric Cardiology":{"FCPS":3,"UHS (MD)":3},"Paediatric Cardiac Surgery":{"FCPS":3},"Electrophysiology":{"FCPS":2}};
 let SUP=[{"n": "Prof. Dr. Musfireh Siddiqeh", "s": "Cardiac Surgery", "c": true, "u": false}, {"n": "Prof. Dr. Javed Iqbal", "s": "Cardiac Surgery", "c": true, "u": false}, {"n": "Dr. Muhammad Sohail Chaudhri", "s": "Cardiac Surgery", "c": false, "u": true}, {"n": "Dr. Qudsia Anjum Quershi", "s": "Anaesthesiology", "c": true, "u": false}, {"n": "Dr. Qudsia Anjum Quershi", "s": "Cardiothoracic Anaesthesia", "c": true, "u": false}, {"n": "Prof. Dr. Misbah Durrani", "s": "Radiology", "c": true, "u": false}, {"n": "Dr. Abdul Malik Sheikh", "s": "Paediatric Cardiology", "c": true, "u": false}, {"n": "Dr. Mahim Akmal Malik", "s": "Paediatric Cardiac Surgery", "c": true, "u": false}, {"n": "Dr. Asma Kanwal", "s": "Paediatric Cardiology", "c": true, "u": false}, {"n": "Dr. Hamid Sharif Khan", "s": "Interventional Cardiology", "c": true, "u": false}, {"n": "Dr. Muhammad Mohsin", "s": "General Cardiology", "c": true, "u": true}, {"n": "Dr. Muhammad Umar Farooq", "s": "General Cardiology", "c": true, "u": false}, {"n": "Dr. Asma Shabbir", "s": "General Cardiology", "c": false, "u": true}, {"n": "Dr. Atif Nazir", "s": "General Cardiology", "c": true, "u": false}, {"n": "Dr. Sana Ahmed", "s": "General Cardiology", "c": true, "u": true}, {"n": "Dr. Imran Iftikhar", "s": "General Cardiology", "c": true, "u": false}, {"n": "Dr. Shabana Kousar", "s": "General Cardiology", "c": true, "u": false}, {"n": "Dr. M. Abdus Salamazad", "s": "General Cardiology", "c": true, "u": false}, {"n": "Dr. Muhammad Talha bin Nazir", "s": "General Cardiology", "c": true, "u": false}, {"n": "Dr. Tanveer Ahmed Raja", "s": "General Cardiology", "c": true, "u": true}, {"n": "Dr. Waleed Ahmed", "s": "General Cardiology", "c": true, "u": false}, {"n": "Dr. Asim Javed", "s": "Interventional Cardiology", "c": true, "u": false}, {"n": "Dr. Adeel ur Rehman", "s": "Interventional Cardiology", "c": true, "u": false}, {"n": "Dr. Qurban Hussain Khan", "s": "Electrophysiology", "c": true, "u": true}];
 const PROGRAMS=["FCPS","UHS (MS)","UHS (MD)"];
-const STEPS=["Personal","Training","Posting","Documents","Submit"];
+const STEPS=["Personal","Contact","Family","Training","Posting","Documents","Submit"];const FAM=2,DOCSTEP=5,LAST=6;
 let SITES=[["HFH","Holy Family Hospital"],["BBH","Benazir Bhutto Hospital"],["CMH","Combined Military Hospital"],["DHQ","DHQ Hospital"],["Other","Other hospital"]];
 const DUTY=[["RIC","Posted at RIC"],["Rotation","On rotation"],["Frozen","Training frozen"]];
 const DOCS=[
  {k:"photo",l:"Passport photo",h:"Clear face, plain background. JPG or PNG.",img:1},
  {k:"cnic",l:"CNIC copy",h:"Front and back on one page, image or PDF."},
  {k:"pmdc",l:"PMDC registration",h:"Current PMDC certificate or card."},
- {k:"joining",l:"Joining letter",h:"Your RIC joining letter / report."}
+ {k:"joining",l:"Joining letter",h:"Your RIC joining letter / report."},
+ {k:"passport",l:"Passport copy",h:"Photo page of your passport.",opt:1}
 ];
+const docsNeeded=()=>DOCS.filter(d=>!d.opt||S.passport.trim());
 const MAX=5*1024*1024;
 const KEY="ric-pgt-reg-v1";
-const blank=()=>({step:0,name:"",father:"",cnic:"",pmdc:"",mobile:"",email:"",domicile:"",program:"",spec:"",sup:"",supOther:"",start:"",dur:"",year:"",comp:"",compEdited:false,duty:"",site:"",siteOther:"",rotStart:"",ret:"",frozenSince:"",ok:false,done:null});
+const blank=()=>({step:0,name:"",father:"",cnic:"",pmdc:"",mobile:"",email:"",domicile:"",dob:"",marital:"",religion:"",sect:"",passport:"",otherNat:"",mobile2:"",resNo:"",curAddr:"",permAddr:"",sameAddr:false,bank:"",account:"",family:[{name:"",rel:"Father",cnic:"",passport:"",age:"",nat:""}],program:"",spec:"",sup:"",supOther:"",start:"",dur:"",year:"",comp:"",compEdited:false,duty:"",site:"",siteOther:"",rotStart:"",ret:"",frozenSince:"",ok:false,done:null});
 let S;try{S={...blank(),...JSON.parse(localStorage.getItem(KEY)||"{}")}}catch(e){S=blank()}
+if(S.v!==2){S.step=0;S.v=2}if(!Array.isArray(S.family)||!S.family.length)S.family=blank().family;
 const FILES={};          // files never go to localStorage
 let touched=new Set();
 const save=()=>{try{const{done,...k}=S;localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
@@ -137,7 +217,19 @@ const RULES={
  cnic:v=>/^\d{5}-\d{7}-\d$/.test(v)||"CNIC must be 13 digits, e.g. 37405-1234567-1.",
  pmdc:v=>/^[0-9]{3,7}-?[A-Z]?$/i.test(v.trim())||"Enter your PMDC number, e.g. 93232-P.",
  mobile:v=>/^03\d{2}-\d{7}$/.test(v)||"Mobile must be 11 digits starting with 03, e.g. 0335-6072567.",
- email:v=>!v||/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)||"Check the email address.",
+ email:v=>/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)||"Enter a valid email address.",
+ dob:v=>{if(!v)return"Enter your date of birth.";const a=(Date.now()-new Date(v+"T00:00"))/(365.25*864e5);return a>=21&&a<=65||"Check your date of birth."},
+ marital:v=>!!v||"Choose your marital status.",
+ religion:v=>v.trim().length>=2||"Enter your religion.",
+ sect:v=>true,
+ passport:v=>!v.trim()||/^[A-Z0-9]{6,12}$/i.test(v.replace(/\s/g,""))||"Check the passport number (letters and digits only).",
+ otherNat:v=>true,
+ mobile2:v=>!v||/^03\d{2}-\d{7}$/.test(v)||"Second mobile must be 11 digits starting with 03.",
+ resNo:v=>v.replace(/\D/g,"").length>=7||"Enter a residence or guardian's phone number.",
+ curAddr:v=>v.trim().length>=10||"Enter your full current address.",
+ permAddr:v=>S.sameAddr||v.trim().length>=10||"Enter your permanent address as written on your CNIC.",
+ bank:v=>v.trim().length>=3||"Enter the name of the bank where your salary is paid.",
+ account:v=>v.replace(/[\s-]/g,"").length>=8||"Enter your account number or IBAN.",
  domicile:v=>v.trim().length>=2||"Enter your district of domicile.",
  program:v=>!!v||"Choose your programme.",
  spec:v=>!!v||"Choose your specialty.",
@@ -151,11 +243,15 @@ const RULES={
  ret:v=>{if(S.duty!=="Rotation")return true;if(!v)return"Enter your expected return date to RIC.";return!S.rotStart||v>S.rotStart||"Return must be after the rotation start."},
  frozenSince:v=>S.duty!=="Frozen"||!!v||"Enter the date your training was frozen."
 };
-const STEPF=[["name","father","cnic","pmdc","mobile","email","domicile"],["program","spec","sup","start","dur","comp"],["duty","site","rotStart","ret","frozenSince"],[],[]];
+const STEPF=[["name","father","dob","marital","cnic","religion","sect","domicile","pmdc","passport","otherNat"],["mobile","mobile2","email","resNo","curAddr","permAddr","bank","account"],[],["program","spec","sup","start","dur","comp"],["duty","site","rotStart","ret","frozenSince"],[],[]];
 const errOf=k=>{const r=RULES[k](S[k]);return r===true?"":r};
-const stepOk=i=>i===3?DOCS.every(d=>FILES[d.k]):STEPF[i].every(k=>!errOf(k));
+const famErr=(f,i)=>{if(!f.name.trim())return i===0?"Enter at least one family member.":"";if(!f.rel)return"Choose the relation.";if(f.cnic&&!/^\d{5}-\d{7}-\d$/.test(f.cnic))return"CNIC must be 13 digits.";if(f.age!==""&&!(+f.age>=0&&+f.age<=120))return"Check the age.";return""};
+const famOk=()=>S.family.some(f=>f.name.trim())&&S.family.every((f,i)=>!famErr(f,i)||(!f.name.trim()&&i>0));
+const stepOk=i=>i===DOCSTEP?docsNeeded().every(d=>FILES[d.k]):i===FAM?famOk():STEPF[i].every(k=>!errOf(k));
 const showErr=k=>touched.has(k)&&errOf(k);
 
+const sel=(k,label,opts,o={})=>`<label class="f"><span class="${o.opt?"":"req"}">${label}</span><select id="${k}" data-k="${k}" aria-invalid="${!!showErr(k)}"><option value="">Choose</option>${opts.map(x=>`<option ${x===S[k]?"selected":""}>${x}</option>`).join("")}</select><span class="err" id="${k}-e">${showErr(k)||""}</span></label>`;
+const area=(k,label,o={})=>`<label class="f"><span class="${o.opt?"":"req"}">${label}${o.hint?` <span class="hint">${o.hint}</span>`:""}</span><textarea id="${k}" data-k="${k}" rows="2" ${o.dis?"disabled":""} aria-invalid="${!!showErr(k)}" ${o.ph?`placeholder="${o.ph}"`:""}>${esc(S[k])}</textarea><span class="err" id="${k}-e">${showErr(k)||""}</span></label>`;
 const fld=(k,label,o={})=>`<label class="f"><span class="${o.opt?"":"req"}">${label}${o.hint?` <span class="hint">${o.hint}</span>`:""}</span>
 <input id="${k}" data-k="${k}" value="${esc(S[k])}" ${o.type?`type="${o.type}"`:""} ${o.mode?`inputmode="${o.mode}"`:""} ${o.ph?`placeholder="${o.ph}"`:""} ${o.ac?`autocomplete="${o.ac}"`:""} class="${o.mono?"mono":""}" aria-invalid="${!!showErr(k)}" aria-describedby="${k}-e">
 <span class="err" id="${k}-e">${showErr(k)||""}</span></label>`;
@@ -169,12 +265,35 @@ function autoFill(){if(S.start&&+S.dur){if(!S.compEdited)S.comp=iso(addYears(S.s
 const session=d=>(d.getMonth()<6?"Jan ":"Jul ")+String(d.getFullYear()).slice(2);
 
 /* ---- views ---- */
-function v0(){return`<section class="card"><h2>Personal details</h2><p class="lede">Write your name exactly as on your PMDC certificate. Do not add "Dr."</p>
+function v0(){return`<section class="card"><h2>Personal details</h2><p class="lede">Write your name exactly as on your PMDC certificate. Do not add "Dr." These details also fill your RIC bio data form.</p>
 ${fld("name","Full name",{ph:"e.g. Ayesha Javaid",ac:"name"})}
 ${fld("father","Father's name")}
+<div class="grid two">${fld("dob","Date of birth",{type:"date"})}${sel("marital","Marital status",BIO_MARITAL)}</div>
 <div class="grid two">${fld("cnic","CNIC",{mode:"numeric",ph:"37405-1234567-1",mono:1})}${fld("pmdc","PMDC number",{ph:"93232-P",mono:1})}</div>
-<div class="grid two">${fld("mobile","Mobile",{type:"tel",mode:"numeric",ph:"03xx-xxxxxxx",mono:1,ac:"tel"})}${fld("email","Email",{type:"email",opt:1,hint:"optional",ac:"email"})}</div>
+<div class="grid two">${fld("religion","Religion",{ph:"e.g. Islam"})}${fld("sect","Sect",{opt:1,hint:"optional"})}</div>
 ${fld("domicile","Domicile (district)",{ph:"e.g. Sargodha"})}
+<div class="grid two">${fld("passport","Passport number",{opt:1,hint:"if you have one",mono:1})}${fld("otherNat","Other nationality",{opt:1,hint:"if any"})}</div>
+</section>`}
+
+function v1c(){return`<section class="card"><h2>Contact, address and bank</h2>
+<div class="grid two">${fld("mobile","Mobile",{type:"tel",mode:"numeric",ph:"03xx-xxxxxxx",mono:1,ac:"tel",hint:"biometric-verified, on WhatsApp"})}${fld("mobile2","Second mobile",{type:"tel",mode:"numeric",ph:"03xx-xxxxxxx",mono:1,opt:1,hint:"optional"})}</div>
+<div class="grid two">${fld("email","Email",{type:"email",ac:"email"})}${fld("resNo","Residence or guardian's number",{type:"tel",mode:"numeric",mono:1})}</div>
+${area("curAddr","Current address",{ph:"House, street, area, city"})}
+<label class="check"><input type="checkbox" id="sameAddr" ${S.sameAddr?"checked":""}><span>My permanent address (as on my CNIC) is the same as my current address</span></label>
+${S.sameAddr?"":area("permAddr","Permanent address",{hint:"exactly as on your CNIC"})}
+<div class="grid two">${fld("bank","Bank name",{hint:"salary account",ph:"e.g. Bank of Punjab"})}${fld("account","Account number or IBAN",{mono:1,ph:"PK00 XXXX 0000 0000 0000 0000"})}</div>
+</section>`}
+
+function vFam(){const fe=touched.has("family");return`<section class="card"><h2>Family information</h2><p class="lede">Your parents, spouse and children (up to 10). Leave CNIC or passport blank if they do not have one.</p>
+${S.family.map((f,i)=>{const er=fe?famErr(f,i):"";return`<fieldset class="fam"><legend>Family member ${i+1}${i>0?` <button type="button" class="btn small" data-famdel="${i}" style="margin-left:8px">Remove</button>`:""}</legend>
+<div class="grid two"><label class="f"><span class="req">Name</span><input data-fam="${i}.name" value="${esc(f.name)}"></label>
+<label class="f"><span class="req">Relation</span><select data-fam="${i}.rel"><option value="">Choose</option>${BIO_REL.map(r=>`<option ${r===f.rel?"selected":""}>${r}</option>`).join("")}</select></label></div>
+<div class="grid three"><label class="f"><span>CNIC</span><input data-fam="${i}.cnic" class="mono" inputmode="numeric" placeholder="xxxxx-xxxxxxx-x" value="${esc(f.cnic)}"></label>
+<label class="f"><span>Age</span><input data-fam="${i}.age" inputmode="numeric" value="${esc(f.age)}"></label>
+<label class="f"><span>Passport no.</span><input data-fam="${i}.passport" class="mono" value="${esc(f.passport)}"></label></div>
+<label class="f"><span>Other nationality <span class="hint">if any</span></span><input data-fam="${i}.nat" value="${esc(f.nat)}"></label>
+<span class="err">${er}</span></fieldset>`}).join("")}
+${S.family.length<10?`<button type="button" class="btn" data-act="famadd" style="justify-self:start">Add family member</button>`:""}
 </section>`}
 
 function supOpts(){if(!S.spec||!S.program)return[];const fc=S.program==="FCPS";return SUP.filter(s=>s.s===S.spec&&(fc?s.c:s.u))}
@@ -215,12 +334,12 @@ ${f?`<span class="meta">${esc(f.name)} · ${(f.size/1024).toFixed(0)} KB</span>`
 <span class="err" id="e-${d.k}"></span>
 <div style="display:flex;gap:8px;flex-wrap:wrap"><label class="btn small" for="file-${d.k}">${f?"Replace":"Choose file or take photo"}</label>
 <input type="file" id="file-${d.k}" data-file="${d.k}" accept="${d.img?"image/jpeg,image/png,image/webp":"image/jpeg,image/png,image/webp,application/pdf"}"></div></div>`}
-function v3(){const n=DOCS.filter(d=>FILES[d.k]).length;return`<section class="card"><h2>Documents</h2>
-<p class="lede">Upload all four. Each file up to 5 MB. A clear phone photo is fine.</p>
-<div class="docs">${DOCS.map(docCard).join("")}</div>
-<div class="note ${n===4?"ok":"warn"}">${n} of 4 documents added.</div></section>`}
+function v3(){const need=docsNeeded(),n=need.filter(d=>FILES[d.k]).length;return`<section class="card"><h2>Documents</h2>
+<p class="lede">Upload all ${need.length}. Each file up to 5 MB. A clear phone photo is fine.${S.passport.trim()?"":" (A passport copy is asked for only if you gave a passport number.)"}</p>
+<div class="docs">${need.map(docCard).join("")}</div>
+<div class="note ${n===need.length?"ok":"warn"}">${n} of ${need.length} documents added.</div></section>`}
 
-function v4(){const miss=STEPS.slice(0,4).map((s,i)=>stepOk(i)?null:[s,i]).filter(Boolean);const sup=S.sup==="other"?S.supOther+" (not listed)":S.sup;
+function v4(){const miss=STEPS.slice(0,LAST).map((s,i)=>stepOk(i)?null:[s,i]).filter(Boolean);const sup=S.sup==="other"?S.supOther+" (not listed)":S.sup;
 return`<section class="card"><h2>Check and submit</h2>
 ${miss.length?`<div class="note warn">Still needed: ${miss.map(([s,i])=>`<button class="btn small" data-go="${i}" style="margin:4px 4px 0 0">${s}</button>`).join("")}</div>`:""}
 ${FILES.photo?`<img src="${FILES.photo.url}" alt="Your photo" style="width:84px;height:104px;object-fit:cover;border-radius:6px;border:1px solid var(--line)">`:""}
@@ -231,14 +350,22 @@ ${S.email?`<dt>Email</dt><dd>${esc(S.email)}</dd>`:""}<dt>Domicile</dt><dd>${esc
 <dt>Training</dt><dd>${S.start?dfmt(new Date(S.start+"T00:00")):"—"}${S.start&&+S.dur?" to "+dfmt(addYears(S.start,+S.dur)):""} (${S.dur||"—"} years)</dd>
 <dt>Expected completion</dt><dd>${S.comp?dfmt(new Date(S.comp+"T00:00")):"—"}</dd>
 <dt>Posting</dt><dd>${S.duty==="RIC"?"Posted at RIC":S.duty==="Rotation"?`On rotation at ${esc(S.site==="Other"?S.siteOther:(SITES.find(x=>x[0]===S.site)||["",""])[1])}${S.rotStart?" since "+dfmt(new Date(S.rotStart+"T00:00")):""}${S.ret?", returning "+dfmt(new Date(S.ret+"T00:00")):""}`:S.duty==="Frozen"?`Training frozen${S.frozenSince?" since "+dfmt(new Date(S.frozenSince+"T00:00")):""}`:"—"}</dd>
-<dt>Documents</dt><dd>${DOCS.filter(d=>FILES[d.k]).length} of 4</dd></dl>
-<label class="check"><input type="checkbox" id="ok" ${S.ok?"checked":""}><span>The information and documents I have given are correct. I will inform the DME office of any change in my training, rotation or contact details.</span></label>
+<dt>Date of birth</dt><dd>${S.dob?dfmt(new Date(S.dob+"T00:00")):"—"}</dd><dt>Marital status</dt><dd>${esc(S.marital)||"—"}</dd>
+<dt>Religion</dt><dd>${esc(S.religion)||"—"}${S.sect?" ("+esc(S.sect)+")":""}</dd>${S.passport?`<dt>Passport</dt><dd>${esc(S.passport.toUpperCase())}</dd>`:""}${S.otherNat?`<dt>Other nationality</dt><dd>${esc(S.otherNat)}</dd>`:""}
+${S.mobile2?`<dt>Second mobile</dt><dd>${esc(S.mobile2)}</dd>`:""}<dt>Residence / guardian no.</dt><dd>${esc(S.resNo)||"—"}</dd>
+<dt>Current address</dt><dd>${esc(S.curAddr)||"—"}</dd><dt>Permanent address</dt><dd>${S.sameAddr?"Same as current":esc(S.permAddr)||"—"}</dd>
+<dt>Salary account</dt><dd>${esc(S.bank)||"—"}${S.account?", "+esc(S.account):""}</dd>
+<dt>Family</dt><dd>${S.family.filter(f=>f.name.trim()).map(f=>esc(f.name)+" ("+esc(f.rel)+(f.age?", "+esc(f.age):"")+")").join("<br>")||"—"}</dd>
+<dt>Documents</dt><dd>${docsNeeded().filter(d=>FILES[d.k]).length} of ${docsNeeded().length}</dd></dl>
+<label class="check"><input type="checkbox" id="ok" ${S.ok?"checked":""}><span>I hereby undertake that I have read the above information (provided by me) and I will be responsible if it is declared false or fake at any stage. I will inform the DME office of any change in my training, rotation or contact details.</span></label>
 <button class="btn primary" data-act="submit" ${miss.length||!S.ok?"disabled":""} style="justify-self:start">Submit registration</button></section>`}
 
 function vDone(){return`<section class="card"><h2>Registration received</h2>
 <p class="lede">Thank you, Dr. ${esc(S.name)}. The DME office will verify your details and documents.</p>
 <div><span class="hint">${LIVE?"Your RIC PGT ID (confirmed once the DME office verifies your registration)":"Your reference"}</span><br><span class="ref">${esc(S.done.ref)}</span></div>
 <span class="hint">Submitted ${esc(S.done.at)}. Keep this reference; quote it if you contact the DME office.</span>
+<div class="note ok" style="display:grid;gap:8px"><b>Your bio data form is ready.</b><span>Download it, print it, sign it and hand it to the DME office with your documents. All your details are already filled in.</span>
+<button class="btn primary" data-act="biopdf" style="justify-self:start">Download bio data form (PDF)</button><span class="hint" id="bioerr"></span></div>
 <ol class="steps"><li>The DME office checks your details against your documents.</li><li>Once verified, you get your RIC PGT number.</li><li>If anything needs correcting, the office will contact you on ${esc(S.mobile)}.</li></ol>
 ${LIVE?"":`<div class="note warn">Prototype: nothing was sent. In the live version this goes into the DME app's "Pending verification" list.</div>`}
 <button class="btn" data-act="reset" style="justify-self:start">Start a new registration</button></section>`}
@@ -255,28 +382,37 @@ if(LIVE)sbReady().then(sb=>sb.rpc("dme_public_lists")).then(({data})=>{if(!data)
 async function liveSubmit(b){b.disabled=true;const old=b.textContent;b.textContent="Uploading documents…";
  const fail=m=>{b.disabled=false;b.textContent=old;let el=document.getElementById("suberr");if(!el){el=document.createElement("p");el.id="suberr";el.className="note warn";b.after(el)}el.textContent=m};
  try{const sb=await sbReady();const folder="pgt/"+Date.now()+"-"+Math.random().toString(36).slice(2,8);const docs={};
-  for(const d of DOCS){const f=FILES[d.k];if(!f||!f.file)return fail("Attach the "+d.l.toLowerCase()+" again (files are not kept if the page was reloaded).");
+  for(const d of docsNeeded()){const f=FILES[d.k];if(!f||!f.file)return fail("Attach the "+d.l.toLowerCase()+" again (files are not kept if the page was reloaded).");
    const ext=(f.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"");const path=`${folder}/${d.k}.${ext}`;
    const{error}=await sb.storage.from("dme-uploads").upload(path,f.file,{contentType:f.type||undefined});if(error)return fail("A document could not be uploaded. Check the connection and try again.");docs[d.k]=path}
-  b.textContent="Sending…";const p={...S,docs,sup:S.sup==="other"?"":S.sup,supOther:S.sup==="other"?S.supOther:""};delete p.done;delete p.step;delete p.ok;
+  b.textContent="Sending…";const p={...S,docs,sup:S.sup==="other"?"":S.sup,supOther:S.sup==="other"?S.supOther:"",bio:bioOf()};delete p.done;delete p.step;delete p.ok;delete p.family;
   const{data,error}=await sb.rpc("dme_submit_pgt",{p});if(error||!data)return fail("Could not send. Check the connection and try again.");
   if(data.error)return fail(data.error==="duplicate"?"A registration with this CNIC already exists. Contact the DME office.":"Some details are missing or not valid. Check each step.");
   S.done={ref:data.ref,at:new Date().toLocaleString("en-GB",{dateStyle:"medium",timeStyle:"short"})};save();render()}catch(e){fail("Could not send. Check the connection and try again.")}}
-const V=[v0,v1,v2,v3,v4];
+function bioOf(){return{dob:S.dob,marital:S.marital,religion:S.religion.trim(),sect:S.sect.trim(),passport:S.passport.replace(/\s/g,"").toUpperCase(),otherNat:S.otherNat.trim(),resNo:S.resNo.trim(),
+ curAddr:S.curAddr.trim(),permAddr:(S.sameAddr?S.curAddr:S.permAddr).trim(),bank:S.bank.trim(),account:S.account.trim(),family:S.family.filter(f=>f.name.trim()).map(f=>({name:f.name.trim(),rel:f.rel,cnic:f.cnic,passport:f.passport.trim().toUpperCase(),age:f.age===""?"":+f.age,nat:f.nat.trim()}))}}
+async function bioDownload(b){const er=document.getElementById("bioerr");b.disabled=true;const t=b.textContent;b.textContent="Preparing…";
+ try{const ph=FILES.photo?.file?await bioPhotoData(FILES.photo.file):null;const r={name:S.name,father:S.father,cnic:S.cnic,domicile:S.domicile,mobile:S.mobile,mobile2:S.mobile2,email:S.email,bio:bioOf()};
+  const doc=await bioPdf(r,ph,{ref:S.done&&S.done.ref,at:S.done&&S.done.at});doc.save(bioFileName(r));er.textContent=ph?"":"Your photo was not added because the page was reloaded; paste a photo in the box after printing."}
+ catch(e){er.textContent=e.message||"Could not make the PDF."}b.disabled=false;b.textContent=t}
+const V=[v0,v1c,vFam,v1,v2,v3,v4];
 function render(){
  document.getElementById("rail").innerHTML=STEPS.map((s,i)=>`<li><button data-go="${i}" class="${i<S.step&&stepOk(i)?"done":""}" ${i===S.step&&!S.done?'aria-current="step"':""}>${s}</button></li>`).join("");
  document.getElementById("app").innerHTML=S.done?vDone():V[S.step]();
  const b=document.getElementById("back"),n=document.getElementById("next");
- b.disabled=S.step===0||!!S.done;n.hidden=S.step===4||!!S.done;n.textContent=S.step===3?"Review":"Next";
+ b.disabled=S.step===0||!!S.done;n.hidden=S.step===LAST||!!S.done;n.textContent=S.step===DOCSTEP?"Review":"Next";
  window.scrollTo(0,0);
 }
 const app=document.body;
-app.addEventListener("input",e=>{const k=e.target.dataset.k;if(!k||e.target.tagName==="SELECT")return;let v=e.target.value;
- if(k==="cnic"){v=fmtCnic(v);e.target.value=v}if(k==="mobile"){v=fmtMob(v);e.target.value=v}
+app.addEventListener("input",e=>{const fm=e.target.dataset.fam;if(fm&&e.target.tagName!=="SELECT"){const[i,f]=fm.split(".");let v=e.target.value;if(f==="cnic"){v=fmtCnic(v);e.target.value=v}if(f==="age"){v=v.replace(/\D/g,"").slice(0,3);e.target.value=v}S.family[+i][f]=v;save();return}
+ const k=e.target.dataset.k;if(!k||e.target.tagName==="SELECT")return;let v=e.target.value;
+ if(k==="cnic"){v=fmtCnic(v);e.target.value=v}if(k==="mobile"||k==="mobile2"){v=fmtMob(v);e.target.value=v}
  S[k]=v;save();if(touched.has(k)){const er=errOf(k);e.target.setAttribute("aria-invalid",!!er);document.getElementById(k+"-e").textContent=er}});
 app.addEventListener("focusout",e=>{const k=e.target.dataset.k;if(!k||!RULES[k])return;touched.add(k);const er=errOf(k);e.target.setAttribute("aria-invalid",!!er);const el=document.getElementById(k+"-e");if(el)el.textContent=er});
 app.addEventListener("change",e=>{const t=e.target;
  if(t.id==="ok"){S.ok=t.checked;save();render();return}
+ if(t.id==="sameAddr"){S.sameAddr=t.checked;save();const y=window.scrollY;render();window.scrollTo(0,y);return}
+ if(t.dataset.fam&&t.tagName==="SELECT"){const[i,f]=t.dataset.fam.split(".");S.family[+i][f]=t.value;save();return}
  if(t.dataset.file){const f=t.files[0],k=t.dataset.file,er=document.getElementById("e-"+k);if(!f)return;
   if(f.size>MAX){er.textContent=`This file is ${(f.size/1048576).toFixed(1)} MB. Use a file under 5 MB.`;return}
   if(!/^(image\/(jpeg|png|webp)|application\/pdf)$/.test(f.type)||(k==="photo"&&!f.type.startsWith("image/"))){er.textContent=k==="photo"?"Use a JPG or PNG photo.":"Use an image (JPG, PNG) or a PDF.";return}
@@ -292,12 +428,15 @@ app.addEventListener("change",e=>{const t=e.target;
 app.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
  if(b.dataset.go!=null){S.step=+b.dataset.go;save();render();return}
  if(b.dataset.prog){S.program=b.dataset.prog;S.sup="";if(S.spec&&DUR[S.spec]?.[S.program])S.dur=String(DUR[S.spec][S.program]);touched.add("program");autoFill();save();const y=window.scrollY;render();window.scrollTo(0,y);return}
+ if(b.dataset.act==="famadd"){S.family.push({name:"",rel:"",cnic:"",passport:"",age:"",nat:""});save();const y=window.scrollY;render();window.scrollTo(0,y);return}
+ if(b.dataset.famdel!=null){S.family.splice(+b.dataset.famdel,1);save();const y=window.scrollY;render();window.scrollTo(0,y);return}
+ if(b.dataset.act==="biopdf")return bioDownload(b);
  if(b.dataset.duty){S.duty=b.dataset.duty;touched.add("duty");save();const y=window.scrollY;render();window.scrollTo(0,y);return}
  if(b.dataset.act==="submit"){if(LIVE)return liveSubmit(b);S.done={ref:"REG-"+Math.random().toString(16).slice(2,10).toUpperCase(),at:new Date().toLocaleString("en-GB",{dateStyle:"medium",timeStyle:"short"})};save();render();return}
  if(b.dataset.act==="reset"){S=blank();for(const k in FILES)delete FILES[k];touched=new Set();save();render()}});
 document.getElementById("back").onclick=()=>{if(S.step>0){S.step--;save();render()}};
-document.getElementById("next").onclick=()=>{STEPF[S.step].forEach(k=>touched.add(k));
- if(!stepOk(S.step)&&S.step<3){render();const f=document.querySelector('[aria-invalid="true"]');if(f){f.focus();f.scrollIntoView({block:"center"})}return}
+document.getElementById("next").onclick=()=>{STEPF[S.step].forEach(k=>touched.add(k));if(S.step===FAM)touched.add("family");
+ if(!stepOk(S.step)&&S.step<DOCSTEP){render();const f=document.querySelector('[aria-invalid="true"]');if(f){f.focus();f.scrollIntoView({block:"center"})}return}
  S.step++;save();render()};
 render();
 </script>
