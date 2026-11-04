@@ -1,6 +1,6 @@
 // RIC DME Office: lets the app install and open quickly. Records are never cached here;
 // they always come live from Supabase.
-const V="dme-v14";
+const V="dme-v15";
 const SHELL=["./index.html","./config.js","./register.html","./manifest.webmanifest","./icon-192.png","./icon-512.png"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(V).then(c=>Promise.all(SHELL.map(u=>c.add(u).catch(()=>{})))).then(()=>self.skipWaiting()))});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!==V).map(x=>caches.delete(x)))).then(()=>self.clients.claim()))});

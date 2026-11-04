@@ -687,7 +687,7 @@ function vPgt(){
    <div class="meta"><span>${esc(p.spec)}</span><span>${esc(p.program)} · ${c.body}</span><span>${esc(ricLabel(p))}</span><span>Induction ${p.start?sess(p.start):"—"}</span></div>
    <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">${p.reg==="Pending"?'<span class="pill p-pend">Pending verification</span>':""}${phasePill(c)}${c.status!=="Active"&&!c.departed&&c.pk!=="pause"?`<span class="pill p-done">${c.status}</span>`:""}</div></div>
   <div class="actions">${p.reg==="Pending"?`<button class="btn primary" data-act="verify" data-id="${p.id}">Verify</button><button class="btn danger" data-act="reject" data-id="${p.id}">Reject</button>`:`
-   <button class="btn" data-act="leave" data-id="${p.id}">Add leave</button><button class="btn" data-act="status" data-id="${p.id}">Change status</button><button class="btn" data-act="rot" data-id="${p.id}">Add rotation</button><button class="btn" data-act="sup" data-id="${p.id}">Change supervisor</button>`}${canConduct()&&p.reg==="Verified"?`<button class="btn" data-act="cd-add" data-id="${p.id}">Add conduct record</button>`:""}<button class="btn" data-act="editpgt" data-id="${p.id}">Edit details</button></div>
+   <button class="btn" data-act="leave" data-id="${p.id}">Add leave</button><button class="btn" data-act="status" data-id="${p.id}">Change status</button><button class="btn" data-act="rot" data-id="${p.id}">Add rotation</button><button class="btn" data-act="sup" data-id="${p.id}">Change supervisor</button>`}${canConduct()&&p.reg==="Verified"?`<button class="btn" data-act="cd-add" data-id="${p.id}">Add conduct record</button>`:""}<button class="btn" data-act="editpgt" data-id="${p.id}">Edit details</button>${isAdmin()?`<button class="btn danger" data-act="pgt-remove" data-id="${p.id}">Remove from register</button>`:""}</div>
  </div></div>
  ${f.length?`<div class="flag">${f.map(esc).join("<br>")}</div>`:""}
  ${pgtExamPanel(p)}${pgtConductPanel(p)}
@@ -728,12 +728,12 @@ function nextCode(p){if(!p.start)return"—";const d=P(p.start),yy=String(d.getF
 
 /* ---------- FACULTY ---------- */
 function vFaculty(){
- const all=DB.faculty.map(f=>[f,facCur(f)]);
+ const former=DB.faculty.filter(f=>f.active===false).length;const all=DB.faculty.filter(f=>UI.fformer?f.active===false:f.active!==false).map(f=>[f,facCur(f)]);
  const attn=([f,c])=>[c.pmdc,f.cpsp?c.cpsp:null,f.uhs?c.uhs:null].some(s=>s==="Expired"||s==="Expiring Soon");
  const rows=all.filter(([f,c])=>(!UI.fq||(f.name+" "+f.pmdc).toLowerCase().includes(UI.fq.toLowerCase()))&&(!UI.fspec||f.spec===UI.fspec)&&(UI.fcred!=="attn"||attn([f,c]))&&(UI.fcred!=="sup"||f.cpsp||f.uhs)&&(UI.fcred!=="over"||c.n>=DB.settings.overload)&&(UI.fcred!=="zero"||((f.cpsp||f.uhs)&&c.n===0)))
   .sort((a,b)=>specIdx(a[0].spec)-specIdx(b[0].spec)||DESIG.indexOf(a[0].desig)-DESIG.indexOf(b[0].desig)||a[0].name.localeCompare(b[0].name));
  const cnt=k=>all.filter(x=>k==="attn"?attn(x):k==="sup"?x[0].cpsp||x[0].uhs:k==="over"?x[1].n>=DB.settings.overload:k==="zero"?(x[0].cpsp||x[0].uhs)&&x[1].n===0:true).length;
- LAST.faculty=rows;return`<div class="head"><div><h2>Faculty directory</h2><p>${rows.length} of ${all.length} shown</p></div><div class="actions">${waBtn("faculty","WhatsApp these")}${xbtn("faculty")}<button class="btn primary" data-act="addfac">Add faculty member</button></div></div>
+ LAST.faculty=rows;return`<div class="head"><div><h2>Faculty directory</h2><p>${UI.fformer?"<b>Former faculty (left RIC)</b> · ":""}${rows.length} of ${all.length} shown${former||UI.fformer?` · <button class="btn link" data-act="fac-former" style="padding:0">${UI.fformer?"Back to current faculty":`Former faculty (left RIC): ${former}`}</button>`:""}</p></div><div class="actions">${waBtn("faculty","WhatsApp these")}${xbtn("faculty")}<button class="btn primary" data-act="addfac">Add faculty member</button></div></div>
  <div class="panel" style="display:grid;gap:10px"><div class="toolbar"><input type="search" id="fq" placeholder="Search name or PMDC number" value="${esc(UI.fq)}" aria-label="Search faculty">
   <select id="ffspec" aria-label="Department"><option value="">All departments</option>${specNames().map(s=>`<option ${UI.fspec===s?"selected":""}>${s}</option>`).join("")}</select></div>
   <div class="chips">${[["","Everyone"],["sup","Approved supervisors"],["attn","Credentials expiring or expired"],["over",`${DB.settings.overload}+ PGTs`],["zero","Supervisors with no PGTs"]].map(([k,l])=>`<button class="chip" data-fcred="${k}" aria-pressed="${UI.fcred===k}">${l}<span class="c">${cnt(k)}</span></button>`).join("")}</div></div>
@@ -746,8 +746,8 @@ function vFac(){
  return`<div><a href="#faculty" class="btn link" style="padding-left:0">← All faculty</a></div>
  <div class="panel"><div class="prof"><div class="avatar" aria-hidden="true">${esc(f.name.split(" ").map(w=>w[0]).slice(0,2).join(""))}</div>
   <div class="who"><h2>${esc(facName(f))}</h2><div class="meta"><span>${esc(f.desig)}</span><span>${esc(f.spec)}${f.unit?" · "+esc(f.unit):""}</span><span>Supervisor: ${c.type}</span></div></div>
-  <div class="actions"><button class="btn primary" data-act="cr-pick" data-id="${f.id}">Update credentials</button><button class="btn" data-act="addcred" data-id="${f.id}">Add certificate</button><button class="btn" data-act="editfac" data-id="${f.id}">Edit details</button></div></div></div>
- ${f.notes?`<div class="flag info">${esc(f.notes)}</div>`:""}
+  <div class="actions"><button class="btn primary" data-act="cr-pick" data-id="${f.id}">Update credentials</button><button class="btn" data-act="addcred" data-id="${f.id}">Add certificate</button><button class="btn" data-act="editfac" data-id="${f.id}">Edit details</button>${f.active===false?`<button class="btn" data-act="fac-back" data-id="${f.id}">Back at RIC</button>`:`<button class="btn" data-act="fac-left" data-id="${f.id}">Mark as left RIC</button>`}${isAdmin()?`<button class="btn danger" data-act="fac-remove" data-id="${f.id}">Remove</button>`:""}</div></div></div>
+ ${facStatusHtml(f)}${f.notes?`<div class="flag info">${esc(f.notes)}</div>`:""}
  <div class="cols two">
   <div class="panel"><h3>Credentials</h3><dl class="kv">
    ${CRED.map(t=>{const x=c.cr[t];const s=t===CRED[0]?c.pmdc:t===CRED[1]?c.cpsp:c.uhs;return`<dt>${t.replace(" Supervisory Certificate"," supervisory").replace(" Faculty Registration"," faculty reg.")}</dt><dd>${credPill(s)}${x?`<div class="code" style="margin-top:3px">Issued ${fd(x.issue)} · expires ${fd(x.expiry)}</div>`:""}</dd>`}).join("")}
@@ -803,7 +803,7 @@ function sheetRot(p,r){openSheet(r?"Edit rotation":`Add rotation · Dr. ${p.name
  const s=fv("start"),e=fv("ret");if(!s)return fail("Enter the start date.");if(e&&e<s)return fail("The return date is before the start date.");
  const rec={pid:p.id,site:fv("site"),start:s,ret:e||null,notes:fv("notes"),by:ME};
  if(r){Object.assign(r,rec);log(`Edited rotation for Dr. ${p.name}`,"pgt-"+p.id)}else{DB.rots.push({id:uid("R"),...rec});log(`Added rotation for Dr. ${p.name} at ${rec.site}: ${fd(s)} – ${fd(e)}`,"pgt-"+p.id)}toast("Rotation saved");return true})}
-function sheetSup(p){const c=CUR.get(p.id);const pool=DB.faculty.filter(f=>f.spec===p.spec&&(p.program==="FCPS"?f.cpsp:f.uhs)),rest=DB.faculty.filter(f=>!pool.includes(f));
+function sheetSup(p){const c=CUR.get(p.id);const pool=DB.faculty.filter(f=>f.active!==false&&f.spec===p.spec&&(p.program==="FCPS"?f.cpsp:f.uhs)),rest=DB.faculty.filter(f=>f.active!==false&&!pool.includes(f));
  openSheet(`Change supervisor · Dr. ${p.name}`,`<p style="margin:0">Current: <b>${esc(facName(c.sup))}</b></p>
  <label class="f">New supervisor<select name="fid"><optgroup label="${p.program==="FCPS"?"CPSP":"UHS"}-approved, ${esc(p.spec)}">${opt(pool.map(f=>[f.id,facName(f)]))}</optgroup><optgroup label="Other faculty">${opt(rest.map(f=>[f.id,facName(f)+" · "+f.spec]))}</optgroup></select></label>
  <label class="f">From<input type="date" name="from" value="${iso(TODAY)}"></label>`,()=>{
@@ -1233,7 +1233,7 @@ function vSettings(){const S=DB.settings;const num=(k,l)=>`<label class="f">${l}
    ${DB.leaveTypes.map((t,i)=>`<tr><td>${esc(t.name)}</td><td class="num">${DB.leaves.filter(l=>l.type===t.name).length}</td><td><span class="pill ${t.active?"p-ric":"p-done"}">${t.active?"In use":"Retired"}</span></td><td><button class="btn link" data-act="lt-edit" data-i="${i}">Rename</button><button class="btn link" data-act="lt-toggle" data-i="${i}">${t.active?"Retire":"Restore"}</button></td></tr>`).join("")}
    </tbody></table></div><p class="code" style="padding:0 16px 14px;margin:8px 0 0">Retired items stay on old records but are not offered for new entries.</p></div>
  </div>
- ${exitTypesPanel()}${contactImportPanel()}${updPanel()}
+ ${exitTypesPanel()}${contactImportPanel()}${updPanel()}${binPanel()}
  <div class="cols two">
   <div class="panel" id="set-units" style="display:grid;gap:10px"><h3 style="margin:0">Units</h3><div class="chips">${DB.units.map(u=>{const n=DB.faculty.filter(f=>f.unit===u).length;return`<span class="chip">${esc(u)}<span class="c">${n} faculty</span><button class="btn link" style="padding:0" data-act="unit-rm" data-v="${esc(u)}" aria-label="Remove ${esc(u)}">✕</button></span>`}).join("")}</div>
    <div class="toolbar"><input id="newunit" placeholder="e.g. Unit 5" aria-label="New unit"><button class="btn small" data-act="unit-add">Add unit</button></div></div>
@@ -2080,7 +2080,7 @@ EXPORTS.evalbeeall=id=>{const x=DB.exams.find(e=>e.id===id);return{file:`Evalbee
 /* ---------- supervisors by department ---------- */
 UI.sq="";UI.sdept="";UI.stype="";UI.sload="";UI.sprog="";
 function supData(){const A=verified().filter(p=>CUR.get(p.id).active);
- const sups=DB.faculty.filter(f=>f.cpsp||f.uhs||A.some(p=>CUR.get(p.id).sup?.id===f.id)).map(f=>{const ps=A.filter(p=>CUR.get(p.id).sup?.id===f.id&&(!UI.sprog||(UI.sprog==="CPSP"?p.program==="FCPS":p.program!=="FCPS")));
+ const sups=DB.faculty.filter(f=>(f.active!==false&&(f.cpsp||f.uhs))||A.some(p=>CUR.get(p.id).sup?.id===f.id)).map(f=>{const ps=A.filter(p=>CUR.get(p.id).sup?.id===f.id&&(!UI.sprog||(UI.sprog==="CPSP"?p.program==="FCPS":p.program!=="FCPS")));
   return{f,type:f.cpsp&&f.uhs?"CPSP & UHS":f.cpsp?"CPSP":f.uhs?"UHS":"Not approved",cpsp:ps.filter(p=>p.program==="FCPS").sort((a,b)=>a.name.localeCompare(b.name)),uhs:ps.filter(p=>p.program!=="FCPS").sort((a,b)=>a.name.localeCompare(b.name))}});
  const none=A.filter(p=>!CUR.get(p.id).sup);
  return{A,sups,none}}
@@ -2685,7 +2685,9 @@ var SYNC={on:false};
 const SUPA=(()=>{let c=window.DME_SUPABASE||{};if(!(c.url&&(c.anonKey||c.key))){try{const l=JSON.parse(localStorage.getItem("dme-supabase")||"null");if(l&&l.url&&l.anonKey)c=l}catch(e){}}
  const url=String(c.url||"").trim().replace(/\/+$/,"").replace(/\/(rest|auth)\/v1$/,""),key=String(c.anonKey||c.key||"").trim();return url&&key?{url,anonKey:key}:null})();
 const LIVE=!!SUPA;
-const ARR_COLLS=["pgts","faculty","creds","status","rots","sups","leaves","workshops","tasks","exams","orients","conduct","audit"];
+/* stable JSON: the database returns object keys in its own order, so compare with keys sorted */
+const sj=v=>JSON.stringify(v,(k,x)=>x&&typeof x==="object"&&!Array.isArray(x)?Object.keys(x).sort().reduce((o,q)=>(o[q]=x[q],o),{}):x);
+const ARR_COLLS=["pgts","faculty","creds","status","rots","sups","leaves","workshops","tasks","exams","orients","conduct","audit","bin"];
 const SUPA_JS="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js";
 const pubBase=()=>location.origin+location.pathname;
 function pubLink(kind,w){if(LIVE)return`${pubBase()}?${kind}=${encodeURIComponent(w.id)}`;return`https://dme.ric.example/${{reg:"register",fb:"feedback",prop:"proposal"}[kind]}/${w.id.toLowerCase()}`}
@@ -2791,7 +2793,7 @@ function dbRows(){const out=[];Object.keys(DB).forEach(k=>{const v=DB[k];
  if(ARR_COLLS.includes(k)){(v||[]).forEach((x,i)=>{if(!x.id)x.id=uid(k==="audit"?"A":"X");out.push({coll:k,id:String(x.id),ord:k==="audit"?0:i,data:x})})}
  else out.push({coll:"meta",id:k,ord:0,data:v})});return out}
 function rowsToDb(rows){const d={};ARR_COLLS.forEach(k=>d[k]=[]);const ord={};SYNC.snap={};
- rows.forEach(r=>{if(r.deleted)return;SYNC.snap[r.coll+"|"+r.id]=JSON.stringify([r.ord,r.data]);if(r.coll==="meta")d[r.id]=r.data;else{(d[r.coll]=d[r.coll]||[]).push(r.data);ord[r.coll+"|"+r.id]=r.ord}});
+ rows.forEach(r=>{if(r.deleted)return;SYNC.snap[r.coll+"|"+r.id]=sj([r.ord,r.data]);if(r.coll==="meta")d[r.id]=r.data;else{(d[r.coll]=d[r.coll]||[]).push(r.data);ord[r.coll+"|"+r.id]=r.ord}});
  ARR_COLLS.forEach(k=>{if(k==="audit")d.audit.sort((a,b)=>(b.at||"")<(a.at||"")?-1:1);else d[k].sort((a,b)=>(ord[k+"|"+a.id]||0)-(ord[k+"|"+b.id]||0))});
  SYNC.last=rows.reduce((m,r)=>r.updated_at>m?r.updated_at:m,"");return d}
 async function pullAll(){const all=[];for(let from=0;;from+=1000){const{data,error}=await SYNC.sb.from("dme_records").select("coll,id,ord,data,deleted,updated_at").order("coll").order("id").range(from,from+999);if(error)throw error;all.push(...data);if(data.length<1000)break}return all}
@@ -2799,7 +2801,7 @@ async function pullAll(){const all=[];for(let from=0;;from+=1000){const{data,err
 /* ---------- saving ---------- */
 SYNC.dirty=()=>{SYNC.pending=true;syncBadge();clearTimeout(SYNC.t);SYNC.t=setTimeout(()=>syncPush(),700)};
 async function syncPush(all,prog){if(SYNC.busy){SYNC.again=true;return}SYNC.busy=true;clearTimeout(SYNC.t);
- try{const rows=dbRows(),seen=new Set(),up=[];rows.forEach(r=>{const k=r.coll+"|"+r.id;seen.add(k);const j=JSON.stringify([r.ord,r.data]);if(all||SYNC.snap[k]!==j)up.push({...r,deleted:false,_j:j})});
+ try{const rows=dbRows(),seen=new Set(),up=[];rows.forEach(r=>{const k=r.coll+"|"+r.id;seen.add(k);const j=sj([r.ord,r.data]);if(all||SYNC.snap[k]!==j)up.push({...r,deleted:false,_j:j})});
   Object.keys(SYNC.snap).forEach(k=>{if(!seen.has(k)){const[coll,...id]=k.split("|");up.push({coll,id:id.join("|"),ord:0,data:null,deleted:true,_j:null})}});
   for(let i=0;i<up.length;i+=200){const part=up.slice(i,i+200);if(prog)prog(Math.min(i+200,up.length),up.length);
    const{error}=await SYNC.sb.from("dme_records").upsert(part.map(({_j,...r})=>r),{onConflict:"coll,id"});if(error)throw error;
@@ -2815,8 +2817,8 @@ async function syncPull(){if(!SYNC.on||SYNC.busy||document.hidden)return;
  const since=SYNC.last?new Date(new Date(SYNC.last).getTime()-15000).toISOString():"1970-01-01";
  const{data,error}=await SYNC.sb.from("dme_records").select("coll,id,ord,data,deleted,updated_at").gt("updated_at",since).order("updated_at").limit(1000);
  if(error){SYNC.err=error.message;syncBadge();return}if(SYNC.err&&SYNC.err!=="view"&&!SYNC.pending){SYNC.err=null;syncBadge()}
- const local=new Map(dbRows().map(r=>[r.coll+"|"+r.id,JSON.stringify([r.ord,r.data])]));let changed=0;
- data.forEach(r=>{if(r.updated_at>SYNC.last)SYNC.last=r.updated_at;const k=r.coll+"|"+r.id,j=r.deleted?null:JSON.stringify([r.ord,r.data]);
+ const local=new Map(dbRows().map(r=>[r.coll+"|"+r.id,sj([r.ord,r.data])]));let changed=0;
+ data.forEach(r=>{if(r.updated_at>SYNC.last)SYNC.last=r.updated_at;const k=r.coll+"|"+r.id,j=r.deleted?null:sj([r.ord,r.data]);
   if(j===SYNC.snap[k]||(j===null&&!(k in SYNC.snap)))return;
   if(local.has(k)&&local.get(k)!==SYNC.snap[k])return; /* you changed this record and it is about to be saved */
   applyRow(r);if(j===null)delete SYNC.snap[k];else SYNC.snap[k]=j;changed++});
@@ -2975,8 +2977,8 @@ function merge3(base,mine,theirs){if(jeq(mine,base))return theirs;if(jeq(theirs,
 async function reconcile(){const since=SYNC.last?new Date(new Date(SYNC.last).getTime()-15000).toISOString():"1970-01-01";
  const{data,error}=await SYNC.sb.from("dme_records").select("coll,id,ord,data,deleted,updated_at").gt("updated_at",since).order("updated_at").limit(1000);
  if(error)throw error;const local=new Map(dbRows().map(r=>[r.coll+"|"+r.id,r]));let changed=0,merged=0;
- data.forEach(r=>{if(r.updated_at>SYNC.last)SYNC.last=r.updated_at;const k=r.coll+"|"+r.id,j=r.deleted?null:JSON.stringify([r.ord,r.data]);
-  if(j===SYNC.snap[k]||(j===null&&!(k in SYNC.snap)))return;const L=local.get(k),lj=L?JSON.stringify([L.ord,L.data]):null;
+ data.forEach(r=>{if(r.updated_at>SYNC.last)SYNC.last=r.updated_at;const k=r.coll+"|"+r.id,j=r.deleted?null:sj([r.ord,r.data]);
+  if(j===SYNC.snap[k]||(j===null&&!(k in SYNC.snap)))return;const L=local.get(k),lj=L?sj([L.ord,L.data]):null;
   if(lj===SYNC.snap[k]||(lj===null&&!(k in SYNC.snap))){applyRow(r);if(j===null)delete SYNC.snap[k];else SYNC.snap[k]=j;changed++;return}
   if(r.deleted){return} /* you edited something another person deleted: your version is kept and saved again */
   if(!L){applyRow(r);SYNC.snap[k]=j;changed++;return}
@@ -2992,7 +2994,7 @@ async function syncPull(){if(!SYNC.on||SYNC.busy||document.hidden)return;
  if(busy){SYNC.stale=true;syncBadge()}else render()}
 async function syncPush(all,prog){if(SYNC.busy){SYNC.again=true;return}SYNC.busy=true;clearTimeout(SYNC.t);
  try{if(!all){const r=await reconcile();if(r.changed&&!document.getElementById("overlay").innerHTML&&!(document.activeElement&&document.activeElement.closest&&document.activeElement.closest("main input,main textarea,main select")))setTimeout(render,0)}
-  const rows=dbRows(),seen=new Set(),up=[];rows.forEach(r=>{const k=r.coll+"|"+r.id;seen.add(k);const j=JSON.stringify([r.ord,r.data]);if(all||SYNC.snap[k]!==j)up.push({...r,deleted:false,_j:j})});
+  const rows=dbRows(),seen=new Set(),up=[];rows.forEach(r=>{const k=r.coll+"|"+r.id;seen.add(k);const j=sj([r.ord,r.data]);if(all||SYNC.snap[k]!==j)up.push({...r,deleted:false,_j:j})});
   Object.keys(SYNC.snap).forEach(k=>{if(!seen.has(k)){const[coll,...id]=k.split("|");if(coll==="conduct"&&!canConduct())return;up.push({coll,id:id.join("|"),ord:0,data:null,deleted:true,_j:null})}});
   for(let i=0;i<up.length;i+=200){const part=up.slice(i,i+200);if(prog)prog(Math.min(i+200,up.length),up.length);
    const{error}=await SYNC.sb.from("dme_records").upsert(part.map(({_j,...r})=>r),{onConflict:"coll,id"});if(error)throw error;
@@ -3135,6 +3137,7 @@ function dcIssues(){const out=[];
   if(c.pk==="rot"&&(!rot||!rot.site||!DB.sites.some(s=>s.short===rot.site)))add("rotsite","On rotation, hospital not recorded");
   if(c.rotational&&rot&&rot.start&&!rot.ret&&P(rot.start)<=TODAY)add("rotret","Rotation started "+fd(rot.start)+", return date not recorded");
   if(!c.sup)add("sup","No supervisor recorded");
+  else if(c.sup.active===false)add("sup",`${facName(c.sup)} has left RIC; choose a new supervisor`);
   else if(p.program==="FCPS"?!c.sup.cpsp:!c.sup.uhs)add("supok",`${facName(c.sup)} is not an approved ${p.program==="FCPS"?"CPSP":"UHS"} supervisor`);
   if(!p.start||!p.dur)add("dates",!p.start&&!p.dur?"Start date and duration missing":!p.start?"Training start date missing":"Training duration missing");
   if(c.phase==="Past expected completion")add("done","Past expected completion ("+fd(c.comp)+")");
@@ -3144,7 +3147,7 @@ function dcIssues(){const out=[];
  return out}
 UI.dck="";UI.dcq="";
 function dcFix(x){const{p,c,k,rot}=x,n=f=>`name="dc-${f}"`;
- const supOpts=()=>{const pool=DB.faculty.filter(f=>f.spec===p.spec&&(p.program==="FCPS"?f.cpsp:f.uhs)),rest=DB.faculty.filter(f=>!pool.includes(f)).sort((a,b)=>a.name.localeCompare(b.name));
+ const supOpts=()=>{const pool=DB.faculty.filter(f=>f.active!==false&&f.spec===p.spec&&(p.program==="FCPS"?f.cpsp:f.uhs)),rest=DB.faculty.filter(f=>f.active!==false&&!pool.includes(f)).sort((a,b)=>a.name.localeCompare(b.name));
   return`<select ${n("fid")} aria-label="Supervisor"><option value="">Choose supervisor</option>${pool.length?`<optgroup label="Approved, ${esc(p.spec)}">${pool.map(f=>`<option value="${f.id}">${esc(facName(f))}</option>`).join("")}</optgroup>`:""}<optgroup label="All faculty">${rest.map(f=>`<option value="${f.id}">${esc(facName(f))} · ${esc(f.spec)}</option>`).join("")}</optgroup></select>`};
  if(k==="rotsite")return`<select ${n("site")} aria-label="Hospital"><option value="">Hospital</option>${DB.sites.filter(s=>s.active).map(s=>`<option value="${esc(s.short)}">${esc(s.name)}</option>`).join("")}</select><label class="dcl">from<input type="date" ${n("start")} value="${rot?.start||c.rotStart||""}"></label><label class="dcl">back<input type="date" ${n("ret")} value="${rot?.ret||c.ret||""}"></label>`;
  if(k==="rotret")return`<label class="dcl">back to RIC<input type="date" ${n("ret")} value="${c.ret||""}"></label>`;
@@ -3264,6 +3267,7 @@ document.addEventListener("change",e=>{if(e.target.id==="msg-tpl"&&route.v==="me
 document.addEventListener("click",e=>{const b=e.target.closest("[data-wa]");if(!b)return;e.preventDefault();e.stopPropagation();const[k,a1,a2]=b.dataset.wa.split(":");let L=[];
  if(k==="pgts")L=(LAST.pgts||[]).map(recPgt);if(k==="faculty")L=(LAST.faculty||[]).map(x=>recFac(Array.isArray(x)?x[0]:x));
  if(k==="regs"){const w=DB.workshops.find(x=>x.id===a1);L=regsOf(w).filter(r=>r.status===(a2||"Confirmed")).map(r=>recReg(w,r))}
+ if(k==="examsel"){const x=DB.exams.find(z=>z.id===a1);L=exSelList(x).map(p=>({...recPgt(p),vars:{...recPgt(p).vars,roll:x.roll?.[p.id]||rollOf(p),date:x.date?fd(x.date):""}}))}
  if(k==="exam"){const x=DB.exams.find(z=>z.id===a1);L=exCands(x).filter(p=>!a2||p.spec===a2).map(p=>({...recPgt(p),vars:{...recPgt(p).vars,roll:x.roll?.[p.id]||rollOf(p),date:x.date?fd(x.date):""}}))}
  UI.msg={recs:[],text:UI.msg.text||"",sent:{},src:k};msgAdd(L);toast(`${L.length} added to WhatsApp message`);go("messages")},true);
 const waBtn=(k,l)=>`<button class="btn small wabtn" data-wa="${k}">${l||"WhatsApp"}</button>`;
@@ -3511,6 +3515,90 @@ function seedWorkshops(){const ws=[];let i=0;
  CAL_ITEMS.forEach(it=>ws.push(blankWs({id:"W"+String(++i).padStart(2,"0"),title:it.title,dept:it.dept,focal:it.focal,director:calFirst(it.focal),month:it.month,notes:it.note||"",cal:CAL_ID})));
  CAL_BOOT.months.forEach((m,k)=>ws.push(blankWs({id:"WB"+(k+1),title:CAL_BOOT.title,dept:CAL_BOOT.dept,focal:CAL_BOOT.focal,director:CAL_BOOT.focal,month:m,series:"Research Bootcamp",cal:CAL_ID})));
  ws.push(seedExampleWs());return ws}
+
+/* =====================================================================
+   V18 · REMOVE RECORDS (with a restore bin), FACULTY WHO LEAVE RIC,
+   and exam candidate lists with several specialties and years at once
+   ===================================================================== */
+const binList=()=>(DB.bin=DB.bin||[]);
+const takeOut=(coll,pred)=>{const arr=DB[coll]||[],out=arr.filter(pred);if(out.length)DB[coll]=arr.filter(x=>!pred(x));return out};
+const REM_WHY=["Dummy or test entry","Duplicate entry","Entered by mistake","Other"];
+const facActive=f=>f&&f.active!==false;
+
+/* ---------- trainee: remove from the register ---------- */
+function sheetRemovePgt(p){const n=k=>(DB[k]||[]).filter(x=>x.pid===p.id).length;
+ openSheet(`Remove from the register · Dr. ${p.name}`,`<div class="flag info">Use this only for dummy, duplicate or wrong entries. If the trainee resigned, was terminated or completed training, use <b>Change status</b> instead, so the record and its history stay in the register.</div>
+ <p style="margin:0">This removes <b>Dr. ${esc(p.name)}</b> (${esc(p.code||"no PGT ID")}, ${esc(p.spec)}) with ${n("status")} status, ${n("leaves")} leave, ${n("rots")} rotation and ${n("sups")} supervisor records. It goes to <b>Settings › Removed records</b>, where you can restore it.</p>
+ <label class="f">Reason<select name="why">${opt(REM_WHY,REM_WHY[0])}</select></label><label class="f">Details <span class="h">optional</span><input name="det" placeholder="e.g. duplicate of PGT/25/7/03"></label>`,()=>{
+  const why=fv("why")+(fv("det")?": "+fv("det"):"");
+  const rel={};["status","rots","sups","leaves","conduct"].forEach(k=>rel[k]=takeOut(k,x=>x.pid===p.id));
+  DB.pgts=DB.pgts.filter(x=>x!==p);binList().unshift({id:uid("B"),kind:"pgt",at:new Date().toISOString(),by:ME,why,label:`Dr. ${p.name} · ${p.code||"no PGT ID"} · ${p.spec}`,rec:p,rel});
+  log(`Removed Dr. ${p.name} (${p.code||"no PGT ID"}) from the trainee register: ${why}`);toast("Removed from the register");go(p.reg==="Verified"?"pgts":"verify");return true},"Remove")}
+
+/* ---------- faculty: left RIC, restore, or remove a wrong entry ---------- */
+function facPgts(f){return verified().filter(p=>{const c=CUR.get(p.id);return c&&c.active&&c.sup&&c.sup.id===f.id})}
+function sheetFacLeft(f){const ps=facPgts(f);
+ openSheet(`Left RIC · ${facName(f)}`,`<p style="margin:0">${esc(facName(f))} stays in the records (credentials, workshops, past supervision) but no longer appears in supervisor lists or the registration form.</p>
+ <div class="grid2"><label class="f">Left on<input type="date" name="on" value="${iso(TODAY)}"></label><label class="f">Reason<select name="why">${opt(["Transferred","Resigned","Retired","Contract ended","Other"],"Transferred")}</select></label></div>
+ ${ps.length?`<div class="flag">${ps.length} active trainee${ps.length>1?"s have":" has"} ${esc(facName(f))} as supervisor: ${ps.map(p=>"Dr. "+esc(p.name)).join(", ")}. They will be listed in <b>Data checks</b> so you can assign a new supervisor.</div>`:""}`,()=>{
+  f.active=false;f.left={on:fv("on")||iso(TODAY),why:fv("why")};log(`${facName(f)} marked as left RIC on ${fd(f.left.on)} (${f.left.why})`);toast("Marked as left RIC");return true},"Mark as left")}
+function sheetRemoveFac(f){const cr=DB.creds.filter(c=>c.fid===f.id).length,sp=DB.sups.filter(s=>s.fid===f.id).length,ps=facPgts(f).length;
+ openSheet(`Remove · ${facName(f)}`,`<div class="flag info">Use this only for dummy, duplicate or wrong entries. For someone who has left RIC, use <b>Mark as left RIC</b> so their history is kept.</div>
+ <p style="margin:0">This removes the record with ${cr} certificate${cr===1?"":"s"} and ${sp} supervision link${sp===1?"":"s"}${ps?` (${ps} active trainee${ps>1?"s":""} will need a new supervisor)`:""}. It goes to <b>Settings › Removed records</b>, where you can restore it.</p>
+ <label class="f">Reason<select name="why">${opt(REM_WHY,REM_WHY[0])}</select></label><label class="f">Details <span class="h">optional</span><input name="det"></label>`,()=>{
+  const why=fv("why")+(fv("det")?": "+fv("det"):"");const rel={creds:takeOut("creds",c=>c.fid===f.id),sups:takeOut("sups",s=>s.fid===f.id)};
+  DB.faculty=DB.faculty.filter(x=>x!==f);binList().unshift({id:uid("B"),kind:"fac",at:new Date().toISOString(),by:ME,why,label:`${facName(f)} · ${f.desig||""} · ${f.spec||""}`,rec:f,rel});
+  log(`Removed ${facName(f)} from the faculty directory: ${why}`);toast("Removed");go("faculty");return true},"Remove")}
+
+/* ---------- Settings › Removed records ---------- */
+function binPanel(){if(!isAdmin())return"";const B=binList();
+ return`<div class="panel flush" id="set-bin"><div style="padding:14px 16px 0"><h3 style="margin:0">Removed records · ${B.length}</h3><p class="subt" style="margin:4px 0 0">Trainees and faculty removed as dummy, duplicate or wrong entries. Restore puts the record back exactly as it was.</p></div>
+ ${B.length?`<div class="tblwrap" style="margin-top:8px"><table><thead><tr><th>Record</th><th>Reason</th><th>Removed</th><th></th></tr></thead><tbody>${B.map(b=>`<tr><td>${esc(b.label)}<div class="subt">${b.kind==="pgt"?"Trainee":"Faculty"}</div></td><td class="wrapcell">${esc(b.why)}</td><td>${fdt(b.at)}<div class="subt">${esc(b.by)}</div></td><td><button class="btn small" data-act="bin-restore" data-id="${b.id}">Restore</button></td></tr>`).join("")}</tbody></table></div>`:`<p class="subt" style="padding:8px 16px 14px;margin:0">Nothing removed.</p>`}</div>`}
+function binRestore(id){const B=binList(),b=B.find(x=>x.id===id);if(!b)return;const coll=b.kind==="pgt"?"pgts":"faculty";
+ if(DB[coll].some(x=>x.id===b.rec.id)){toast("A record with the same ID already exists");return}
+ DB[coll].push(b.rec);Object.entries(b.rel||{}).forEach(([k,list])=>{DB[k]=DB[k]||[];list.forEach(r=>{if(!r.id||!DB[k].some(x=>x.id===r.id))DB[k].push(r)})});
+ DB.bin=B.filter(x=>x!==b);log(`Restored ${b.label}`);toast("Restored");render()}
+
+document.addEventListener("click",e=>{const a=e.target.closest('[data-act="pgt-remove"],[data-act="fac-left"],[data-act="fac-back"],[data-act="fac-remove"],[data-act="bin-restore"],[data-act="fac-former"]');if(!a)return;
+ const act=a.dataset.act;
+ if(act==="fac-former"){UI.fformer=!UI.fformer;render();return}
+ if(act==="bin-restore"){if(a.dataset.armed!=="1"){a.dataset.armed="1";a.textContent="Tap again to restore";return}return binRestore(a.dataset.id)}
+ if(act==="pgt-remove"){const p=DB.pgts.find(x=>x.id===a.dataset.id);if(p)sheetRemovePgt(p);return}
+ const f=facById(a.dataset.id);if(!f)return;
+ if(act==="fac-left")sheetFacLeft(f);if(act==="fac-remove")sheetRemoveFac(f);
+ if(act==="fac-back"){f.active=true;const was=f.left;delete f.left;log(`${facName(f)} restored to active faculty${was?` (had left on ${fd(was.on)})`:""}`);toast("Back in the active faculty list");render()}});
+function facStatusHtml(f){return f.active===false?`<div class="flag">Left RIC${f.left?` on ${fd(f.left.on)} · ${esc(f.left.why)}`:""}. Not shown in supervisor lists or the registration form.</div>`:""}
+
+/* ---------- exam candidate lists: several specialties, years and programmes ---------- */
+UI.exSel={sp:[],g:[],prog:""};
+function exGrp(x,p){const y=examYear(x,p);if(y)return"y"+y;const s=specOf(p.spec),at=P(x.date||x.month+"-15");
+ if(s&&s.rotational&&p.program!=="FCPS"&&p.start){const six=addM(p.start,Math.round(((s.rule&&s.rule[2])??.5)*12));if(at>=P(p.start)&&at<six)return"init"}return"pre"}
+const EXG_L=g=>g==="init"?"UHS initial 6 months":g==="pre"?"Not yet at RIC":"RIC year "+g.slice(1);
+const exgOrd=g=>g==="init"?0:g==="pre"?-1:+g.slice(1);
+function exSelList(x){const S=UI.exSel;return exCands(x).filter(p=>(!S.sp.length||S.sp.includes(p.spec))&&(!S.g.length||S.g.includes(exGrp(x,p)))&&(!S.prog||(S.prog==="FCPS"?p.program==="FCPS":p.program!=="FCPS")))
+ .sort((a,b)=>specIdx(a.spec)-specIdx(b.spec)||exgOrd(exGrp(x,a))-exgOrd(exGrp(x,b))||(x.roll?.[a.id]||"").localeCompare(x.roll?.[b.id]||"")||a.name.localeCompare(b.name))}
+function exSelLabel(){const S=UI.exSel;return[S.sp.length?S.sp.join(", "):"All specialties",S.g.length?S.g.map(EXG_L).join(", "):"all years",S.prog==="FCPS"?"FCPS only":S.prog==="UHS"?"UHS only":""].filter(Boolean).join(" · ")}
+function examSpecPanel(x,specs,cands,sp,canMark){const S=UI.exSel;S.sp=S.sp.filter(s=>specs.includes(s));
+ const inSp=cands.filter(p=>!S.sp.length||S.sp.includes(p.spec)),grps=[...new Set(inSp.map(p=>exGrp(x,p)))].sort((a,b)=>exgOrd(a)-exgOrd(b));S.g=S.g.filter(g=>grps.includes(g));
+ const C=exSelList(x),multi=S.sp.length!==1;
+ const chip=(attr,val,on,label,n)=>`<button class="chip" data-${attr}="${esc(val)}" aria-pressed="${on}">${label}${n!=null?`<span class="c">${n}</span>`:""}</button>`;
+ return`<div class="panel flush"><div style="padding:14px 16px 0;display:grid;gap:10px"><div class="head"><h3 style="margin:0">Candidate lists${canMark?" and marks":""} · ${C.length}</h3>
+  <div class="actions">${waBtn(`examsel:${x.id}`,"WhatsApp this list")}${x.roll?xbtn(`evalbeesel:${x.id}`,"Download Evalbee list (this selection)"):""}${xbtn(`evalbeeall:${x.id}`,"All specialties (one sheet each)")}</div></div>
+  <div><div class="subt" style="margin-bottom:4px">Specialties · tap several to combine</div><div class="chips">${chip("exsp2","",!S.sp.length,"All specialties",cands.length)}${specs.map(s=>chip("exsp2",s,S.sp.includes(s),esc(s),cands.filter(p=>p.spec===s).length)).join("")}</div></div>
+  <div><div class="subt" style="margin-bottom:4px">Year at the time of the exam · tap several to combine</div><div class="chips">${chip("exg","",!S.g.length,"All years",inSp.length)}${grps.map(g=>chip("exg",g,S.g.includes(g),EXG_L(g),inSp.filter(p=>exGrp(x,p)===g).length)).join("")}</div></div>
+  <div class="chips">${chip("exprog","",!S.prog,"FCPS and UHS")}${chip("exprog","FCPS",S.prog==="FCPS","FCPS only")}${chip("exprog","UHS",S.prog==="UHS","UHS only")}</div>
+  <p class="subt" style="margin:0">Showing: <b>${esc(exSelLabel())}</b>. ${x.roll?"Edit any roll number before downloading. ":"Generate roll numbers first (above). "}The Evalbee file follows your template: ROLLNO, NAME, PHONENO, EMAILID${x.stage<3?". Exclude anyone not sitting, or add a PGT in the candidate list panel":""}.</p>
+  ${x.stage<3?`<p class="subt" style="margin:0">Marks open once the exam is marked as held.</p>`:""}</div>
+  <div class="tblwrap" style="margin-top:8px"><table><thead><tr><th>Roll no.</th><th>PGT</th>${multi?"<th>Specialty</th>":""}<th>Prog.</th><th>Year (at exam)</th><th>Marks %</th><th>Absent</th><th>Result</th><th></th></tr></thead><tbody>
+  ${C.map(p=>{const m=x.marks[p.id],ab=x.absent[p.id];return`<tr><td>${x.roll?`<input data-exroll="${p.id}" value="${esc(x.roll[p.id]||"")}" style="width:96px;font-family:var(--f-mono)" ${x.stage>=5?"disabled":""} aria-label="Roll number for Dr. ${esc(p.name)}">`:'<span class="subt">—</span>'}</td><td>${pgtName(p)}<div class="code">${esc(p.code)}</div></td>${multi?`<td>${esc(p.spec)}</td>`:""}<td>${esc(p.program)}</td><td>${EXG_L(exGrp(x,p))}</td>
+   <td><input type="number" min="0" max="100" step="0.5" style="width:90px" data-exmark="${p.id}" value="${m??""}" ${canMark&&!ab?"":"disabled"} aria-label="Marks for Dr. ${esc(p.name)}"></td><td><input type="checkbox" data-exabs="${p.id}" ${ab?"checked":""} ${canMark?"":"disabled"} aria-label="Absent"></td>
+   <td>${ab?'<span class="pill p-done">Absent</span>':m==null?"—":m>=x.passMark?'<span class="pill p-ric">Pass</span>':'<span class="pill p-bad">Fail</span>'}</td><td>${x.stage<3?`<button class="btn link" data-act="ex-excl" data-id="${p.id}">Exclude</button>`:`<a class="btn link" href="#pgt-${p.id}">Profile</a>`}</td></tr>`}).join("")||`<tr><td colspan="9" class="empty">No candidates match this selection.</td></tr>`}
+ </tbody></table></div></div>`}
+EXPORTS.evalbeesel=id=>{const x=DB.exams.find(e=>e.id===id);return{file:`Evalbee ${exSelLabel().replace(/[^A-Za-z0-9 ,.-]+/g," ").slice(0,90)} ${x.session}`,sheets:[{name:"Template",rows:evalbeeRows(x,exSelList(x))}]}};
+document.addEventListener("click",e=>{const b=e.target.closest("[data-exsp2],[data-exg],[data-exprog]");if(!b)return;const S=UI.exSel;
+ const tog=(arr,v)=>v===""?[]:arr.includes(v)?arr.filter(z=>z!==v):[...arr,v];
+ if(b.dataset.exsp2!=null)S.sp=tog(S.sp,b.dataset.exsp2);if(b.dataset.exg!=null)S.g=tog(S.g,b.dataset.exg);if(b.dataset.exprog!=null)S.prog=b.dataset.exprog;
+ const y=window.scrollY;render();window.scrollTo(0,y)});
 
 /* ---------- events ---------- */
 document.addEventListener("click",e=>{
