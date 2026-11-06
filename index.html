@@ -569,6 +569,11 @@ body.kiosk main,body.kiosk #main{grid-column:1/-1!important;width:100%;max-width
 .acd.a-P{background:var(--ok-soft);color:var(--ok);border-color:var(--ok)}.acd.a-A{background:var(--bad-soft);color:var(--bad);border-color:var(--bad)}.acd.a-L{background:var(--gold-soft);color:var(--warn);border-color:var(--gold)}.acd.a-H,.acd.a-off{background:var(--mute-soft);color:var(--muted)}.acd.a-miss{background:var(--bad-soft);color:var(--bad);border-style:dashed}
 #rotform .req::after{content:" *";color:var(--brand)}
 #rotform [hidden]{display:none!important}
+.qrthumb{border:1px solid var(--line);border-radius:10px;background:#fff;padding:6px;cursor:zoom-in;line-height:0}
+.qrthumb svg{width:96px;height:96px}
+.supspec{display:flex;gap:12px;align-items:center;flex-wrap:wrap;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--sunk)}
+.supspec select{max-width:240px}
+#cr-specwrap[hidden]{display:none}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:sl .18s ease-out}@keyframes sl{from{transform:translateX(24px)}to{transform:none}}}
 </style>
 
@@ -784,7 +789,7 @@ function vVerify(){
    <dt>PGT ID</dt><dd class="code">${p.code||nextCode(p)} <span class="subt">reserved in order of registration · roll no. ${rollOf(p)||"—"}</span></dd></dl>
    ${issues.length?`<div class="flag">${issues.map(esc).join("<br>")}</div>`:`<div class="flag ok">Declared year and completion match the calculated values.</div>`}
    <div class="docs">${docsHtml(p)}</div></div>`};
- return`<div class="head"><div><h2>New registrations</h2><p>Registrations submitted through the PGT link. Check details against the documents, then verify.</p></div></div>${LIVE?`<div class="panel"><div class="toolbar"><span class="subt">PGT registration link</span><input id="pgtlink" readonly class="linkbox" value="${esc(pubBase().replace(/[^/]*$/,"")+"register.html")}"><button class="btn small" data-act="pgt-copy">Copy</button></div></div>`:""}
+ return`<div class="head"><div><h2>New registrations</h2><p>Registrations submitted through the PGT link. Check details against the documents, then verify.</p></div></div>${regLinkPanel("pgt")}
  ${pend.length?pend.map(card).join(""):`<div class="panel empty">No registrations waiting. New submissions from the registration link appear here.</div>`}
  ${rej.length?`<div class="panel flush"><h3>Rejected</h3><div class="tblwrap"><table><thead><tr><th>Name</th><th>Reason</th><th></th></tr></thead><tbody>${rej.map(p=>`<tr><td>${pgtName(p)}</td><td class="wrapcell">${esc(p.rejection)}</td><td><button class="btn small" data-act="reopen" data-id="${p.id}">Move back to pending</button></td></tr>`).join("")}</tbody></table></div></div>`:""}`}
 function nextCode(p){if(!p.start)return"—";const d=P(p.start),yy=String(d.getFullYear()).slice(2),m=d.getMonth()<6?1:7;const pre=`PGT/${yy}/${m}/`;
@@ -815,7 +820,7 @@ function vFac(){
  <div class="cols two">
   <div class="panel"><h3>Credentials</h3><dl class="kv">
    ${CRED.map(t=>{const x=c.cr[t];const s=t===CRED[0]?c.pmdc:t===CRED[1]?c.cpsp:c.uhs;return`<dt>${t.replace(" Supervisory Certificate"," supervisory").replace(" Faculty Registration"," faculty reg.")}</dt><dd>${credPill(s)}${x?`<div class="code" style="margin-top:3px">Issued ${fd(x.issue)} · expires ${fd(x.expiry)}</div>`:""}</dd>`}).join("")}
-   <dt>PMDC number</dt><dd class="code">${esc(f.pmdc)||"—"}</dd><dt>Faculty reg. no.</dt><dd class="code">${esc(f.regno)||"—"}</dd></dl></div>
+   ${facSpecLines(f,c)}<dt>PMDC number</dt><dd class="code">${esc(f.pmdc)||"—"}</dd><dt>Faculty reg. no.</dt><dd class="code">${esc(f.regno)||"—"}</dd></dl></div>
   <div class="panel flush"><h3>Certificate history</h3><div class="tblwrap"><table><thead><tr><th>Type</th><th>Issued</th><th>Expires</th><th></th></tr></thead><tbody>
    ${hist.map(x=>`<tr><td>${esc(x.type)}</td><td>${fd(x.issue)}</td><td>${fd(x.expiry)}</td><td><button class="btn link" data-del="cred" data-id="${x.id}">Delete</button></td></tr>`).join("")||`<tr><td colspan="4" class="empty">No certificates on file. Add one with "Add certificate".</td></tr>`}</tbody></table></div></div>
  </div>
@@ -867,7 +872,7 @@ function sheetRot(p,r){openSheet(r?"Edit rotation":`Add rotation · Dr. ${p.name
  const s=fv("start"),e=fv("ret");if(!s)return fail("Enter the start date.");if(e&&e<s)return fail("The return date is before the start date.");
  const rec={pid:p.id,site:fv("site"),start:s,ret:e||null,notes:fv("notes"),by:ME};
  if(r){Object.assign(r,rec);log(`Edited rotation for Dr. ${p.name}`,"pgt-"+p.id)}else{DB.rots.push({id:uid("R"),...rec});log(`Added rotation for Dr. ${p.name} at ${rec.site}: ${fd(s)} – ${fd(e)}`,"pgt-"+p.id)}toast("Rotation saved");return true})}
-function sheetSup(p){const c=CUR.get(p.id);const pool=DB.faculty.filter(f=>f.active!==false&&f.spec===p.spec&&(p.program==="FCPS"?f.cpsp:f.uhs)),rest=DB.faculty.filter(f=>f.active!==false&&!pool.includes(f));
+function sheetSup(p){const c=CUR.get(p.id);const pool=DB.faculty.filter(f=>f.active!==false&&canSup(f,p.spec,p.program)),rest=DB.faculty.filter(f=>f.active!==false&&!pool.includes(f));
  openSheet(`Change supervisor · Dr. ${p.name}`,`<p style="margin:0">Current: <b>${esc(facName(c.sup))}</b></p>
  <label class="f">New supervisor<select name="fid"><optgroup label="${p.program==="FCPS"?"CPSP":"UHS"}-approved, ${esc(p.spec)}">${opt(pool.map(f=>[f.id,facName(f)]))}</optgroup><optgroup label="Other faculty">${opt(rest.map(f=>[f.id,facName(f)+" · "+f.spec]))}</optgroup></select></label>
  <label class="f">From<input type="date" name="from" value="${iso(TODAY)}"></label>`,()=>{
@@ -894,11 +899,11 @@ function sheetFac(f){const n=!f;f=f||{title:"Dr.",name:"",pmdc:"",regno:"",desig
  <label class="f">Full name <span class="h">without title</span><input name="name" value="${esc(f.name)}"></label>
  <div class="grid2"><label class="f">Department<select name="spec">${opt(specNames(),f.spec)}</select></label><label class="f">Unit<select name="unit">${opt([["","None"],...DB.units],f.unit)}</select></label></div>
  <div class="grid2"><label class="f">PMDC number<input name="pmdc" value="${esc(f.pmdc)}"></label><label class="f">Faculty reg. no.<input name="regno" value="${esc(f.regno)}"></label></div>
- <div class="grid2"><label class="f">CPSP supervisor<select name="cpsp">${opt([["1","Approved"],["0","Not approved"]],f.cpsp?"1":"0")}</select></label><label class="f">UHS supervisor<select name="uhs">${opt([["1","Approved"],["0","Not approved"]],f.uhs?"1":"0")}</select></label></div>
+ <div class="grid2"><label class="f">CPSP supervisor<select name="cpsp">${opt([["1","Approved"],["0","Not approved"]],(n?f.cpsp:primSup(f).cpsp)?"1":"0")}</select></label><label class="f">UHS supervisor<select name="uhs">${opt([["1","Approved"],["0","Not approved"]],(n?f.uhs:primSup(f).uhs)?"1":"0")}</select></label></div>
  <label class="f">Notes<textarea name="notes">${esc(f.notes)}</textarea></label>`,()=>{
  const name=fv("name").replace(/^((prof\.?|dr\.?)\s+)+/i,"");if(name.length<3)return fail("Enter the full name.");
  if(DB.faculty.some(x=>x!==f&&x.name.toLowerCase()===name.toLowerCase()))return fail("A faculty member with this name already exists.");
- Object.assign(f,{title:fv("title"),name,desig:fv("desig"),spec:fv("spec"),unit:fv("unit"),pmdc:fv("pmdc"),regno:fv("regno"),cpsp:fv("cpsp")==="1",uhs:fv("uhs")==="1",notes:fv("notes")});
+ Object.assign(f,{title:fv("title"),name,desig:fv("desig"),spec:fv("spec"),unit:fv("unit"),pmdc:fv("pmdc"),regno:fv("regno"),notes:fv("notes")});{const L=n?[]:supSpecs(f).filter(s=>s.spec!==f.spec).map(s=>({...s}));L.unshift({spec:f.spec,cpsp:fv("cpsp")==="1",uhs:fv("uhs")==="1"});f.sups=L;facSync(f)}
  if(n){f.id=uid("F");DB.faculty.push(f);log(`Added faculty member ${facName(f)}`,"fac-"+f.id);go("fac-"+f.id)}else log(`Edited ${facName(f)}`,"fac-"+f.id);toast("Saved");return true})}
 function sheetCred(f){openSheet(`Add certificate · ${facName(f)}`,`
  <label class="f">Certificate<select name="type">${opt(CRED)}</select></label>
@@ -991,19 +996,22 @@ function vCreds(){
   ${f?"":`<p class="code" style="margin:0">Choose a faculty member, or tap "Update" in the register below.</p>`}</div>
  ${f?`<div class="panel"><div class="prof"><div class="avatar" aria-hidden="true">${esc(f.name.split(" ").map(w=>w[0]).slice(0,2).join(""))}</div>
   <div class="who"><h2>${esc(facName(f))}</h2><div class="meta"><span>${esc(f.desig)}</span><span>${esc(f.spec)}${f.unit?" · "+esc(f.unit):""}</span><span>${c.n} active PGTs</span></div>
-  <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap"><span class="pill ${f.cpsp?"p-ric":"p-done"}">CPSP supervisor: ${f.cpsp?"Yes":"No"}</span><span class="pill ${f.uhs?"p-ric":"p-done"}">UHS supervisor: ${f.uhs?"Yes":"No"}</span>${credPill(c.pmdc).replace(">",">PMDC: ")}</div></div>
+  <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">${c.sp.filter(s=>s.cpsp||s.uhs).map(s=>`<span class="pill p-ric">${esc(s.spec)}: ${[s.cpsp?"CPSP":"",s.uhs?"UHS":""].filter(Boolean).join(" & ")}</span>`).join("")||'<span class="pill p-done">Not an approved supervisor</span>'}${credPill(c.pmdc).replace(">",">PMDC: ")}</div></div>
   <div class="actions"><a class="btn" href="#fac-${f.id}">Open profile</a></div></div></div>
  ${credIssues(f,c).length?`<div class="flag">${credIssues(f,c).map(i=>esc(i[1])).join("<br>")}</div>`:`<div class="flag ok">All credentials are current.</div>`}
  <div class="cols two">
   <div class="panel" style="display:grid;gap:12px"><h3 style="margin:0">1 · Supervisor approval</h3>
-   <label class="check2"><input type="checkbox" id="cr-cpsp" ${f.cpsp?"checked":""}> Approved CPSP supervisor</label>
-   <label class="check2"><input type="checkbox" id="cr-uhs" ${f.uhs?"checked":""}> Approved UHS supervisor</label>
+   <p class="subt" style="margin:0">Tick CPSP and/or UHS for each specialty this person is approved to supervise in.</p>
+   ${crSupRows(f)}
    <label class="f">Approval date <span class="h">from the CPSP / UHS letter</span><input type="date" id="cr-appdate"></label>
    <label class="f">Reference / note <span class="h">optional</span><input id="cr-appnote" placeholder="e.g. CPSP letter no."></label>
    <div class="actions"><button class="btn primary" data-act="cr-sup">Save approval</button></div>
    <p class="code" style="margin:0">After approving, upload the supervisory certificate in section 2.</p></div>
   <div class="panel" id="cr-upload" style="display:grid;gap:12px"><h3 style="margin:0">2 · Upload certificate</h3>
    <label class="f">Certificate<select id="cr-type">${opt(CRED,UI.credType||(!f.cpsp&&!f.uhs?CRED[0]:f.cpsp&&c.cpsp!=="Certified"?CRED[1]:f.uhs&&c.uhs!=="Certified"?CRED[2]:CRED[0]))}</select></label>
+   ${(()=>{const t0=UI.credType||(!f.cpsp&&!f.uhs?CRED[0]:f.cpsp&&c.cpsp!=="Certified"?CRED[1]:f.uhs&&c.uhs!=="Certified"?CRED[2]:CRED[0]);const mine=c.sp.map(s=>s.spec),rest=specNames().filter(s=>!mine.includes(s));
+    const def=UI.credSpec&&[...mine,...rest].includes(UI.credSpec)?UI.credSpec:(c.sp.find(s=>(t0===CRED[1]&&s.cpsp&&s.cpsp!=="Certified")||(t0===CRED[2]&&s.uhs&&s.uhs!=="Certified"))||c.sp[0]).spec;
+    return`<label class="f" id="cr-specwrap" ${t0===CRED[0]?"hidden":""}>Specialty this certificate is for<select id="cr-cspec"><optgroup label="Approved in">${opt(mine,def)}</optgroup>${rest.length?`<optgroup label="Other specialties">${opt(rest,def)}</optgroup>`:""}</select></label>`})()}
    <div class="grid2"><label class="f">Issued<input type="date" id="cr-issue"></label><label class="f">Expires<input type="date" id="cr-expiry"></label></div>
    <label class="f">File <span class="h">PDF or image, up to 5 MB</span><input type="file" id="cr-file" accept="image/*,application/pdf"></label>
    <div class="actions"><button class="btn primary" data-act="cr-cert">Upload certificate</button></div>
@@ -1023,19 +1031,20 @@ function vCreds(){
   <div class="err" id="cr-err" role="alert"></div>
   <div class="actions"><button class="btn primary" data-act="cr-reg">Save details</button></div></div>
  <div class="panel flush"><h3>Certificate history · ${esc(facName(f))}</h3><div class="tblwrap"><table><thead><tr><th>Certificate</th><th>Issued</th><th>Expires</th><th>Status</th><th></th></tr></thead><tbody>
-  ${hist.map(x=>`<tr><td>${esc(x.type)}</td><td>${fd(x.issue)}</td><td>${fd(x.expiry)}</td><td>${x.expiry&&P(x.expiry)<TODAY?credPill("Expired"):x.expiry&&days(P(x.expiry),TODAY)<=DB.settings.cert_warn?credPill("Expiring Soon"):credPill("Certified")}</td><td><button class="btn link" data-del="cred" data-id="${x.id}">Delete</button></td></tr>`).join("")||`<tr><td colspan="5" class="empty">No certificates on file yet.</td></tr>`}</tbody></table></div></div>`:""}
+  ${hist.map(x=>`<tr><td>${esc(x.type)}${x.type!==CRED[0]?`<div class="subt">${esc(x.spec||f.spec)}</div>`:""}</td><td>${fd(x.issue)}</td><td>${fd(x.expiry)}</td><td>${x.expiry&&P(x.expiry)<TODAY?credPill("Expired"):x.expiry&&days(P(x.expiry),TODAY)<=DB.settings.cert_warn?credPill("Expiring Soon"):credPill("Certified")}</td><td><button class="btn link" data-del="cred" data-id="${x.id}">Delete</button></td></tr>`).join("")||`<tr><td colspan="5" class="empty">No certificates on file yet.</td></tr>`}</tbody></table></div></div>`:""}
  <div class="panel flush"><h3>Credential register · ${reg.length} need attention</h3><div class="tblwrap"><table><thead><tr><th>Faculty member</th><th>Department</th><th>Issue</th><th></th></tr></thead><tbody>
-  ${reg.map(([x,is])=>`<tr><td>${esc(facName(x))}</td><td>${esc(x.spec)}</td><td class="wrapcell">${is.filter(i=>UI.credMute||i[0]!=="mute").map(i=>`<button class="pill pillbtn ${i[0]==="bad"?"p-bad":i[0]==="mute"?"p-done":"p-pause"}" style="margin:2px 4px 2px 0" data-act="cr-goto" data-id="${x.id}" data-type="${esc(credTypeOf(i[1]))}" title="Open the upload form for this">${esc(i[1])} →</button>`).join("")}</td><td><button class="btn small" data-act="cr-goto" data-id="${x.id}" data-type="${esc(credTypeOf((is.find(i=>UI.credMute||i[0]!=="mute")||[0,""])[1]))}">Update</button></td></tr>`).join("")||`<tr><td colspan="4" class="empty">No expired or missing supervisor certificates.</td></tr>`}
+  ${reg.map(([x,is])=>`<tr><td>${esc(facName(x))}</td><td>${esc(x.spec)}</td><td class="wrapcell">${is.filter(i=>UI.credMute||i[0]!=="mute").map(i=>`<button class="pill pillbtn ${i[0]==="bad"?"p-bad":i[0]==="mute"?"p-done":"p-pause"}" style="margin:2px 4px 2px 0" data-act="cr-goto" data-id="${x.id}" data-type="${esc(credTypeOf(i[1]))}" data-spec="${esc(credSpecOf(i[1]))}" title="Open the upload form for this">${esc(i[1])} →</button>`).join("")}</td><td><button class="btn small" data-act="cr-goto" data-id="${x.id}" data-type="${esc(credTypeOf((is.find(i=>UI.credMute||i[0]!=="mute")||[0,""])[1]))}">Update</button></td></tr>`).join("")||`<tr><td colspan="4" class="empty">No expired or missing supervisor certificates.</td></tr>`}
  </tbody></table></div><p class="code" style="padding:0 16px 14px;margin:8px 0 0">${DB.faculty.filter(x=>facCur(x).pmdc==="Not Registered").length} faculty members have no PMDC faculty registration on file. <button class="btn link" data-act="cr-mute">${UI.credMute?"Hide them":"Show them in this list"}</button></p></div>`}
 function credAction(a){const f=facById(UI.credFac);if(!f)return;
- if(a==="cr-sup"){const cp=document.getElementById("cr-cpsp").checked,uh=document.getElementById("cr-uhs").checked;if(cp===f.cpsp&&uh===f.uhs){toast("No change to save");return}
-  const ch=[];if(cp!==f.cpsp)ch.push(`CPSP ${cp?"approved":"removed"}`);if(uh!==f.uhs)ch.push(`UHS ${uh?"approved":"removed"}`);f.cpsp=cp;f.uhs=uh;
+ if(a==="cr-sup"){const before=supSpecs(f),after=crReadSups(f),lab=L=>L.filter(s=>s.cpsp||s.uhs).map(s=>`${s.spec} (${[s.cpsp?"CPSP":"",s.uhs?"UHS":""].filter(Boolean).join(" & ")})`).join(", ")||"none";
+  if(JSON.stringify(lab(before))===JSON.stringify(lab(after))){toast("No change to save");return}
+  const ch=[`now approved in: ${lab(after)}`];f.sups=after;facSync(f);
   const dt=pick("cr-appdate"),nt=pick("cr-appnote");log(`Supervisor status of ${facName(f)}: ${ch.join(", ")}${dt?" from "+fd(dt):""}${nt?" ("+nt+")":""}`,"fac-"+f.id);toast("Supervisor approval saved");render();return}
- if(a==="cr-cert"){const i=pick("cr-issue"),e=pick("cr-expiry"),t=pick("cr-type");if(!i){toast("Enter the issue date");return}if(e&&e<i){toast("Expiry is before the issue date");return}
+ if(a==="cr-cert"){const i=pick("cr-issue"),e=pick("cr-expiry"),t=pick("cr-type"),cs=t===CRED[0]?"":pick("cr-cspec")||f.spec;if(!i){toast("Enter the issue date");return}if(e&&e<i){toast("Expiry is before the issue date");return}
   const fl=document.getElementById("cr-file").files[0];if(fl&&fl.size>5*1048576){toast("File is over 5 MB");return}
-  DB.creds.push({id:uid("C"),fid:f.id,type:t,issue:i,expiry:e||null,file:!!fl});
-  if(t===CRED[1]&&!f.cpsp)f.cpsp=true;if(t===CRED[2]&&!f.uhs)f.uhs=true;
-  log(`Uploaded ${t} for ${facName(f)} (issued ${fd(i)}${e?", expires "+fd(e):""})`,"fac-"+f.id);toast("Certificate uploaded");render();return}
+  DB.creds.push({id:uid("C"),fid:f.id,type:t,issue:i,expiry:e||null,file:!!fl,...(cs?{spec:cs}:{})});
+  if(cs){const L=supSpecs(f).map(s=>({...s}));let x=L.find(s=>s.spec===cs);if(!x){x={spec:cs,cpsp:false,uhs:false};L.push(x)}if(t===CRED[1])x.cpsp=true;if(t===CRED[2])x.uhs=true;f.sups=L;facSync(f)}
+  log(`Uploaded ${t}${cs?" ("+cs+")":""} for ${facName(f)} (issued ${fd(i)}${e?", expires "+fd(e):""})`,"fac-"+f.id);toast("Certificate uploaded");render();return}
  if(a==="cr-reg"){const m=pick("cr-mobile");if(m&&!/^03\d{2}-?\d{7}$/.test(m)){document.getElementById("cr-err").textContent="Mobile must be 11 digits starting with 03.";return}
   const pm=pick("cr-pmdc");if(pm&&DB.faculty.some(x=>x!==f&&x.pmdc&&x.pmdc.toLowerCase()===pm.toLowerCase())){document.getElementById("cr-err").textContent="Another faculty member already has this PMDC number.";return}
   const before=JSON.stringify(f);Object.assign(f,{pmdc:pm,regno:pick("cr-regno"),desig:pick("cr-desig"),spec:pick("cr-spec"),unit:pick("cr-unit"),title:pick("cr-title"),mobile:m,email:pick("cr-email")});
@@ -2152,15 +2161,15 @@ function supData(){const A=verified().filter(p=>CUR.get(p.id).active);
  const none=A.filter(p=>!CUR.get(p.id).sup);
  return{A,sups,none}}
 function supFilter(s){const q=UI.sq.toLowerCase(),n=s.cpsp.length+s.uhs.length;
- if(UI.sdept&&s.f.spec!==UI.sdept)return false;if(UI.stype&&s.type!==UI.stype)return false;if(UI.sload==="has"&&!n)return false;if(UI.sload==="none"&&n)return false;if(UI.sload==="over"&&n<DB.settings.overload)return false;
+ if(UI.sdept&&!(s.f.spec===UI.sdept||supsIn(s.f,UI.sdept)))return false;if(UI.stype&&s.type!==UI.stype)return false;if(UI.sload==="has"&&!n)return false;if(UI.sload==="none"&&n)return false;if(UI.sload==="over"&&n<DB.settings.overload)return false;
  if(q&&!((facName(s.f)+" "+s.f.spec+" "+s.f.desig).toLowerCase().includes(q)||[...s.cpsp,...s.uhs].some(p=>(p.name+" "+p.code).toLowerCase().includes(q))))return false;return true}
 function vSupervisors(){const{A,sups,none}=supData();const rows=sups.filter(supFilter);LAST.sups=rows;
- const depts=[...new Set(sups.map(s=>s.f.spec))].sort((a,b)=>specIdx(a)-specIdx(b));
- const dsum=depts.map(d=>{const S=sups.filter(s=>s.f.spec===d),P=A.filter(p=>p.spec===d);return{d,ns:S.filter(s=>s.type!=="Not approved").length,nc:S.filter(s=>s.f.cpsp).length,nu:S.filter(s=>s.f.uhs).length,pc:P.filter(p=>p.program==="FCPS").length,pu:P.filter(p=>p.program!=="FCPS").length,un:none.filter(p=>p.spec===d).length}}).filter(x=>x.ns||x.pc||x.pu);
+ const depts=[...new Set(sups.flatMap(s=>[s.f.spec,...supSpecs(s.f).filter(x=>x.cpsp||x.uhs).map(x=>x.spec)]))].sort((a,b)=>specIdx(a)-specIdx(b));
+ const dsum=depts.map(d=>{const S=sups.filter(s=>s.f.spec===d||supsIn(s.f,d)),P=A.filter(p=>p.spec===d);return{d,ns:S.filter(s=>s.type!=="Not approved").length,nc:S.filter(s=>s.f.cpsp).length,nu:S.filter(s=>s.f.uhs).length,pc:P.filter(p=>p.program==="FCPS").length,pu:P.filter(p=>p.program!=="FCPS").length,un:none.filter(p=>p.spec===d).length}}).filter(x=>x.ns||x.pc||x.pu);
  const chip=p=>`<a class="pchip" href="#pgt-${p.id}" title="${esc(p.code)} · ${esc(ricLabel(p))}">Dr. ${esc(p.name)}<span>${(r=>r.y?"Y"+r.y:r.k==="init"?"6 mo":"Out")(ricInfo(p))}</span></a>`;
  const legend=`<div class="legend"><span>Badge on each name: Y1 to Y3 = year at RIC · 6 mo = UHS initial 6 months · Out = on rotation, not yet at RIC</span></div>`;
  const typePill=t=>`<span class="pill ${t==="CPSP & UHS"?"p-pend":t==="CPSP"?"p-rot":t==="UHS"?"p-leave":"p-bad"}">${t}</span>`;
- const shown=[...new Set(rows.map(s=>s.f.spec))].sort((a,b)=>specIdx(a)-specIdx(b));
+ const shown=[...new Set(rows.flatMap(s=>[s.f.spec,...supSpecs(s.f).filter(x=>x.cpsp||x.uhs).map(x=>x.spec)]))].filter(d=>!UI.sdept||d===UI.sdept).sort((a,b)=>specIdx(a)-specIdx(b));
  return`<div class="head"><div><h2>Supervisors by department</h2><p>Approved supervisors and the active PGTs attached to each, with CPSP (FCPS) and UHS trainees counted separately.</p></div><div class="actions">${xbtn("sups")}</div></div>
  <div class="dgrid">${dsum.map(x=>`<button class="dcard ${UI.sdept===x.d?"on":""}" data-sdept="${esc(x.d)}"><b>${esc(x.d)}</b><span class="dn"><span><em>${x.ns}</em> supervisor${x.ns===1?"":"s"}</span><span><em>${x.pc+x.pu}</em> PGT${x.pc+x.pu===1?"":"s"}</span></span><span class="subt">CPSP ${x.nc} sup · ${x.pc} PGTs · UHS ${x.nu} sup · ${x.pu} PGTs${x.un?` · <span class="d-red">${x.un} without supervisor</span>`:""}</span></button>`).join("")}</div>
  <div class="panel" style="display:grid;gap:10px"><div class="toolbar"><input type="search" id="sq" placeholder="Search supervisor, department or PGT" value="${esc(UI.sq)}" aria-label="Search">
@@ -2169,13 +2178,13 @@ function vSupervisors(){const{A,sups,none}=supData();const rows=sups.filter(supF
   <div class="chips">${[["","All types"],["CPSP","CPSP"],["UHS","UHS"],["CPSP & UHS","CPSP & UHS"],["Not approved","Not approved but has PGTs"]].map(([k,l])=>`<button class="chip" data-stype="${k}" aria-pressed="${UI.stype===k}">${l}<span class="c">${sups.filter(s=>!k||s.type===k).length}</span></button>`).join("")}
    ${[["","Any load"],["has","Has PGTs"],["none","No PGTs"],["over",`${DB.settings.overload}+ PGTs`]].map(([k,l])=>`<button class="chip" data-sload="${k}" aria-pressed="${UI.sload===k}">${l}</button>`).join("")}</div></div>
  ${legend}<div class="panel flush"><div class="tblwrap"><table class="suptable"><thead><tr><th>Supervisor</th><th>Designation</th><th>Type</th><th class="num">CPSP</th><th>CPSP (FCPS) trainees</th><th class="num">UHS</th><th>UHS trainees</th><th class="num">Total</th></tr></thead><tbody>
- ${shown.map(d=>{const L=rows.filter(s=>s.f.spec===d).sort((a,b)=>(b.cpsp.length+b.uhs.length)-(a.cpsp.length+a.uhs.length)||a.f.name.localeCompare(b.f.name));const tc=L.reduce((s,x)=>s+x.cpsp.length,0),tu=L.reduce((s,x)=>s+x.uhs.length,0),un=none.filter(p=>p.spec===d&&(!UI.sprog||(UI.sprog==="CPSP"?p.program==="FCPS":p.program!=="FCPS")));
+ ${shown.map(d=>{const L=rows.filter(s=>s.f.spec===d||supsIn(s.f,d)).sort((a,b)=>(b.cpsp.length+b.uhs.length)-(a.cpsp.length+a.uhs.length)||a.f.name.localeCompare(b.f.name));const tc=L.reduce((s,x)=>s+x.cpsp.length,0),tu=L.reduce((s,x)=>s+x.uhs.length,0),un=none.filter(p=>p.spec===d&&(!UI.sprog||(UI.sprog==="CPSP"?p.program==="FCPS":p.program!=="FCPS")));
   return`<tr class="deptrow"><td colspan="3">${esc(d)} <span class="subt">${L.length} supervisor${L.length===1?"":"s"}</span></td><td class="num">${tc}</td><td></td><td class="num">${tu}</td><td></td><td class="num">${tc+tu}</td></tr>
   ${L.map(s=>{const n=s.cpsp.length+s.uhs.length;return`<tr><td><a href="#fac-${s.f.id}">${esc(facName(s.f))}</a>${s.f.unit?`<div class="subt">${esc(s.f.unit)}</div>`:""}</td><td>${esc(s.f.desig)}</td><td>${typePill(s.type)}</td><td class="num"><b>${s.cpsp.length}</b></td><td class="wrapcell">${s.cpsp.length?`<div class="pchips">${s.cpsp.map(chip).join("")}</div>`:'<span class="subt">—</span>'}</td><td class="num"><b>${s.uhs.length}</b></td><td class="wrapcell">${s.uhs.length?`<div class="pchips">${s.uhs.map(chip).join("")}</div>`:'<span class="subt">—</span>'}</td><td class="num"><span class="days ${n>=DB.settings.overload?"d-red":""}">${n}</span></td></tr>`}).join("")}
   ${un.length&&!UI.stype&&UI.sload!=="none"&&!UI.sq?`<tr><td colspan="3"><span class="pill p-bad">No supervisor recorded</span></td><td class="num">${un.filter(p=>p.program==="FCPS").length}</td><td class="wrapcell"><div class="pchips">${un.filter(p=>p.program==="FCPS").map(chip).join("")}</div></td><td class="num">${un.filter(p=>p.program!=="FCPS").length}</td><td class="wrapcell"><div class="pchips">${un.filter(p=>p.program!=="FCPS").map(chip).join("")}</div></td><td class="num">${un.length}</td></tr>`:""}`}).join("")||`<tr><td colspan="8" class="empty">No supervisors match these filters.</td></tr>`}
  </tbody></table></div></div>`}
-EXPORTS.sups=()=>{const{A,sups,none}=supData();const rows=LAST.sups||sups;const depts=[...new Set(sups.map(s=>s.f.spec))].sort((a,b)=>specIdx(a)-specIdx(b));
- const sum=depts.map(d=>{const S=sups.filter(s=>s.f.spec===d),P=A.filter(p=>p.spec===d);return{"Department":d,"Approved supervisors":S.filter(s=>s.type!=="Not approved").length,"CPSP supervisors":S.filter(s=>s.f.cpsp).length,"UHS supervisors":S.filter(s=>s.f.uhs).length,"CPSP (FCPS) PGTs":P.filter(p=>p.program==="FCPS").length,"UHS PGTs":P.filter(p=>p.program!=="FCPS").length,"Total PGTs":P.length,"PGTs without supervisor":none.filter(p=>p.spec===d).length}});
+EXPORTS.sups=()=>{const{A,sups,none}=supData();const rows=LAST.sups||sups;const depts=[...new Set(sups.flatMap(s=>[s.f.spec,...supSpecs(s.f).filter(x=>x.cpsp||x.uhs).map(x=>x.spec)]))].sort((a,b)=>specIdx(a)-specIdx(b));
+ const sum=depts.map(d=>{const S=sups.filter(s=>s.f.spec===d||supsIn(s.f,d)),P=A.filter(p=>p.spec===d);return{"Department":d,"Approved supervisors":S.filter(s=>s.type!=="Not approved").length,"CPSP supervisors":S.filter(s=>s.f.cpsp).length,"UHS supervisors":S.filter(s=>s.f.uhs).length,"CPSP (FCPS) PGTs":P.filter(p=>p.program==="FCPS").length,"UHS PGTs":P.filter(p=>p.program!=="FCPS").length,"Total PGTs":P.length,"PGTs without supervisor":none.filter(p=>p.spec===d).length}});
  const ordered=rows.slice().sort((a,b)=>specIdx(a.f.spec)-specIdx(b.f.spec)||(b.cpsp.length+b.uhs.length)-(a.cpsp.length+a.uhs.length));
  const bySup=ordered.map(s=>({"Department":s.f.spec,"Supervisor":facName(s.f),"Designation":s.f.desig,"Unit":s.f.unit,"Type":s.type,"CPSP PGTs":s.cpsp.length,"CPSP trainee names":s.cpsp.map(p=>"Dr. "+p.name).join(", "),"UHS PGTs":s.uhs.length,"UHS trainee names":s.uhs.map(p=>"Dr. "+p.name).join(", "),"Total PGTs":s.cpsp.length+s.uhs.length}));
  const pairs=[];ordered.forEach(s=>{const L=[...s.cpsp,...s.uhs];if(!L.length)pairs.push({"Department":s.f.spec,"Supervisor":facName(s.f),"Designation":s.f.desig,"Type":s.type,"Track":"","PGT ID":"","Trainee":"","Programme":"","Year at RIC":"","Induction":""});
@@ -3208,7 +3217,7 @@ function dcIssues(){const out=[];
   if(c.rotational&&rot&&rot.start&&!rot.ret&&P(rot.start)<=TODAY)add("rotret","Rotation started "+fd(rot.start)+", return date not recorded");
   if(!c.sup)add("sup","No supervisor recorded");
   else if(c.sup.active===false)add("sup",`${facName(c.sup)} has left RIC; choose a new supervisor`);
-  else if(p.program==="FCPS"?!c.sup.cpsp:!c.sup.uhs)add("supok",`${facName(c.sup)} is not an approved ${p.program==="FCPS"?"CPSP":"UHS"} supervisor`);
+  else if(!canSup(c.sup,p.spec,p.program))add("supok",`${facName(c.sup)} is not an approved ${p.program==="FCPS"?"CPSP":"UHS"} supervisor in ${p.spec}`);
   if(!p.start||!p.dur)add("dates",!p.start&&!p.dur?"Start date and duration missing":!p.start?"Training start date missing":"Training duration missing");
   if(c.phase==="Past expected completion")add("done","Past expected completion ("+fd(c.comp)+")");
   if(!p.code)add("code","No PGT ID");
@@ -3217,7 +3226,7 @@ function dcIssues(){const out=[];
  return out}
 UI.dck="";UI.dcq="";
 function dcFix(x){const{p,c,k,rot}=x,n=f=>`name="dc-${f}"`;
- const supOpts=()=>{const pool=DB.faculty.filter(f=>f.active!==false&&f.spec===p.spec&&(p.program==="FCPS"?f.cpsp:f.uhs)),rest=DB.faculty.filter(f=>f.active!==false&&!pool.includes(f)).sort((a,b)=>a.name.localeCompare(b.name));
+ const supOpts=()=>{const pool=DB.faculty.filter(f=>f.active!==false&&canSup(f,p.spec,p.program)),rest=DB.faculty.filter(f=>f.active!==false&&!pool.includes(f)).sort((a,b)=>a.name.localeCompare(b.name));
   return`<select ${n("fid")} aria-label="Supervisor"><option value="">Choose supervisor</option>${pool.length?`<optgroup label="Approved, ${esc(p.spec)}">${pool.map(f=>`<option value="${f.id}">${esc(facName(f))}</option>`).join("")}</optgroup>`:""}<optgroup label="All faculty">${rest.map(f=>`<option value="${f.id}">${esc(facName(f))} · ${esc(f.spec)}</option>`).join("")}</optgroup></select>`};
  if(k==="rotsite")return`<select ${n("site")} aria-label="Hospital"><option value="">Hospital</option>${DB.sites.filter(s=>s.active).map(s=>`<option value="${esc(s.short)}">${esc(s.name)}</option>`).join("")}</select><label class="dcl">from<input type="date" ${n("start")} value="${rot?.start||c.rotStart||""}"></label><label class="dcl">back<input type="date" ${n("ret")} value="${rot?.ret||c.ret||""}"></label>`;
  if(k==="rotret")return`<label class="dcl">back to RIC<input type="date" ${n("ret")} value="${c.ret||""}"></label>`;
@@ -3261,7 +3270,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Enter"&&route.v==="datacheck
 UI.credType=null;UI.credMute=false;
 function credTypeOf(issue){return/CPSP/.test(issue)?CRED[1]:/UHS/.test(issue)?CRED[2]:CRED[0]}
 function credGo(fid,type){UI.credFac=fid;UI.credType=type||null;if(route.v!=="credentials")go("credentials");else render();setTimeout(()=>{const el=document.getElementById("cr-upload")||document.getElementById("cr-type")?.closest(".panel");if(el){el.scrollIntoView({behavior:"smooth",block:"start"});el.classList.add("flash");setTimeout(()=>el.classList.remove("flash"),1600);document.getElementById("cr-issue")?.focus({preventScroll:true})}},60)}
-document.addEventListener("click",e=>{const b=e.target.closest('[data-act="cr-goto"]');if(!b)return;e.preventDefault();e.stopPropagation();credGo(b.dataset.id,b.dataset.type)},true);
+document.addEventListener("click",e=>{const b=e.target.closest('[data-act="cr-goto"]');if(!b)return;e.preventDefault();e.stopPropagation();UI.credSpec=b.dataset.spec||"";credGo(b.dataset.id,b.dataset.type)},true);
 document.addEventListener("click",e=>{const b=e.target.closest('[data-act="cr-mute"],[data-act="cr-pick"]');if(!b)return;e.stopPropagation();e.preventDefault();
  if(b.dataset.act==="cr-mute"){UI.credMute=!UI.credMute;render();return}credGo(b.dataset.id,null)},true);
 
@@ -3934,15 +3943,17 @@ function rotDashCard(){const cur=visList().filter(v=>rotState(v)==="Current"),t=
 const rotLink=()=>LIVE?pubBase()+"?rot=1":"https://dme.ric.example/rotation";
 let ROTPUB={sups:[]};
 async function rotPublicPage(){document.body.classList.add("public");
- try{const{data}=await SYNC.sb.rpc("dme_public_lists");ROTPUB.sups=(data&&data.faculty||[]).map(f=>f.n).sort()}catch(e){}
+ try{const{data}=await SYNC.sb.rpc("dme_public_lists");ROTPUB.sups=[...new Set((data&&data.faculty||[]).map(f=>f.n))].sort();ROTPUB.cfg={...FORM_DEF.rot,...((data&&data.forms&&data.forms.rot)||{})}}catch(e){ROTPUB.cfg={...FORM_DEF.rot}}
  rotPubRender()}
 function rotPubRender(done){
  if(done)return pubShell(`<div class="panel fbform">${formHead(null,"Registration received","Rotating trainees · Department of Medical Education")}
   <p>Thank you, Dr. ${esc(done.name)}. Your rotation in <b>${esc(done.unit)}</b> from ${fd(done.start)} to ${fd(done.end)} is now recorded with the DME office.</p>
   <div class="flag ok" style="display:grid;gap:4px"><span>Your attendance PIN</span><b style="font-size:32px;letter-spacing:.25em;font-family:var(--f-mono)">${esc(done.pin)}</b><span class="subt">Write it down. Mark your attendance every working day on the attendance computer in the Medical Education Department.</span></div>
   <p class="subt">Bring your original movement order to the DME office on your first day.</p></div>`);
+ const C=ROTPUB.cfg||FORM_DEF.rot;
+ if(!formIsOpen(C))return pubShell(`<div class="panel fbform">${formHead(null,"Rotation registration","Department of Medical Education")}<p>Online registration for rotations is closed at the moment.</p>${C.msg?`<p style="white-space:pre-line">${esc(C.msg)}</p>`:""}${C.contact?`<p class="subt">Contact: ${esc(C.contact)}</p>`:""}</div>`);
  const f=(n,l,o={})=>`<label class="f"><span class="${o.opt?"":"req"}">${l}${o.h?` <span class="h">${o.h}</span>`:o.opt?` <span class="h">optional</span>`:""}</span><input name="${n}" ${o.type?`type="${o.type}"`:""} ${o.ph?`placeholder="${o.ph}"`:""} ${o.list?`list="${o.list}"`:""} ${o.mode?`inputmode="${o.mode}"`:""}></label>`;
- pubShell(`<form class="panel fbform" id="rotform" novalidate>${formHead(null,"Rotation registration","For postgraduate trainees from other institutes joining RIC for a rotation")}
+ pubShell(`<form class="panel fbform" id="rotform" novalidate>${formHead(null,"Rotation registration","For postgraduate trainees from other institutes joining RIC for a rotation")}${C.msg?`<div class="flag info" style="white-space:pre-line">${esc(C.msg)}</div>`:""}
   <fieldset class="pfsec"><legend>About you</legend>${f("name","Full name",{h:'without "Dr."',ph:"e.g. Ahmed Raza"})}${f("father","Father's name",{opt:1})}
    <div class="grid2">${f("cnic","CNIC",{ph:"37405-1234567-1",mode:"numeric"})}${f("pmdc","PMDC number",{opt:1,ph:"e.g. 93232-P"})}</div>
    <div class="grid2">${f("mobile","Mobile",{ph:"03xx-xxxxxxx",type:"tel",mode:"numeric"})}${f("email","Email",{opt:1,type:"email"})}</div></fieldset>
@@ -3950,7 +3961,7 @@ function rotPubRender(done){
    <div class="grid2"><label class="f"><span class="req">Programme</span><select name="program">${opt(["",...ROT_PROGS],"")}</select></label>${f("spec","Your specialty",{ph:"e.g. General Surgery"})}</div>
    ${f("year","Training year",{opt:1,ph:"e.g. 3"})}</fieldset>
   <fieldset class="pfsec"><legend>Rotation at RIC</legend>
-   <label class="f"><span class="req">Department / unit</span><select name="unit">${opt(["",...ROT_UNITS,"Other"],"")}</select></label><label class="f" id="rp-uo" hidden><span class="req">Which unit?</span><input name="unitOther"></label>
+   <label class="f"><span class="req">Department / unit</span><select name="unit">${opt(["",...(C.units&&C.units.length?C.units:ROT_UNITS).filter(u=>u!=="Other"),"Other"],"")}</select></label><label class="f" id="rp-uo" hidden><span class="req">Which unit?</span><input name="unitOther"></label>
    <div class="grid2">${f("start","Rotation starts",{type:"date"})}${f("end","Rotation ends",{type:"date"})}</div>
    <div class="chips">${[1,2,3,6].map(m=>`<button type="button" class="chip" data-rplen="${m}">${m} month${m>1?"s":""}</button>`).join("")}</div>
    <label class="f"><span>Supervisor at RIC <span class="h">if you know it</span></span><select name="supName">${opt(["",...ROTPUB.sups],"")}</select></label>
@@ -3959,7 +3970,7 @@ function rotPubRender(done){
    <label class="f"><span class="req">Movement order</span><input type="file" name="movement" accept="image/jpeg,image/png,image/webp,application/pdf"></label>
    <label class="f"><span>PMDC certificate <span class="h">optional</span></span><input type="file" name="pmdcdoc" accept="image/jpeg,image/png,image/webp,application/pdf"></label></fieldset>
   <label class="check2"><input type="checkbox" id="rp-decl"> The information I have given is correct.</label>
-  <div class="err" id="rperr" role="alert"></div><button class="btn primary" type="button" data-act="rp-submit" style="justify-self:start">Submit</button></form>`)}
+  <div class="err" id="rperr" role="alert"></div><button class="btn primary" type="button" data-act="rp-submit" style="justify-self:start">Submit</button>${C.contact?`<p class="subt" style="margin:0">Questions? ${esc(C.contact)}</p>`:""}</form>`)}
 document.addEventListener("change",e=>{if(e.target.name==="unit"&&e.target.closest("#rotform"))document.getElementById("rp-uo").hidden=e.target.value!=="Other"});
 document.addEventListener("click",async e=>{const lb=e.target.closest("[data-rplen]");if(lb){const fm=document.getElementById("rotform"),s=fm.start.value;if(!s){document.getElementById("rperr").textContent="Choose the start date first.";return}const d=P(s);d.setMonth(d.getMonth()+ +lb.dataset.rplen);d.setDate(d.getDate()-1);fm.end.value=iso(d);return}
  const b=e.target.closest('[data-act="rp-submit"]');if(!b)return;const fm=document.getElementById("rotform"),er=document.getElementById("rperr"),g=n=>(fm[n]?.value||"").trim();
@@ -3979,7 +3990,7 @@ document.addEventListener("click",async e=>{const lb=e.target.closest("[data-rpl
    const{error}=await SYNC.sb.storage.from("dme-uploads").upload(path,x,{contentType:x.type||undefined});if(error)throw new Error("upload");docs[k]=path}
   b.textContent="Sending…";const p={name,father:g("father"),cnic:cn,pmdc:g("pmdc"),mobile:mob.slice(0,4)+"-"+mob.slice(4),email:g("email"),inst:g("inst"),program:g("program"),spec:g("spec"),year:g("year"),unit,start:g("start"),end:g("end"),supName:g("supName"),letter:g("letter"),docs};
   const{data,error}=await SYNC.sb.rpc("dme_submit_rot",{p});if(error||!data)throw new Error("send");
-  if(data.error){b.disabled=false;b.textContent="Submit";return bad(data.error==="duplicate"?"You are already registered for a rotation at RIC on these dates. Contact the DME office.":"Some details are missing or not valid. Check the form.")}
+  if(data.error){b.disabled=false;b.textContent="Submit";return bad(data.error==="duplicate"?"You are already registered for a rotation at RIC on these dates. Contact the DME office.":data.error==="closed"?"Online registration has just closed. Contact the DME office.":"Some details are missing or not valid. Check the form.")}
   rotPubRender({...p,pin:data.pin});window.scrollTo(0,0)}
  catch(x){b.disabled=false;b.textContent="Submit";bad(x.message==="upload"?"A document could not be uploaded. Check the connection and try again.":"Could not send. Check the connection and try again.")}});
 /* staff side: link, new-registration badge, documents */
@@ -3993,6 +4004,90 @@ function rotDocsHtml(v){const D=[["movement","Movement order"],["pmdc","PMDC cer
 document.addEventListener("click",e=>{const a=e.target.closest('[data-act="rot-copylink"],[data-act="rot-checked"]');if(!a)return;
  if(a.dataset.act==="rot-copylink")return copyText(document.getElementById("rotlink").value,a);
  const v=visList().find(x=>x.id===a.dataset.id);if(!v)return;v.checked=true;v.checkedBy=ME;log(`Documents checked for rotating trainee Dr. ${v.name}`,"rot-"+v.id);toast("Marked as checked");render()});
+
+/* =====================================================================
+   V22 · (1) registration-form settings, links and QR codes for the PGT
+   and rotating-trainee forms; (2) faculty who supervise in more than
+   one specialty, with supervisory certificates per specialty
+   ===================================================================== */
+
+/* ---------- 1. form settings + QR ---------- */
+const FORM_DEF={pgt:{open:true,msg:"",close:"",contact:""},rot:{open:true,msg:"",close:"",contact:"",units:ROT_UNITS.slice()}};
+const formCfg=k=>{const s=DB.settings.forms=DB.settings.forms||{};return{...FORM_DEF[k],...(s[k]||{})}};
+const formName=k=>k==="pgt"?"PGT registration":"Rotation registration";
+const formUrl=k=>k==="pgt"?(LIVE?pubBase().replace(/[^/]*$/,"")+"register.html":"https://dme.ric.example/register"):rotLink();
+const formIsOpen=c=>c.open!==false&&!(c.close&&c.close<iso(TODAY));
+function regLinkPanel(k){if(isViewer())return"";const c=formCfg(k),open=formIsOpen(c),n=k==="rot"?visList().filter(rotNew).length:0;
+ return`<div class="panel" style="display:grid;gap:10px"><div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
+  <button class="qrthumb" data-act="form-qr" data-k="${k}" title="Show QR code">${qrSvg(formUrl(k),2)}</button>
+  <div style="flex:1;min-width:240px;display:grid;gap:6px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>${formName(k)} form</b><span class="pill ${open?"p-ric":"p-bad"}">${open?"Open":"Closed"}</span>${c.close&&open?`<span class="subt">closes ${fd(c.close)}</span>`:""}</div>
+   <div class="toolbar"><input id="flink-${k}" readonly class="linkbox" value="${esc(formUrl(k))}" style="flex:1;min-width:200px;font-family:var(--f-mono);font-size:13px"><button class="btn small" data-act="form-copy" data-k="${k}">Copy link</button><button class="btn small" data-act="form-qr" data-k="${k}">QR code</button><a class="btn small" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent((k==="pgt"?"PGT registration, Rawalpindi Institute of Cardiology. Please fill in your details and upload your documents:\n":"Rotation registration, Rawalpindi Institute of Cardiology (Department of Medical Education). Please register before your first day and upload your movement order:\n")+formUrl(k))}">Share on WhatsApp</a><button class="btn small" data-act="form-edit" data-k="${k}">Form settings</button></div>
+   ${c.msg?`<p class="subt" style="margin:0">Message on the form: ${esc(c.msg.slice(0,140))}${c.msg.length>140?"…":""}</p>`:""}</div></div>
+  ${n?`<div class="flag info">${n} new online registration${n>1?"s":""}: check the movement order, then press <b>Documents checked</b> on the profile.</div>`:""}</div>`}
+function rotLinkPanel(){return regLinkPanel("rot")}
+function sheetFormCfg(k){const c=formCfg(k);
+ openSheet(`${formName(k)} form`,`<p class="subt" style="margin:0">These settings show on the form the moment you save. The link and QR code stay the same, so printed QR codes keep working.</p>
+ <label class="f">Status<select name="open">${opt([["1","Open: accepting registrations"],["0","Closed"]],c.open===false?"0":"1")}</select></label>
+ <label class="f">Close automatically after <span class="h">optional</span><input type="date" name="close" value="${esc(c.close||"")}"></label>
+ <label class="f">Message at the top of the form <span class="h">optional: instructions, deadline, what to bring</span><textarea name="msg" rows="4" placeholder="${k==="pgt"?"e.g. All PGTs joining in the July 2026 induction must register by 15 August. Keep your CNIC, PMDC certificate and joining letter ready.":"e.g. Register before your first day. Bring your original movement order to the DME office (Ground floor, Admin block)."}">${esc(c.msg||"")}</textarea></label>
+ <label class="f">Contact for questions <span class="h">shown on the form</span><input name="contact" value="${esc(c.contact||"")}" placeholder="e.g. DME office, 051-xxxxxxx (9 am to 3 pm)"></label>
+ ${k==="rot"?`<label class="f">Rotation units offered <span class="h">one per line; "Other" is always added</span><textarea name="units" rows="7">${esc((c.units||[]).join("\n"))}</textarea></label>`:""}`,()=>{
+  const n={open:fv("open")==="1",close:fv("close"),msg:fv("msg"),contact:fv("contact")};if(k==="rot"){n.units=fv("units").split("\n").map(s=>s.trim()).filter(Boolean);if(!n.units.length)return fail("List at least one unit.")}
+  DB.settings.forms=DB.settings.forms||{};DB.settings.forms[k]=n;log(`${formName(k)} form settings changed: ${n.open?"open":"closed"}${n.close?", closes "+fd(n.close):""}`);toast("Saved. The form shows the change now.");return true})}
+function qrPng(k){return new Promise((ok,no)=>{const url=formUrl(k);if(typeof qrcode!=="function")return no(new Error("QR code needs an internet connection"));
+ const q=qrcode(0,"M");q.addData(url);q.make();const n=q.getModuleCount(),cell=Math.floor(900/n),qs=n*cell,W=1200,H=1650,cv=document.createElement("canvas");cv.width=W;cv.height=H;const g=cv.getContext("2d");
+ g.fillStyle="#fff";g.fillRect(0,0,W,H);g.fillStyle="#6D1F2B";g.fillRect(0,0,W,22);
+ const draw=()=>{g.fillStyle="#231A17";g.textAlign="center";g.font="600 44px Georgia,serif";g.fillText("RAWALPINDI INSTITUTE OF CARDIOLOGY",W/2,230);g.font="32px Arial,sans-serif";g.fillStyle="#6E625A";g.fillText("Department of Medical Education & Training",W/2,280);
+  g.fillStyle="#6D1F2B";g.font="bold 64px Arial,sans-serif";g.fillText(k==="pgt"?"PGT Registration":"Rotation Registration",W/2,390);g.fillStyle="#231A17";g.font="34px Arial,sans-serif";g.fillText(k==="pgt"?"Postgraduate trainees joining RIC":"Trainees from other institutes on rotation at RIC",W/2,445);
+  const x0=(W-qs)/2,y0=500;g.fillStyle="#000";for(let r=0;r<n;r++)for(let c2=0;c2<n;c2++)if(q.isDark(r,c2))g.fillRect(x0+c2*cell,y0+r*cell,cell,cell);
+  g.fillStyle="#6D1F2B";g.font="bold 46px Arial,sans-serif";g.fillText("Scan with your phone camera",W/2,y0+qs+90);g.fillStyle="#6E625A";g.font="26px monospace";g.fillText(url.length>70?url.slice(0,70)+"…":url,W/2,y0+qs+145);ok(cv.toDataURL("image/png"))};
+ const lg=document.querySelector('img[alt="RIC logo"]');if(lg&&lg.complete){try{g.drawImage(lg,W/2-75,45,150,150)}catch(e){}}draw()})}
+function qrBig(k){const url=formUrl(k);document.getElementById("overlay").innerHTML=`<div class="scrim" data-act="close"></div><div class="qrfull" role="dialog" aria-modal="true" aria-label="QR code"><div class="code">Scan to open the registration form</div><h2>${formName(k)}</h2><div class="qrbig">${qrSvg(url,10)}</div><div class="code" style="font-size:13px;word-break:break-all">${esc(url)}</div>
+ <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center"><button class="btn primary" data-act="form-qrpng" data-k="${k}">Download printable QR (PNG)</button><button class="btn" data-act="close">Close</button></div></div>`}
+document.addEventListener("click",async e=>{const a=e.target.closest('[data-act="form-qr"],[data-act="form-copy"],[data-act="form-edit"],[data-act="form-qrpng"]');if(!a)return;const k=a.dataset.k;
+ if(a.dataset.act==="form-copy")return copyText(formUrl(k),a);if(a.dataset.act==="form-edit")return sheetFormCfg(k);if(a.dataset.act==="form-qr")return qrBig(k);
+ try{const png=await qrPng(k);const l=document.createElement("a");l.href=png;l.download=`QR ${formName(k)} - RIC.png`;document.body.append(l);l.click();l.remove()}catch(x){toast(x.message||"Could not make the QR image")}});
+VIEW_ACTS.add("form-qr");VIEW_ACTS.add("form-copy");VIEW_ACTS.add("form-qrpng");
+
+/* ---------- 2. supervisors in more than one specialty ---------- */
+const supSpecs=f=>Array.isArray(f.sups)&&f.sups.length?f.sups:[{spec:f.spec,cpsp:!!f.cpsp,uhs:!!f.uhs}];
+const primSup=f=>supSpecs(f).find(s=>s.spec===f.spec)||{spec:f.spec,cpsp:false,uhs:false};
+const canSup=(f,spec,prog)=>supSpecs(f).some(s=>s.spec===spec&&(prog==="FCPS"?s.cpsp:s.uhs));
+const supsIn=(f,spec)=>supSpecs(f).some(s=>s.spec===spec&&(s.cpsp||s.uhs));
+/* keep the "approved anywhere" flags in step with the per-specialty list */
+function facSync(f){const L=supSpecs(f);f.cpsp=L.some(s=>s.cpsp);f.uhs=L.some(s=>s.uhs);if(L.length===1&&L[0].spec===f.spec)delete f.sups;else f.sups=L}
+const CSTAT_RANK={"Expired":0,"Not Certified":1,"Expiring Soon":2,"Certified":3};
+function facCur(f){
+ const ps=verified().filter(p=>CUR.get(p.id).active&&CUR.get(p.id).sup?.id===f.id);
+ const mine=DB.creds.filter(c=>c.fid===f.id),latest=(t,sp)=>mine.filter(c=>c.type===t&&(sp==null||(c.spec||f.spec)===sp)).sort((a,b)=>(a.issue||"")<(b.issue||"")?1:-1)[0]||null;
+ const cr={};CRED.forEach(t=>cr[t]=latest(t));
+ const st=(c,reg)=>{if(!c)return reg?"Not Registered":"Not Certified";if(c.expiry&&P(c.expiry)<TODAY)return"Expired";if(c.expiry&&days(P(c.expiry),TODAY)<=DB.settings.cert_warn)return"Expiring Soon";return reg?"Registered":"Certified"};
+ const sp=supSpecs(f).map(s=>({spec:s.spec,cpsp:s.cpsp?st(latest(CRED[1],s.spec)):null,uhs:s.uhs?st(latest(CRED[2],s.spec)):null,cc:latest(CRED[1],s.spec),uc:latest(CRED[2],s.spec)}));
+ const worst=k=>{const L=sp.map(x=>x[k]).filter(Boolean);return L.length?L.sort((a,b)=>CSTAT_RANK[a]-CSTAT_RANK[b])[0]:st(cr[k==="cpsp"?CRED[1]:CRED[2]])};
+ return{pgts:ps,n:ps.length,ncpsp:ps.filter(p=>p.program==="FCPS").length,nuhs:ps.filter(p=>p.program!=="FCPS").length,cr,sp,
+  pmdc:st(cr[CRED[0]],1),cpsp:worst("cpsp"),uhs:worst("uhs"),type:f.cpsp&&f.uhs?"CPSP & UHS":f.cpsp?"CPSP":f.uhs?"UHS":"—"}}
+function credIssues(f,c){const i=[],many=c.sp.length>1;
+ if(c.pmdc==="Expired")i.push(["bad","PMDC registration expired"]);else if(c.pmdc==="Expiring Soon")i.push(["warn","PMDC registration expiring "+fd(c.cr[CRED[0]].expiry)]);else if(c.pmdc==="Not Registered")i.push(["mute","No PMDC faculty registration on file"]);
+ c.sp.forEach(s=>{const tag=many?` (${s.spec})`:"";
+  [["CPSP","cpsp","cc"],["UHS","uhs","uc"]].forEach(([B,k,ck])=>{const v=s[k];if(!v)return;if(v==="Not Certified")i.push(["warn",`${B} supervisor${tag}, no certificate on file`]);else if(v==="Expired")i.push(["bad",`${B} certificate${tag} expired`]);else if(v==="Expiring Soon")i.push(["warn",`${B} certificate${tag} expiring ${fd(s[ck].expiry)}`])})});
+ return i}
+const credSpecOf=issue=>(String(issue).match(/\(([^)]+)\)/)||[])[1]||"";
+function facSpecLines(f,c){if(!f.cpsp&&!f.uhs)return"";return`<dt>Supervises in</dt><dd>${c.sp.filter(s=>s.cpsp||s.uhs).map(s=>`<div style="margin-bottom:4px"><b>${esc(s.spec)}</b>${s.cpsp?` · CPSP ${credPill(s.cpsp)}`:""}${s.uhs?` · UHS ${credPill(s.uhs)}`:""}</div>`).join("")}</dd>`}
+/* the supervisor-approval rows on the Credentials page */
+function crSupRows(f){const L=supSpecs(f);return`<div id="cr-sups" style="display:grid;gap:8px">${L.map((s,i)=>crSupRow(s,s.spec===f.spec)).join("")}</div>
+ <button type="button" class="btn small" data-act="cr-addspec" style="justify-self:start">Add another specialty</button>`}
+function crSupRow(s,prim){return`<div class="supspec">${prim?`<b>${esc(s.spec)}</b><input type="hidden" class="cr-sp" value="${esc(s.spec)}"><span class="subt">main department</span>`:`<select class="cr-sp" aria-label="Specialty">${opt(specNames(),s.spec)}</select>`}
+ <label class="check2"><input type="checkbox" class="cr-c" ${s.cpsp?"checked":""}> CPSP</label><label class="check2"><input type="checkbox" class="cr-u" ${s.uhs?"checked":""}> UHS</label>${prim?"":`<button type="button" class="btn link" data-act="cr-rmspec">Remove</button>`}</div>`}
+document.addEventListener("click",e=>{const a=e.target.closest('[data-act="cr-addspec"],[data-act="cr-rmspec"]');if(!a)return;e.stopPropagation();
+ if(a.dataset.act==="cr-rmspec"){a.closest(".supspec").remove();return}const f=facById(UI.credFac);if(!f)return;const used=[...document.querySelectorAll("#cr-sups .cr-sp")].map(x=>x.value);
+ const next=specNames().find(s=>!used.includes(s))||specNames()[0];document.getElementById("cr-sups").insertAdjacentHTML("beforeend",crSupRow({spec:next,cpsp:true,uhs:false},false))},true);
+function crReadSups(f){const rows=[...document.querySelectorAll("#cr-sups .supspec")].map(r=>({spec:r.querySelector(".cr-sp").value,cpsp:r.querySelector(".cr-c").checked,uhs:r.querySelector(".cr-u").checked}));
+ const out=[];rows.forEach(r=>{const x=out.find(o=>o.spec===r.spec);if(x){x.cpsp=x.cpsp||r.cpsp;x.uhs=x.uhs||r.uhs}else out.push(r)});
+ return out.filter(r=>r.spec===f.spec||r.cpsp||r.uhs)}
+document.addEventListener("change",e=>{if(e.target.id==="cr-type"){const w=document.getElementById("cr-specwrap");if(w)w.hidden=e.target.value===CRED[0]}},true);
+
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&document.querySelector("#overlay .qrfull"))document.getElementById("overlay").innerHTML=""});
+window.addEventListener("hashchange",()=>{if(document.querySelector("#overlay .qrfull"))document.getElementById("overlay").innerHTML=""});
 
 /* ---------- events ---------- */
 document.addEventListener("click",e=>{

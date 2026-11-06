@@ -372,12 +372,14 @@ ${LIVE?"":`<div class="note warn">Prototype: nothing was sent. In the live versi
 
 
 /* ---------- live: lists from the DME database, submission to Supabase ---------- */
+let FORMC=null;const formClosed=()=>FORMC&&(FORMC.open===false||(FORMC.close&&FORMC.close<iso(new Date())));
 const SUPA=(window.DME_SUPABASE&&window.DME_SUPABASE.url&&window.DME_SUPABASE.anonKey)?window.DME_SUPABASE:null,LIVE=!!SUPA;let SB=null;
 function sbReady(){if(SB)return Promise.resolve(SB);return new Promise((ok,no)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js";s.onload=()=>{SB=window.supabase.createClient(SUPA.url,SUPA.anonKey,{auth:{persistSession:false}});ok(SB)};s.onerror=()=>no(new Error("Could not connect"));document.head.append(s)})}
 if(LIVE)sbReady().then(sb=>sb.rpc("dme_public_lists")).then(({data})=>{if(!data)return;
  if((data.specs||[]).length){const sp=data.specs.filter(x=>x.active!==false&&x.teaching!==false&&x.dur&&Object.keys(x.dur).length);if(sp.length){SPECS=sp.map(x=>x.name);DUR=Object.fromEntries(sp.map(x=>[x.name,Object.fromEntries(Object.entries(x.dur).filter(([k,v])=>+v>0).map(([k,v])=>[k,+v]))]))}}
  if((data.faculty||[]).length)SUP=data.faculty.filter(f=>f.c||f.u);
  if((data.sites||[]).length)SITES=[...data.sites.filter(x=>x.active!==false).map(x=>[x.short,x.name]),["Other","Other hospital"]];
+ if(data.forms&&data.forms.pgt)FORMC=data.forms.pgt;
  if(!S.done)render()}).catch(()=>{});
 async function liveSubmit(b){b.disabled=true;const old=b.textContent;b.textContent="Uploading documents…";
  const fail=m=>{b.disabled=false;b.textContent=old;let el=document.getElementById("suberr");if(!el){el=document.createElement("p");el.id="suberr";el.className="note warn";b.after(el)}el.textContent=m};
@@ -387,7 +389,7 @@ async function liveSubmit(b){b.disabled=true;const old=b.textContent;b.textConte
    const{error}=await sb.storage.from("dme-uploads").upload(path,f.file,{contentType:f.type||undefined});if(error)return fail("A document could not be uploaded. Check the connection and try again.");docs[d.k]=path}
   b.textContent="Sending…";const p={...S,docs,sup:S.sup==="other"?"":S.sup,supOther:S.sup==="other"?S.supOther:"",bio:bioOf()};delete p.done;delete p.step;delete p.ok;delete p.family;
   const{data,error}=await sb.rpc("dme_submit_pgt",{p});if(error||!data)return fail("Could not send. Check the connection and try again.");
-  if(data.error)return fail(data.error==="duplicate"?"A registration with this CNIC already exists. Contact the DME office.":"Some details are missing or not valid. Check each step.");
+  if(data.error)return fail(data.error==="duplicate"?"A registration with this CNIC already exists. Contact the DME office.":data.error==="closed"?"Online registration has just closed. Contact the DME office.":"Some details are missing or not valid. Check each step.");
   S.done={ref:data.ref,at:new Date().toLocaleString("en-GB",{dateStyle:"medium",timeStyle:"short"})};save();render()}catch(e){fail("Could not send. Check the connection and try again.")}}
 function bioOf(){return{dob:S.dob,marital:S.marital,religion:S.religion.trim(),sect:S.sect.trim(),passport:S.passport.replace(/\s/g,"").toUpperCase(),otherNat:S.otherNat.trim(),resNo:S.resNo.trim(),
  curAddr:S.curAddr.trim(),permAddr:(S.sameAddr?S.curAddr:S.permAddr).trim(),bank:S.bank.trim(),account:S.account.trim(),family:S.family.filter(f=>f.name.trim()).map(f=>({name:f.name.trim(),rel:f.rel,cnic:f.cnic,passport:f.passport.trim().toUpperCase(),age:f.age===""?"":+f.age,nat:f.nat.trim()}))}}
@@ -398,7 +400,9 @@ async function bioDownload(b){const er=document.getElementById("bioerr");b.disab
 const V=[v0,v1c,vFam,v1,v2,v3,v4];
 function render(){
  document.getElementById("rail").innerHTML=STEPS.map((s,i)=>`<li><button data-go="${i}" class="${i<S.step&&stepOk(i)?"done":""}" ${i===S.step&&!S.done?'aria-current="step"':""}>${s}</button></li>`).join("");
- document.getElementById("app").innerHTML=S.done?vDone():V[S.step]();
+ if(!S.done&&formClosed()){document.getElementById("app").innerHTML=`<section class="card"><h2>Registration is closed</h2><p class="lede">Online PGT registration is not open at the moment.</p>${FORMC.msg?`<p style="white-space:pre-line;margin:0">${esc(FORMC.msg)}</p>`:""}${FORMC.contact?`<p class="hint">Contact: ${esc(FORMC.contact)}</p>`:""}</section>`;
+  document.getElementById("back").disabled=true;document.getElementById("next").hidden=true;return}
+ document.getElementById("app").innerHTML=(S.step===0&&!S.done&&FORMC&&FORMC.msg?`<div class="note warn" style="white-space:pre-line;margin-bottom:12px">${esc(FORMC.msg)}</div>`:"")+(S.done?vDone():V[S.step]())+(FORMC&&FORMC.contact&&!S.done?`<p class="hint" style="margin-top:10px">Questions? ${esc(FORMC.contact)}</p>`:"");
  const b=document.getElementById("back"),n=document.getElementById("next");
  b.disabled=S.step===0||!!S.done;n.hidden=S.step===LAST||!!S.done;n.textContent=S.step===DOCSTEP?"Review":"Next";
  window.scrollTo(0,0);
