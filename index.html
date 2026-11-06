@@ -505,6 +505,70 @@ body.solo .topq,body.solo .topsearch{display:none!important}
 .bioft input,.bioft select{padding:6px 8px;font-size:13px;min-width:0}
 .bioft td{padding:4px}
 .bioft td:first-child input{min-width:140px}
+/* academic calendar */
+.upnext{display:grid;gap:8px;grid-template-columns:repeat(3,minmax(0,1fr)) auto;align-items:stretch}
+.upi{display:flex;gap:10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--k);border-radius:10px;padding:8px 10px;text-decoration:none;color:inherit;min-width:0}
+.upi:hover{border-color:var(--k)}
+.ud{display:grid;justify-items:center;min-width:40px;font-size:11px;text-transform:uppercase;color:var(--muted);line-height:1.1}
+.ud b{font-size:20px;color:var(--ink);font-weight:600}
+.ut{display:grid;min-width:0}.ut b{font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ut small{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.upmore{align-self:center;font-size:13px;white-space:nowrap;padding:0 4px}
+@media(max-width:700px){.upnext{grid-template-columns:1fr}.upmore{justify-self:end}}
+.cdot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.calm h3{padding:12px 16px 4px;margin:0}
+.callist{list-style:none;margin:0;padding:0 0 6px}
+.calrow{display:grid;grid-template-columns:54px 1fr;gap:12px;padding:9px 16px;border-top:1px solid var(--line)}
+.calrow.past{opacity:.55}.calrow.cx .clink{text-decoration:line-through}
+.cd{display:grid;justify-items:center;align-content:start;font-size:11px;text-transform:uppercase;color:var(--muted);border-right:3px solid var(--k);padding-right:8px}
+.cd b{font-size:20px;color:var(--ink);font-weight:600;line-height:1.1}
+.cm{display:grid;gap:2px;min-width:0}.ct{font-size:12px;color:var(--muted)}
+.clink{font:inherit;font-weight:600;color:var(--ink);background:none;border:0;padding:0;text-align:left;cursor:pointer;text-decoration:none}
+.clink:hover{color:var(--brand);text-decoration:underline}
+.calgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px}
+.cgh{font-size:12px;color:var(--muted);text-align:center;padding:2px 0}
+.cgd{min-height:78px;border:1px solid var(--line);border-radius:8px;padding:4px;display:grid;align-content:start;gap:3px;min-width:0;background:var(--surface)}
+.cgd.out{opacity:.45}.cgd.today{border-color:var(--brand);box-shadow:inset 0 0 0 1px var(--brand)}
+.cgn{font-size:12px;color:var(--muted)}
+.cge{display:block;font:inherit;font-size:11px;line-height:1.25;text-align:left;border:0;border-left:3px solid var(--k);background:var(--sunk);color:var(--ink);border-radius:4px;padding:2px 4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;text-decoration:none}
+@media(max-width:640px){.cgd{min-height:52px}.cge{font-size:0;height:6px;padding:0;background:var(--k)}}
+/* rotating trainees: attendance */
+.attbtns{display:flex;gap:4px;align-items:center}
+.ab{width:30px;height:28px;border:1px solid var(--line);background:var(--surface);border-radius:6px;font:600 12px var(--f-body,inherit);color:var(--muted);cursor:pointer}
+.ab.on.a-P,.a-P{background:var(--ok-soft);color:var(--ok);border-color:var(--ok)}
+.ab.on.a-A,.a-A{background:var(--bad-soft);color:var(--bad);border-color:var(--bad)}
+.ab.on.a-L,.a-L{background:var(--gold-soft);color:var(--warn);border-color:var(--gold)}
+.a-H,.a-off{background:var(--mute-soft);color:var(--muted)}
+.a-miss{background:var(--bad-soft);color:var(--bad);opacity:.7}
+.lg{display:inline-grid;place-items:center;width:18px;height:18px;border-radius:4px;font-size:11px;font-weight:600;margin:0 2px 0 8px;border:1px solid transparent}
+.attcals{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.attcal h4{margin:0 0 6px;font-size:13px}
+.acg{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.acgh{font-size:11px;color:var(--muted);text-align:center}
+.acd{aspect-ratio:1;display:grid;place-items:center;border:1px solid var(--line);border-radius:6px;font:12px inherit;background:var(--surface);color:var(--ink);cursor:pointer;padding:0}
+.acd.out{border-color:transparent;color:var(--muted);opacity:.35;cursor:default;background:none}
+.acd:disabled{cursor:default}.acd.today{box-shadow:inset 0 0 0 2px var(--brand)}
+/* attendance kiosk */
+body.kiosk .appbar,body.kiosk nav.tabs,body.kiosk .proto,body.kiosk #navscrim,body.kiosk .sidenav{display:none!important}
+body.kiosk main,body.kiosk #main{grid-column:1/-1!important;width:100%;max-width:1000px!important;margin:0 auto!important;padding:24px 16px!important}
+.kio{display:grid;gap:18px;justify-items:center;width:100%}
+.kio-h{display:flex;gap:16px;align-items:center;width:100%}.kio-h img{width:56px;height:56px}.kio-h h2{margin:0;font-size:28px}.kio-h p{margin:2px 0 0;color:var(--muted)}
+.kio-clock{margin-left:auto;text-align:right;color:var(--muted)}.kio-clock b{display:block;font-size:34px;color:var(--ink);font-variant-numeric:tabular-nums}
+.kio-names{display:grid;gap:10px;width:100%;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+.kio-names button{display:grid;gap:4px;text-align:left;padding:18px 18px;border:1px solid var(--line);border-left:5px solid var(--brand);border-radius:12px;background:var(--surface);font:inherit;cursor:pointer}
+.kio-names button b{font-size:19px}.kio-names button span{color:var(--muted);font-size:14px}
+.kio-names button.done{border-left-color:var(--ok);background:var(--ok-soft)}
+.kio-pin{display:flex;gap:14px}.kio-pin span{width:22px;height:22px;border-radius:50%;border:2px solid var(--brand)}.kio-pin span.f{background:var(--brand)}
+.kio-pad{display:grid;grid-template-columns:repeat(3,88px);gap:12px}
+.kio-pad button{height:72px;font-size:28px;border:1px solid var(--line);border-radius:14px;background:var(--surface);cursor:pointer;color:var(--ink)}
+.kio-pad button:active{background:var(--brand-soft)}
+.kio-done{display:grid;gap:8px;text-align:center;padding:60px 40px;border-radius:18px;margin-top:40px;min-width:min(560px,100%)}
+.kio-done b{font-size:30px}.kio-done span{font-size:18px}
+.kio-done.ok{background:var(--ok-soft);color:var(--ok)}.kio-done.bad{background:var(--bad-soft);color:var(--bad)}
+.kio-exit{margin-top:30px;opacity:.6}
+
+.acd.a-P{background:var(--ok-soft);color:var(--ok);border-color:var(--ok)}.acd.a-A{background:var(--bad-soft);color:var(--bad);border-color:var(--bad)}.acd.a-L{background:var(--gold-soft);color:var(--warn);border-color:var(--gold)}.acd.a-H,.acd.a-off{background:var(--mute-soft);color:var(--muted)}.acd.a-miss{background:var(--bad-soft);color:var(--bad);border-style:dashed}
+#rotform .req::after{content:" *";color:var(--brand)}
+#rotform [hidden]{display:none!important}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:sl .18s ease-out}@keyframes sl{from{transform:translateX(24px)}to{transform:none}}}
 </style>
 
@@ -646,9 +710,9 @@ function checks(p,c){const f=[];
  return f}
 
 /* ---------- routing ---------- */
-const NAV=[["messages","WhatsApp"],["datacheck","Data checks"],["search","Search"],["overview","Overview"],["exits","Left training"],["tasks","Tasks"],["pgts","PGTs"],["leaves","Leave"],["verify","Verification"],["faculty","Faculty"],["supervisors","Supervisors"],["credentials","Faculty updates"],["workshops","Workshops"],["exams","Exams"],["orientation","Orientation"],["settings","Settings"],["audit","Audit log"]];
+const NAV=[["rotating","Rotating trainees"],["kiosk","Attendance kiosk"],["calendar","Academic calendar"],["messages","WhatsApp"],["datacheck","Data checks"],["search","Search"],["overview","Overview"],["exits","Left training"],["tasks","Tasks"],["pgts","PGTs"],["leaves","Leave"],["verify","Verification"],["faculty","Faculty"],["supervisors","Supervisors"],["credentials","Faculty updates"],["workshops","Workshops"],["exams","Exams"],["orientation","Orientation"],["settings","Settings"],["audit","Audit log"]];
 let route={v:"overview",id:null};
-function parse(){const h=location.hash.slice(1);const m=h.match(/^(pgt|fac|ws|fb|task|fbedit|pfedit|pfill|prop|exam|orient|reg|rgedit|cert|certx|attend|cred)-(\w+)$/);if(m)return{v:m[1],id:m[2]};return{v:NAV.some(n=>n[0]===h)?h:"overview",id:null}}
+function parse(){const h=location.hash.slice(1);const m=h.match(/^(pgt|fac|ws|fb|task|fbedit|pfedit|pfill|prop|exam|orient|reg|rgedit|cert|certx|attend|cred|rot)-(\w+)$/);if(m)return{v:m[1],id:m[2]};return{v:NAV.some(n=>n[0]===h)?h:"overview",id:null}}
 function go(h){if(location.hash==="#"+h)render();else location.hash=h}
 window.addEventListener("hashchange",()=>{route=parse();render();window.scrollTo(0,0)});
 const UI={q:"",phase:"active",spec:"",prog:"",sort:"name",dir:1,fq:"",fspec:"",fcred:""};
@@ -657,10 +721,10 @@ function render(){
  TODAY.setTime(new Date(new Date().toDateString()).getTime());
  recompute();
  const pend=DB.pgts.filter(p=>p.reg==="Pending").length;
- const cur=route.v==="pgt"?"pgts":route.v==="fac"?"faculty":["ws","fb","fbedit","pfedit","pfill","prop","reg","rgedit","attend"].includes(route.v)?"workshops":route.v==="task"?"tasks":route.v==="exam"?"exams":route.v==="orient"?"orientation":route.v==="cert"?"workshops":route.v==="certx"?"exams":route.v==="cred"?"credentials":route.v;
+ const cur=route.v==="pgt"?"pgts":route.v==="fac"?"faculty":["ws","fb","fbedit","pfedit","pfill","prop","reg","rgedit","attend"].includes(route.v)?"workshops":route.v==="task"?"tasks":route.v==="exam"?"exams":route.v==="orient"?"orientation":route.v==="cert"?"workshops":route.v==="certx"?"exams":route.v==="cred"?"credentials":route.v==="rot"||route.v==="kiosk"?"rotating":route.v;
  renderChrome(cur);if(!canSee(cur)){document.getElementById("main").innerHTML=`<div class="panel empty">You do not have access to this section. Ask the Director of Medical Education to change your access.</div>`;return}
  const m=document.getElementById("main");
- m.innerHTML=({overview:vOverview,pgts:vPgts,pgt:vPgt,verify:vVerify,faculty:vFaculty,fac:vFac,settings:vSettings,audit:vAudit,leaves:vLeaves,credentials:vCreds,workshops:vWorkshops,ws:vWs,tasks:vTasks,task:vTask,fb:vFb,fbedit:vFbEdit,pfedit:vPfEdit,pfill:vPfill,prop:vProp,exams:vExams,exam:vExam,orientation:vOrients,orient:vOrient,supervisors:vSupervisors,reg:vReg,rgedit:vRgEdit,attend:vAttend,search:vSearch,datacheck:vDataCheck,messages:vMessages,cred:()=>{if(UI.credFac!==route.id){UI.credFac=route.id;UI.credType=null}return vCreds()},exits:vExits,cert:vCertWs,certx:vCertEx}[route.v]||vOverview)();
+ m.innerHTML=({overview:vOverview,pgts:vPgts,pgt:vPgt,verify:vVerify,faculty:vFaculty,fac:vFac,settings:vSettings,audit:vAudit,leaves:vLeaves,credentials:vCreds,workshops:vWorkshops,ws:vWs,tasks:vTasks,task:vTask,fb:vFb,fbedit:vFbEdit,pfedit:vPfEdit,pfill:vPfill,prop:vProp,exams:vExams,exam:vExam,orientation:vOrients,orient:vOrient,supervisors:vSupervisors,reg:vReg,rgedit:vRgEdit,attend:vAttend,search:vSearch,datacheck:vDataCheck,messages:vMessages,calendar:vCalendar,rotating:vRotating,rot:vRot,kiosk:vKiosk,cred:()=>{if(UI.credFac!==route.id){UI.credFac=route.id;UI.credType=null}return vCreds()},exits:vExits,cert:vCertWs,certx:vCertEx}[route.v]||vOverview)();
 }
 
 /* ---------- OVERVIEW ---------- */
@@ -1604,12 +1668,12 @@ const DESIGS={
 const meObj=()=>DB.staff.find(s=>s.name===ME)||DB.staff[0];
 const isAdmin=()=>meObj().role==="Admin";
 const seeAll=()=>isAdmin()||!!meObj().seeAll;
-const canSee=k=>{if(k==="exits")k="leaves";if(k==="datacheck")k="pgts";if(k==="messages")return true;return k==="overview"||k==="search"||isAdmin()||(meObj().sections||[]).includes(k)};
+const canSee=k=>{if(k==="exits")k="leaves";if(k==="rotating"||k==="kiosk")k="pgts";if(k==="datacheck")k="pgts";if(k==="messages"||k==="calendar")return true;return k==="overview"||k==="search"||isAdmin()||(meObj().sections||[]).includes(k)};
 const visibleTasks=()=>seeAll()?DB.tasks:DB.tasks.filter(t=>t.assignee===ME);
 const canAssign=()=>seeAll();
 
 /* ---------- side menu ---------- */
-const NAVG=[["","overview","Dashboard"],["","tasks","Tasks"],["","messages","WhatsApp"],["Postgraduate trainees","pgts","Trainee register"],["Postgraduate trainees","verify","New registrations"],["Postgraduate trainees","datacheck","Data checks"],["Postgraduate trainees","leaves","Leave"],["Postgraduate trainees","exits","Left training"],["Faculty","faculty","Faculty directory"],["Faculty","supervisors","Supervisors"],["Faculty","credentials","Credentials"],["Teaching and assessment","workshops","Workshops"],["Teaching and assessment","exams","Examinations"],["Teaching and assessment","orientation","Orientation"],["Administration","settings","Settings"],["Administration","audit","Audit log"],["Administration","search","Search"]];
+const NAVG=[["","overview","Dashboard"],["","tasks","Tasks"],["","messages","WhatsApp"],["Postgraduate trainees","pgts","Trainee register"],["Postgraduate trainees","verify","New registrations"],["Postgraduate trainees","datacheck","Data checks"],["Postgraduate trainees","leaves","Leave"],["Postgraduate trainees","exits","Left training"],["Postgraduate trainees","rotating","Rotating trainees"],["Faculty","faculty","Faculty directory"],["Faculty","supervisors","Supervisors"],["Faculty","credentials","Credentials"],["Teaching and assessment","calendar","Academic calendar"],["Teaching and assessment","workshops","Workshops"],["Teaching and assessment","exams","Examinations"],["Teaching and assessment","orientation","Orientation"],["Administration","settings","Settings"],["Administration","audit","Audit log"],["Administration","search","Search"]];
 function renderChrome(cur){
  const late=visibleTasks().filter(tOverdue).length,pend=DB.pgts.filter(p=>p.reg==="Pending").length,wa=DB.workshops.filter(w=>wsFlags(w).length).length;
  const badge={tasks:late?[late,"late"]:null,verify:pend?[pend,""]:null,workshops:wa?[wa,""]:null};
@@ -1682,6 +1746,7 @@ function vOverview(){
  if(canSee("orientation"))DB.orients.filter(o=>o.month===m0||o.month===m1).forEach(o=>ev.push([o.date||o.month+"-01",!!o.date,"Orientation",sessLong(o.cycle)+" cycle","orient-"+o.id]));
  if(canSee("pgts"))A.forEach(p=>{const c=C(p);if(inWin(c.comp))ev.push([c.comp,true,"Completion","Dr. "+p.name,"pgt-"+p.id]);if(c.pk==="rot"&&inWin(c.ret))ev.push([c.ret,true,"Return","Dr. "+p.name+" from "+c.rotSite,"pgt-"+p.id])});
  openT.filter(t=>inWin(t.due)).forEach(t=>ev.push([t.due,true,"Task",t.title,"task-"+t.id]));
+ (DB.events||[]).filter(e=>e.status!=="Cancelled"&&inWin(e.date)).forEach(e=>ev.push([e.date,true,"Event",e.title,"calendar"]));
  ev.sort((a,b)=>a[0]<b[0]?-1:1);
  const ret=A.filter(p=>C(p).pk==="rot"&&C(p).toRet!=null&&C(p).toRet<=60).sort((a,b)=>C(a).toRet-C(b).toRet);
  const comp=A.filter(p=>C(p).toComp>0&&C(p).toComp<=180).sort((a,b)=>C(a).toComp-C(b).toComp);
@@ -1692,7 +1757,8 @@ function vOverview(){
  const mx=Math.max(1,...bySpec.map(r=>r[1]+r[2]));
  const cards=[];
  if(canSee("tasks"))cards.push(card(seeAll()?"Tasks due next":"My tasks",openT.length,"tasks",olist(openT.slice().sort((a,b)=>(tDue(a)??9999)-(tDue(b)??9999)).slice(0,5).map(t=>oli("task-"+t.id,esc(t.title),esc(t.assignee),dueTxt(t))),"No open tasks.")));
- cards.push(card(`${mLabel(m0)} and ${mLabel(m1)}`,ev.length,"",olist(ev.slice(0,6).map(e=>oli(e[4],`<span class="pill ${({Workshop:"p-pend",Exam:"p-rot",Orientation:"p-rot",Completion:"p-ric",Return:"p-rot",Task:"p-pause"})[e[2]]}" style="margin-right:6px">${e[2]}</span>${esc(e[3])}`,"",e[1]?fd(e[0]).slice(0,6):mLabel(e[0].slice(0,7)))),"Nothing scheduled.")));
+ cards.push(card(`${mLabel(m0)} and ${mLabel(m1)}`,ev.length,"",olist(ev.slice(0,6).map(e=>oli(e[4],`<span class="pill ${({Workshop:"p-pend",Exam:"p-rot",Orientation:"p-rot",Completion:"p-ric",Return:"p-rot",Task:"p-pause",Event:"p-leave"})[e[2]]}" style="margin-right:6px">${e[2]}</span>${esc(e[3])}`,"",e[1]?fd(e[0]).slice(0,6):mLabel(e[0].slice(0,7)))),"Nothing scheduled.")));
+ if(canSee("pgts")){const rc=rotDashCard();if(rc)cards.push(rc)}
  if(canSee("verify"))cards.push(card("Waiting for verification",pend.length,"verify",olist(pend.slice(0,5).map(p=>oli("pgt-"+p.id,pgtName(p),esc(p.spec+" · "+p.program),fd(p.submitted))),"No registrations waiting.")));
  if(canSee("pgts")){
   cards.push(card("Returning to RIC · 60 days",ret.length,"pgts",olist(ret.slice(0,5).map(p=>oli("pgt-"+p.id,pgtName(p),esc(p.spec)+" · from "+esc(C(p).rotSite),`<span class="days ${C(p).toRet<=S.return_red?"d-red":C(p).toRet<=S.return_yellow?"d-amb":""}">${C(p).toRet} d</span>`)),"No returns due.")));
@@ -1705,6 +1771,7 @@ function vOverview(){
  if(canSee("credentials"))cards.push(card("Faculty credentials",credBad.length,"credentials",olist(credBad.slice(0,5).map(([f,c])=>oli("cred-"+f.id,esc(facName(f)),esc(credIssues(f,c).filter(i=>i[0]!=="mute")[0][1]),"")),"All supervisor credentials are current.")));
  if(seeAll()&&canSee("tasks"))cards.push(card("Team workload",null,"tasks",olist(DB.staff.map(s=>{const m=openT.filter(t=>t.assignee===s.name),av=m.length?Math.round(m.reduce((a,t)=>a+tProg(t),0)/m.length):0;return oli("tasks",esc(s.name),`${m.length} open${m.filter(tOverdue).length?` · <span class="d-red">${m.filter(tOverdue).length} overdue</span>`:""}`,m.length?progBar(av,1):"")}),"")));
  return`<div class="head"><div><h2>Dashboard</h2><p>${TODAY.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"})} · ${esc(ME)}</p></div><div class="actions">${canSee("tasks")?`<button class="btn" data-act="t-new">New task</button>`:""}${canSee("leaves")?`<a class="btn" href="#leaves">Add leave</a>`:""}${canSee("workshops")?`<button class="btn" data-act="ws-add">Add workshop</button>`:""}</div></div>
+ ${calStrip()}
  <div class="kpis">
   ${kp("pgts",A.length,"Active PGTs",`${atRic} at RIC · ${onRot} rotation · ${onLeave.length} leave`,"pgts")}
   ${kp("faculty",sups.length,"Approved supervisors",`of ${fac.length} faculty`,"faculty")}
@@ -2687,7 +2754,7 @@ const SUPA=(()=>{let c=window.DME_SUPABASE||{};if(!(c.url&&(c.anonKey||c.key))){
 const LIVE=!!SUPA;
 /* stable JSON: the database returns object keys in its own order, so compare with keys sorted */
 const sj=v=>JSON.stringify(v,(k,x)=>x&&typeof x==="object"&&!Array.isArray(x)?Object.keys(x).sort().reduce((o,q)=>(o[q]=x[q],o),{}):x);
-const ARR_COLLS=["pgts","faculty","creds","status","rots","sups","leaves","workshops","tasks","exams","orients","conduct","audit","bin"];
+const ARR_COLLS=["pgts","faculty","creds","status","rots","sups","leaves","workshops","tasks","exams","orients","conduct","audit","bin","events","visitors"];
 const SUPA_JS="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js";
 const pubBase=()=>location.origin+location.pathname;
 function pubLink(kind,w){if(LIVE)return`${pubBase()}?${kind}=${encodeURIComponent(w.id)}`;return`https://dme.ric.example/${{reg:"register",fb:"feedback",prop:"proposal"}[kind]}/${w.id.toLowerCase()}`}
@@ -2708,9 +2775,10 @@ function bootApp(){
    try{localStorage.setItem("dme-supabase",JSON.stringify({url:u,anonKey:k}))}catch(x){}location.reload()};return}
  if(!LIVE){if(!DB||!DB.pgts)DB=seed();if(migrate9(DB))persist();if(!DB.staff.some(s=>s.name===ME))ME=DB.staff[0].name;route=parse();render();return}
  document.body.classList.add("live");DB=null;try{localStorage.removeItem(KEY)}catch(e){}
- const q=new URLSearchParams(location.search);const pk=["reg","fb","prop"].find(k=>q.get(k));
+ const q=new URLSearchParams(location.search);const pk=["reg","fb","prop","rot"].find(k=>q.get(k));
  screen(`<p class="subt">Connecting…</p>`);
  loadScript(SUPA_JS).then(()=>{SYNC.sb=window.supabase.createClient(SUPA.url,SUPA.anonKey,{auth:{persistSession:true,detectSessionInUrl:true}});
+  if(pk==="rot")return rotPublicPage();
   if(pk)return publicPage(pk,q.get(pk));
   SYNC.sb.auth.onAuthStateChange((ev,ses)=>{if(ev==="PASSWORD_RECOVERY")return setPasswordScreen(true);if(ev==="SIGNED_OUT"){location.hash="";location.reload()}});
   return SYNC.sb.auth.getSession().then(({data})=>data.session?afterLogin(data.session):loginScreen())}).catch(e=>screen(`<h2>Cannot connect</h2><p>${esc(e.message||e)}</p><p class="subt">Check the internet connection and reload the page.</p>${localStorage.getItem("dme-supabase")?`<div class="actions"><button class="btn" onclick="localStorage.removeItem('dme-supabase');location.reload()">Change the Supabase settings</button></div>`:""}`))}
@@ -2833,7 +2901,7 @@ function syncBadge(){const el=document.getElementById("syncst");if(!el)return;
  el.innerHTML=SYNC.err&&SYNC.err!=="view"?`<span class="sy bad">Not saved · <button class="btn link" data-act="sy-retry">Try again</button></span>`:SYNC.pending||SYNC.busy?`<span class="sy">Saving…</span>`:SYNC.stale?`<span class="sy">Others made changes · <button class="btn link" data-act="sy-refresh">Show</button></span>`:`<span class="sy ok">All changes saved</span>`}
 function renderChrome(cur){
  const late=visibleTasks().filter(tOverdue).length,pend=DB.pgts.filter(p=>p.reg==="Pending").length,wa=DB.workshops.filter(w=>wsFlags(w).length).length;
- const dcn=canSee("pgts")?dcIssues().filter(x=>x.k!=="contact").length:0;const badge={datacheck:dcn?[dcn,""]:null,tasks:late?[late,"late"]:null,verify:pend?[pend,""]:null,workshops:wa?[wa,""]:null};
+ const dcn=canSee("pgts")?dcIssues().filter(x=>x.k!=="contact").length:0;const badge={datacheck:dcn?[dcn,""]:null,tasks:late?[late,"late"]:null,verify:pend?[pend,""]:null,workshops:wa?[wa,""]:null,rotating:(n=>n?[n,""]:null)(typeof visList==="function"?visList().filter(v=>v.src==="form"&&!v.checked).length:0)};
  let g=null,h="";NAVG.filter(n=>canSee(n[1])).forEach(([grp,k,l])=>{if(grp!==g){h+=grp?`<div class="ng">${grp}</div>`:"";g=grp}
   h+=`<a href="#${k}" ${k===cur?'aria-current="page"':""} title="${l}"><span class="ni" aria-hidden="true">${NAV_ICON[k]||""}</span><span class="nl">${l}</span>${badge[k]?`<span class="cnt ${badge[k][1]}">${badge[k][0]}</span>`:""}</a>`});
  document.getElementById("nav").innerHTML=h;const m=meObj();
@@ -3076,6 +3144,8 @@ const NAV_ICON={
  exams:_ic('<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M8.5 11l2 2 4-4M8.5 16.5h7"/>'),
  orientation:_ic('<circle cx="12" cy="12" r="8.5"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/>'),
  settings:_ic('<circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/>'),
+ calendar:_ic('<rect x="3.5" y="5" width="17" height="15.5" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 14h2M12 14h2M16 14h.5M8 17.5h2M12 17.5h2"/>'),
+ rotating:_ic('<circle cx="9" cy="7.5" r="3"/><path d="M3.5 19c.5-3.2 2.8-5.2 5.5-5.2 1.2 0 2.3.4 3.2 1"/><path d="M14 17.5a4 4 0 1 0 1.2-2.9"/><path d="M14.2 13.6v1.6h1.6"/>'),
  audit:_ic('<path d="M3.5 12a8.5 8.5 0 1 0 2.5-6"/><path d="M3.5 4v4h4M12 7.5V12l3 2"/>')};
 
 /* ---------- names open profiles ---------- */
@@ -3599,6 +3669,330 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-exsp2],[da
  const tog=(arr,v)=>v===""?[]:arr.includes(v)?arr.filter(z=>z!==v):[...arr,v];
  if(b.dataset.exsp2!=null)S.sp=tog(S.sp,b.dataset.exsp2);if(b.dataset.exg!=null)S.g=tog(S.g,b.dataset.exg);if(b.dataset.exprog!=null)S.prog=b.dataset.exprog;
  const y=window.scrollY;render();window.scrollTo(0,y)});
+
+/* =====================================================================
+   V19 · ACADEMIC CALENDAR: expert talks, exams, orientations, workshops,
+   conferences, meetings and milestones in one place; next three on the
+   dashboard
+   ===================================================================== */
+const EV_TYPES=[["talk","Expert talk","var(--brand)"],["workshop","Workshop","var(--gold)"],["exam","Examination","var(--info)"],["orient","Orientation","var(--ok)"],["conf","Conference / CME","#7A5AA6"],["research","Research activity","#3F7F7A"],["meeting","Meeting","var(--muted)"],["milestone","Milestone / deadline","var(--bad)"],["other","Other event","var(--muted)"]];
+const EV_STATUS=["Planned","Confirmed","Held","Postponed","Cancelled"];
+const evT=k=>EV_TYPES.find(t=>t[0]===k)||EV_TYPES[EV_TYPES.length-1];
+const evList=()=>(DB.events=DB.events||[]);
+UI.calV="list";UI.calF=[];UI.calPast=false;UI.calM=null;
+
+/* everything on the calendar: own entries plus workshops, exams and orientations already in the app */
+function calItems(){const out=[],mon=d=>d.slice(0,7);
+ evList().forEach(e=>{if(!e.date)return;out.push({key:"e:"+e.id,date:e.date,end:e.end||"",month:mon(e.date),type:e.type,title:e.title,time:e.time||"",venue:e.venue||"",sub:[e.speaker?(e.speaker+(e.speakerInfo?", "+e.speakerInfo:"")):"",e.sponsor?"Sponsored by "+e.sponsor:""].filter(Boolean).join(" · "),status:e.status||"Planned",ev:e})});
+ if(canSee("workshops"))DB.workshops.filter(w=>!w.example).forEach(w=>out.push({key:"w:"+w.id,date:w.date||"",month:w.date?mon(w.date):w.month,type:/research boot ?camp/i.test(w.title)?"research":"workshop",title:w.title,venue:w.venue||"",sub:[w.focal?"Focal: "+w.focal:"",w.dept].filter(Boolean).join(" · "),status:w.stage>=5?"Held":w.stage>=3?"Confirmed":"Planned",href:"ws-"+w.id}));
+ const exM=new Set(),orM=new Set();
+ if(canSee("exams"))DB.exams.forEach(x=>{exM.add(x.month);exM.add(mAdd(x.month,-1));exM.add(mAdd(x.month,1));out.push({key:"x:"+x.id,date:x.date||"",month:x.date?mon(x.date):x.month,type:"exam",title:`${x.title} · ${x.session}`,venue:x.venue||"",sub:`${exCands(x).length} candidates`,status:x.stage>=3?"Held":"Planned",href:"exam-"+x.id})});
+ if(canSee("orientation"))DB.orients.forEach(o=>{const m=o.date?mon(o.date):(o.month||orientMonth(o.cycle));orM.add(m);out.push({key:"o:"+o.id,date:o.date||"",month:m,type:"orient",title:`PGT orientation · ${sessLong(o.cycle)} cycle`,sub:"First week",status:o.stage>=3?"Held":"Planned",href:"orient-"+o.id})});
+ FIXTURES().forEach(f=>{const isEx=/exam/i.test(f.t);if(isEx?exM.has(f.month):orM.has(f.month))return;
+  out.push({key:"f:"+f.month+f.t,date:"",month:f.month,type:isEx?"exam":"orient",title:isEx?"Six-monthly internal examination ("+(f.month.endsWith("06")?"Jun–Jul":"Nov–Dec")+")":"PGT orientation (first week)",sub:"From the annual calendar",status:"Planned",href:isEx?"exams":"orientation"})});
+ return out}
+const calKey=i=>(i.date||i.month+"-32");
+const calUpcoming=()=>{const t=iso(TODAY),m=t.slice(0,7);return calItems().filter(i=>i.status!=="Cancelled"&&i.status!=="Held"&&(i.date?(i.end||i.date)>=t:i.month>=m)).sort((a,b)=>{const ka=a.date||a.month+"-32",kb=b.date||b.month+"-32";return ka<kb?-1:ka>kb?1:(a.date?0:1)-(b.date?0:1)})};
+
+/* ---------- dashboard strip: the next three ---------- */
+function calStrip(){const U=calUpcoming().slice(0,3);if(!U.length)return"";
+ return`<div class="upnext">${U.map(i=>{const d=i.date?P(i.date):null,t=evT(i.type);return`<a class="upi" href="#${i.href||"calendar"}" ${i.ev?`data-evopen="${i.ev.id}"`:""} style="--k:${t[2]}">
+  <span class="ud">${d?`<b>${d.getDate()}</b>${d.toLocaleDateString("en-GB",{month:"short"})}`:`<b style="font-size:13px">${P(i.month+"-01").toLocaleDateString("en-GB",{month:"short"})}</b>${i.month.slice(0,4)}`}</span>
+  <span class="ut"><b>${esc(i.title)}</b><small>${t[1]}${d?" · "+d.toLocaleDateString("en-GB",{weekday:"short"}):" · date to be fixed"}${i.time?" · "+esc(i.time):""}${i.venue?" · "+esc(i.venue):""}</small></span></a>`}).join("")}
+  <a class="upmore" href="#calendar">Calendar ›</a></div>`}
+
+/* ---------- the calendar page ---------- */
+function vCalendar(){const all=calItems(),t=iso(TODAY),m0=t.slice(0,7),F=UI.calF;
+ const vis=all.filter(i=>!F.length||F.includes(i.type));const cnt=k=>all.filter(i=>i.type===k).length;
+ const chips=`<div class="chips">${`<button class="chip" data-calf="" aria-pressed="${!F.length}">All<span class="c">${all.length}</span></button>`}${EV_TYPES.filter(([k])=>cnt(k)).map(([k,l,c])=>`<button class="chip" data-calf="${k}" aria-pressed="${F.includes(k)}"><i class="cdot" style="background:${c}"></i>${l}<span class="c">${cnt(k)}</span></button>`).join("")}</div>`;
+ const can=!isViewer();
+ return`<div class="head"><div><h2>Academic calendar</h2><p>Expert talks, workshops, examinations, orientations, conferences, meetings and milestones. Workshops, exams and orientations come from their own pages; add everything else here.</p></div>
+  <div class="actions">${xbtn("calendar")}${can?`<button class="btn primary" data-act="ev-add">Add event</button>`:""}</div></div>
+ <div class="panel" style="display:grid;gap:10px"><div class="toolbar"><div class="seg2">${[["list","List"],["month","Month"]].map(([k,l])=>`<button class="chip" data-calv="${k}" aria-pressed="${UI.calV===k}">${l}</button>`).join("")}</div>
+  ${UI.calV==="list"?`<label class="subt" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="calpast" ${UI.calPast?"checked":""}> Show past events</label>`:""}</div>${chips}</div>
+ ${UI.calV==="month"?calMonth(vis,m0):calAgenda(vis,t,m0)}`}
+function calRow(i,t){const d=i.date?P(i.date):null,ty=evT(i.type),past=i.date?(i.end||i.date)<t:false;
+ return`<li class="calrow ${past?"past":""} ${i.status==="Cancelled"?"cx":""}" style="--k:${ty[2]}"><span class="cd">${d?`<b>${d.getDate()}</b>${d.toLocaleDateString("en-GB",{weekday:"short"})}`:`<b>—</b>date TBC`}</span>
+  <span class="cm"><span class="ct"><i class="cdot" style="background:${ty[2]}"></i>${ty[1]}${i.status!=="Planned"?` · <span class="${i.status==="Cancelled"?"d-red":i.status==="Postponed"?"d-amb":""}">${i.status}</span>`:""}</span>
+   ${i.ev?`<button class="clink" data-evopen="${i.ev.id}">${esc(i.title)}</button>`:`<a class="clink" href="#${i.href}">${esc(i.title)}</a>`}
+   <span class="subt">${[i.end&&i.end!==i.date?"until "+fd(i.end):"",i.time,i.venue,i.sub].filter(Boolean).map(esc).join(" · ")}</span></span></li>`}
+function calAgenda(vis,t,m0){const L=vis.filter(i=>UI.calPast||(i.date?(i.end||i.date)>=t:i.month>=m0)).sort((a,b)=>calKey(a)<calKey(b)?-1:calKey(a)>calKey(b)?1:0);
+ if(!L.length)return`<div class="panel empty">Nothing on the calendar${UI.calPast?"":" from today on"}. Use <b>Add event</b> to enter talks, meetings and milestones.</div>`;
+ const months=[...new Set(L.map(i=>i.month))];
+ return months.map(m=>`<div class="panel flush calm"><h3>${P(m+"-01").toLocaleDateString("en-GB",{month:"long",year:"numeric"})}${m===m0?' <span class="subt">this month</span>':""}</h3><ul class="callist">${L.filter(i=>i.month===m).map(i=>calRow(i,t)).join("")}</ul></div>`).join("")}
+function calMonth(vis,m0){const m=UI.calM||m0,first=P(m+"-01"),start=new Date(first);start.setDate(1-((first.getDay()+6)%7));const t=iso(TODAY);
+ const days=[];for(let k=0;k<42;k++){const d=new Date(start);d.setDate(start.getDate()+k);days.push(d)}
+ const inDay=ds=>vis.filter(i=>i.date&&ds>=i.date&&ds<=(i.end||i.date));const loose=vis.filter(i=>!i.date&&i.month===m);
+ return`<div class="panel" style="display:grid;gap:10px"><div class="toolbar" style="justify-content:space-between"><button class="btn small" data-calm="${mAdd(m,-1)}">‹ ${mLabel(mAdd(m,-1))}</button><h3 style="margin:0">${first.toLocaleDateString("en-GB",{month:"long",year:"numeric"})}</h3><button class="btn small" data-calm="${mAdd(m,1)}">${mLabel(mAdd(m,1))} ›</button></div>
+  ${loose.length?`<div class="flag info" style="display:grid;gap:4px"><b>This month, date to be fixed</b>${loose.map(i=>`<a href="#${i.href}">${esc(i.title)}</a>`).join("")}</div>`:""}
+  <div class="calgrid">${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(d=>`<div class="cgh">${d}</div>`).join("")}${days.map(d=>{const ds=iso(d),its=inDay(ds);return`<div class="cgd ${ds.slice(0,7)!==m?"out":""} ${ds===t?"today":""}"><span class="cgn">${d.getDate()}</span>${its.map(i=>`<${i.ev?"button":"a"} class="cge" style="--k:${evT(i.type)[2]}" ${i.ev?`data-evopen="${i.ev.id}"`:`href="#${i.href}"`} title="${esc(i.title)}">${esc(i.title)}</${i.ev?"button":"a"}>`).join("")}</div>`}).join("")}</div></div>`}
+
+/* ---------- add / edit an event ---------- */
+function sheetEvent(e){const n=!e;e=e||{type:"talk",title:"",date:iso(TODAY),end:"",time:"",venue:"",speaker:"",speakerInfo:"",sponsor:"",dept:"",focal:"",status:"Planned",notes:""};
+ openSheet(n?"Add to the calendar":"Edit event",`<label class="f">Type<select name="type" id="ev-type">${opt(EV_TYPES.map(([k,l])=>[k,l]),e.type)}</select></label>
+ <label class="f">Title <span class="h">for a talk, the topic</span><input name="title" value="${esc(e.title)}" placeholder="e.g. Heart failure: what's new in 2026"></label>
+ <div class="grid2"><label class="f">Date<input type="date" name="date" value="${e.date||""}"></label><label class="f">Ends <span class="h">if more than one day</span><input type="date" name="end" value="${e.end||""}"></label></div>
+ <div class="grid2"><label class="f">Time<input name="time" value="${esc(e.time||"")}" placeholder="e.g. 2:00 pm"></label><label class="f">Venue<input name="venue" list="ev-venues" value="${esc(e.venue||"")}"></label></div>
+ <datalist id="ev-venues">${VENUES.filter(v=>v!=="Other").map(v=>`<option value="${esc(v)}">`).join("")}</datalist>
+ <div id="ev-talk" class="grid2" ${e.type==="talk"||e.type==="conf"?"":"hidden"}><label class="f">Speaker<input name="speaker" value="${esc(e.speaker||"")}" placeholder="e.g. Prof. Dr. ..."></label><label class="f">Speaker's designation / institution<input name="speakerInfo" value="${esc(e.speakerInfo||"")}"></label>
+  <label class="f">Sponsor <span class="h">company</span><input name="sponsor" value="${esc(e.sponsor||"")}"></label></div>
+ <div class="grid2"><label class="f">Department<select name="dept">${opt(["",...wsDepts()],e.dept||"")}</select></label><label class="f">Focal person<input name="focal" list="ev-fac" value="${esc(e.focal||"")}"></label></div>
+ <datalist id="ev-fac">${DB.faculty.filter(f=>f.active!==false).map(f=>`<option value="${esc(facName(f))}">`).join("")}</datalist>
+ <label class="f">Status<select name="status">${opt(EV_STATUS,e.status||"Planned")}</select></label>
+ <label class="f">Notes<textarea name="notes">${esc(e.notes||"")}</textarea></label>
+ ${n?"":`<button type="button" class="btn danger" data-act="ev-del" data-id="${e.id}" style="justify-self:start">Delete this event</button>`}`,()=>{
+  if(fv("title").length<3)return fail("Enter a title.");if(!fv("date"))return fail("Choose the date.");if(fv("end")&&fv("end")<fv("date"))return fail("The end date is before the start date.");
+  const rec={type:fv("type"),title:fv("title"),date:fv("date"),end:fv("end"),time:fv("time"),venue:fv("venue"),speaker:fv("speaker"),speakerInfo:fv("speakerInfo"),sponsor:fv("sponsor"),dept:fv("dept"),focal:fv("focal"),status:fv("status"),notes:fv("notes")};
+  if(n){const ne={id:uid("E"),...rec};evList().push(ne);log(`Added to the academic calendar: ${evT(rec.type)[1]}, ${rec.title} (${fd(rec.date)})`)}
+  else{const was=e.date;Object.assign(e,rec);log(`Calendar event edited: ${rec.title}${was!==rec.date?` (moved from ${fd(was)} to ${fd(rec.date)})`:""}`)}
+  toast("Saved");return true})}
+document.addEventListener("change",e=>{if(e.target.id==="ev-type"){const b=document.getElementById("ev-talk");if(b)b.hidden=!["talk","conf"].includes(e.target.value)}
+ if(e.target.id==="calpast"){UI.calPast=e.target.checked;render()}});
+document.addEventListener("click",e=>{const o=e.target.closest("[data-evopen]");if(o){e.preventDefault();const ev=evList().find(x=>x.id===o.dataset.evopen);if(ev){if(isViewer())return calInfo(ev);sheetEvent(ev)}return}
+ const a=e.target.closest('[data-act="ev-add"],[data-act="ev-del"],[data-calv],[data-calf],[data-calm]');if(!a)return;
+ if(a.dataset.calv){UI.calV=a.dataset.calv;render();return}
+ if(a.dataset.calm){UI.calM=a.dataset.calm;render();return}
+ if(a.dataset.calf!=null){const k=a.dataset.calf;UI.calF=k===""?[]:UI.calF.includes(k)?UI.calF.filter(x=>x!==k):[...UI.calF,k];render();return}
+ if(a.dataset.act==="ev-add")return sheetEvent();
+ if(a.dataset.act==="ev-del"){if(a.dataset.armed!=="1"){a.dataset.armed="1";a.textContent="Tap again to delete";return}const ev=evList().find(x=>x.id===a.dataset.id);if(!ev)return;
+  DB.events=evList().filter(x=>x!==ev);log(`Removed from the academic calendar: ${ev.title} (${fd(ev.date)})`);document.getElementById("overlay").innerHTML="";toast("Event deleted");render()}});
+function calInfo(ev){const t=evT(ev.type);openSheet(ev.title,`<dl class="kv"><dt>Type</dt><dd>${t[1]}</dd><dt>Date</dt><dd>${fd(ev.date)}${ev.end?" to "+fd(ev.end):""}${ev.time?" · "+esc(ev.time):""}</dd>${ev.venue?`<dt>Venue</dt><dd>${esc(ev.venue)}</dd>`:""}${ev.speaker?`<dt>Speaker</dt><dd>${esc(ev.speaker)}${ev.speakerInfo?", "+esc(ev.speakerInfo):""}</dd>`:""}${ev.sponsor?`<dt>Sponsor</dt><dd>${esc(ev.sponsor)}</dd>`:""}${ev.focal?`<dt>Focal person</dt><dd>${esc(ev.focal)}</dd>`:""}<dt>Status</dt><dd>${esc(ev.status||"Planned")}</dd>${ev.notes?`<dt>Notes</dt><dd>${esc(ev.notes)}</dd>`:""}</dl>`,()=>true,"Close")}
+EXPORTS.calendar=()=>({file:"RIC academic calendar",sheets:[sheetFrom("Calendar",calItems().sort((a,b)=>calKey(a)<calKey(b)?-1:1).map(i=>({"Date":i.date||"","Month":mLabel(i.month),"Type":evT(i.type)[1],"Title":i.title,"Time":i.time||"","Venue":i.venue||"","Speaker":i.ev?.speaker||"","Speaker details":i.ev?.speakerInfo||"","Sponsor":i.ev?.sponsor||"","Department":i.ev?.dept||"","Focal person":i.ev?.focal||"","Status":i.status,"Notes":i.ev?.notes||i.sub||""})))]});
+
+/* =====================================================================
+   V20 · ROTATING TRAINEES (PGTs from other institutes on short
+   rotations at RIC): daily attendance, a self-service attendance kiosk
+   for the DME office computer, and the experience certificate
+   ===================================================================== */
+const ROT_UNITS=["Cardiac Surgery","CT Angiography / Cardiac Imaging","Cardiology","Cath Lab","Echocardiography","CCU","Cardiac Anaesthesia","Paediatric Cardiology","Paediatric Cardiac Surgery","Electrophysiology"];
+const ROT_PROGS=["FCPS","MS","MD","MCPS","Diploma","House job","Other"];
+const AT_L={P:"Present",A:"Absent",L:"Leave",H:"Holiday / off"};
+const visList=()=>(DB.visitors=DB.visitors||[]);
+const rotOff=()=>DB.settings.rotOff||[0];
+const dIso=d=>iso(d);
+function rotState(v){const t=iso(TODAY),end=v.left||v.end;if(v.start>t)return"Upcoming";if(end<t)return v.left?"Left early":"Completed";return"Current"}
+function rotStats(v){const t=iso(TODAY),end=(v.left||v.end)<t?(v.left||v.end):t,att=v.att||{},off=rotOff();let work=0,nP=0,nL=0,nH=0,nA=0;
+ for(let d=P(v.start);iso(d)<=end;d.setDate(d.getDate()+1)){const ds=iso(d),m=att[ds]?.s,isOff=off.includes(d.getDay());
+  if(m==="H"||(isOff&&m!=="P")){nH++;continue}work++;if(m==="P")nP++;else if(m==="L")nL++;else if(ds<t||m==="A")nA++}
+ let total=0;for(let d=P(v.start);iso(d)<=(v.left||v.end);d.setDate(d.getDate()+1)){const m=att[iso(d)]?.s;if(m!=="H"&&!off.includes(d.getDay()))total++}
+ return{work,P:nP,L:nL,A:nA,H:nH,total,pct:work?Math.round(nP/work*100):null}}
+const rotDaysLeft=v=>days(P(v.left||v.end),TODAY);
+const rotPin=()=>String(Math.floor(1000+Math.random()*9000));
+const rotFac=v=>v.sup?(facById(v.sup)?facName(facById(v.sup)):v.sup):"";
+function markAtt(v,ds,s,by){v.att=v.att||{};if(!s){delete v.att[ds];return}v.att[ds]={s,t:s==="P"?new Date().toTimeString().slice(0,5):"",by:by||ME}}
+
+/* ---------- list ---------- */
+UI.rotTab="Current";UI.rotQ="";
+function vRotating(){const L=visList(),t=iso(TODAY),can=!isViewer();const by=s=>L.filter(v=>rotState(v)===s||(s==="Completed"&&rotState(v)==="Left early"));
+ const tabs=["Current","Upcoming","Completed"],q=UI.rotQ.toLowerCase();
+ const rows=by(UI.rotTab).filter(v=>!q||(v.name+" "+v.inst+" "+v.unit).toLowerCase().includes(q)).sort((a,b)=>UI.rotTab==="Completed"?(a.end<b.end?1:-1):(a.start<b.start?-1:1));
+ const cur=by("Current"),markedToday=cur.filter(v=>v.att?.[t]).length,isOffToday=rotOff().includes(TODAY.getDay());
+ const todayCell=v=>{const m=v.att?.[t];return`<div class="attbtns">${["P","A","L"].map(s=>`<button class="ab ${m?.s===s?"on a-"+s:""}" data-att="${v.id}|${t}|${s}" ${can?"":"disabled"} title="${AT_L[s]}">${s}</button>`).join("")}${m?.t?`<span class="subt">${m.t}</span>`:""}</div>`};
+ return`<div class="head"><div><h2>Rotating trainees</h2><p>PGTs from other institutes on short rotations at RIC. They mark attendance daily; the experience certificate shows their attendance.</p></div>
+  <div class="actions">${xbtn("rotating")}${can?`<a class="btn" href="#kiosk">Open attendance kiosk</a><button class="btn primary" data-act="rot-add">Add rotating trainee</button>`:""}</div></div>
+ ${rotLinkPanel()}
+ <div class="kpis">${[["Current",cur.length,`${markedToday} of ${cur.length} marked today`],["Upcoming",by("Upcoming").length,"starting later"],["Completed",by("Completed").length,`${by("Completed").filter(v=>!v.cert).length} certificates to issue`]].map(([k,n,s])=>`<button class="kpi" data-rottab="${k}" aria-pressed="${UI.rotTab===k}"><span class="n">${n}</span><span class="l">${k}</span><span class="sub">${s}</span></button>`).join("")}</div>
+ <div class="panel flush"><div style="padding:12px 16px 0;display:grid;gap:8px"><div class="toolbar"><div class="chips">${tabs.map(k=>`<button class="chip" data-rottab="${k}" aria-pressed="${UI.rotTab===k}">${k}<span class="c">${by(k).length}</span></button>`).join("")}</div><input type="search" id="rotq" placeholder="Search name, institute or unit" value="${esc(UI.rotQ)}" aria-label="Search"></div>
+  ${UI.rotTab==="Current"&&isOffToday?`<p class="subt" style="margin:0">Today is a weekly off day; attendance is optional.</p>`:""}</div>
+  <div class="tblwrap" style="margin-top:8px"><table><thead><tr><th>Trainee</th><th>Rotation at RIC</th><th>Dates</th>${UI.rotTab==="Current"?"<th>Today</th>":""}<th class="num">Attendance</th>${UI.rotTab==="Completed"?"<th>Certificate</th>":""}</tr></thead><tbody>
+  ${rows.map(v=>{const s=rotStats(v),dl=rotDaysLeft(v);return`<tr><td><a href="#rot-${v.id}"><b>Dr. ${esc(v.name)}</b></a>${rotNew(v)?' <span class="pill p-pend">New · check documents</span>':""}<div class="subt">${esc(v.program||"")} ${esc(v.spec||"")}${v.year?" · Year "+esc(v.year):""} · ${esc(v.inst||"")}</div></td>
+   <td>${esc(v.unit||"")}<div class="subt">${esc(rotFac(v))}</div></td><td>${fd(v.start)} – ${fd(v.left||v.end)}<div class="subt">${UI.rotTab==="Current"?`${dl} day${dl===1?"":"s"} left`:UI.rotTab==="Upcoming"?`starts in ${days(P(v.start),TODAY)} days`:rotState(v)}</div></td>
+   ${UI.rotTab==="Current"?`<td>${todayCell(v)}</td>`:""}<td class="num">${s.pct==null?"—":`<b class="${s.pct<75?"d-red":""}">${s.pct}%</b><div class="subt">${s.P} of ${s.work} days</div>`}</td>
+   ${UI.rotTab==="Completed"?`<td>${v.cert?`<span class="pill p-ric">Issued</span><div class="subt">${esc(v.cert.no)}</div>`:`<a class="btn small" href="#rot-${v.id}">Issue</a>`}</td>`:""}</tr>`}).join("")||`<tr><td colspan="6" class="empty">${UI.rotTab==="Current"?"No rotating trainees at RIC right now.":UI.rotTab==="Upcoming"?"None scheduled.":"None yet."}</td></tr>`}
+ </tbody></table></div></div>
+ <p class="subt">Weekly off: ${rotOff().map(d=>["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][d]).join(", ")||"none"}. Off days and holidays are not counted as working days. Unmarked past working days count as absent.${can?` <button class="btn link" data-act="rot-off">Change</button>`:""}</p>`}
+
+/* ---------- profile ---------- */
+function vRot(){const v=visList().find(x=>x.id===route.id);if(!v)return`<div class="panel">Not found. <a href="#rotating">Back</a></div>`;const s=rotStats(v),st=rotState(v),can=!isViewer(),t=iso(TODAY);
+ const months=[];for(let m=v.start.slice(0,7);m<=(v.left||v.end).slice(0,7);m=mAdd(m,1))months.push(m);
+ const cal=m=>{const f=P(m+"-01"),st0=new Date(f);st0.setDate(1-((f.getDay()+6)%7));const cells=[];for(let k=0;k<42;k++){const d=new Date(st0);d.setDate(st0.getDate()+k);cells.push(d)}
+  const last=cells.findLastIndex(d=>iso(d).slice(0,7)===m);const rowsN=Math.ceil((last+1)/7);
+  return`<div class="attcal"><h4>${f.toLocaleDateString("en-GB",{month:"long",year:"numeric"})}</h4><div class="acg">${["M","T","W","T","F","S","S"].map(x=>`<span class="acgh">${x}</span>`).join("")}${cells.slice(0,rowsN*7).map(d=>{const ds=iso(d),inR=ds>=v.start&&ds<=(v.left||v.end)&&ds.slice(0,7)===m,mk=v.att?.[ds],off=rotOff().includes(d.getDay());
+   if(!inR)return`<span class="acd out">${ds.slice(0,7)===m?d.getDate():""}</span>`;const cls=mk?"a-"+mk.s:off?"a-off":ds<t?"a-miss":"";
+   return`<button class="acd ${cls} ${ds===t?"today":""}" data-attcyc="${v.id}|${ds}" ${can&&ds<=t?"":"disabled"} title="${fd(ds)}: ${mk?AT_L[mk.s]+(mk.t?" at "+mk.t:"")+(mk.by?" · "+mk.by:""):off?"Weekly off":ds<t?"Not marked (absent)":""}">${d.getDate()}</button>`}).join("")}</div></div>`};
+ return`<div><a href="#rotating" class="btn link" style="padding-left:0">← Rotating trainees</a></div>
+ <div class="panel"><div class="prof"><div class="avatar" aria-hidden="true">${esc(v.name.split(" ").map(w=>w[0]).slice(0,2).join(""))}</div>
+  <div class="who"><div class="code">Rotating trainee · ${st}</div><h2>Dr. ${esc(v.name)}</h2><div class="meta"><span>${esc(v.program||"")} ${esc(v.spec||"")}${v.year?" · Year "+esc(v.year):""}</span><span>${esc(v.inst||"")}</span><span>${esc(v.unit||"")} at RIC</span></div></div>
+  <div class="actions">${can?`<button class="btn" data-act="rot-edit" data-id="${v.id}">Edit details</button>`:""}${st!=="Upcoming"?`<button class="btn ${st==="Current"?"":"primary"}" data-act="rot-cert" data-id="${v.id}">${v.cert?"Experience certificate (PDF)":"Issue experience certificate"}</button>`:""}${can?`<button class="btn danger" data-act="rot-del" data-id="${v.id}">Remove</button>`:""}</div></div></div>
+ <div class="kpis">${[[s.pct==null?"—":s.pct+"%","Attendance",`${s.P} present of ${s.work} working days so far`],[s.A,"Absent","unmarked past days count as absent"],[s.L,"Leave",""],[`${s.total}`,"Working days in rotation",`${fd(v.start)} – ${fd(v.left||v.end)}`]].map(([n,l,sub])=>`<div class="kpi"><span class="n">${n}</span><span class="l">${l}</span>${sub?`<span class="sub">${sub}</span>`:""}</div>`).join("")}</div>
+ <div class="cols side"><div class="panel"><h3>Attendance</h3><p class="subt" style="margin:0 0 8px">${can?"Tap a day to change it: Present › Absent › Leave › Holiday › clear.":""} <span class="lg a-P">P</span> present <span class="lg a-A">A</span> absent <span class="lg a-L">L</span> leave <span class="lg a-H">H</span> holiday / off</p><div class="attcals">${months.map(cal).join("")}</div></div>
+  <div style="display:grid;gap:18px;align-content:start"><div class="panel"><h3>Details</h3><dl class="kv"><dt>Parent institute</dt><dd>${esc(v.inst||"—")}</dd><dt>Programme</dt><dd>${esc(v.program||"—")} ${esc(v.spec||"")}${v.year?", year "+esc(v.year):""}</dd><dt>Rotation unit</dt><dd>${esc(v.unit||"—")}</dd><dt>Supervisor at RIC</dt><dd>${esc(rotFac(v)||v.supName||"—")}</dd>${v.father?`<dt>Father's name</dt><dd>${esc(v.father)}</dd>`:""}
+   <dt>Rotation</dt><dd>${fd(v.start)} – ${fd(v.end)}${v.left?`<div class="d-red">Left on ${fd(v.left)}</div>`:""}</dd>${v.cnic?`<dt>CNIC</dt><dd>${esc(v.cnic)}</dd>`:""}${v.pmdc?`<dt>PMDC</dt><dd>${esc(v.pmdc)}</dd>`:""}<dt>Mobile</dt><dd>${esc(v.mobile||"—")}</dd>${v.email?`<dt>Email</dt><dd>${esc(v.email)}</dd>`:""}${v.letter?`<dt>Rotation letter</dt><dd>${esc(v.letter)}</dd>`:""}${v.notes?`<dt>Notes</dt><dd>${esc(v.notes)}</dd>`:""}</dl></div>
+   ${can?`<div class="panel"><h3>Attendance PIN</h3><p style="margin:0"><span class="code" style="font-size:22px;letter-spacing:.2em">${esc(v.pin)}</span></p><p class="subt" style="margin:4px 0 8px">The trainee enters this on the attendance kiosk in the DME office.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">${waNum(v.mobile)?`<a class="btn small" target="_blank" rel="noopener" href="https://wa.me/${waNum(v.mobile)}?text=${encodeURIComponent(`Dear Dr. ${v.name},\nWelcome to the Rawalpindi Institute of Cardiology for your ${v.unit} rotation (${fd(v.start)} to ${fd(v.end)}).\nPlease mark your attendance every day on the attendance computer in the Medical Education Department. Your PIN is ${v.pin}.\nDME Office, RIC`)}">Send PIN on WhatsApp</a>`:""}<button class="btn small" data-act="rot-pin" data-id="${v.id}">New PIN</button></div></div>`:""}
+   ${rotDocsHtml(v)}${v.cert?`<div class="panel"><h3>Certificate</h3><p style="margin:0">${esc(v.cert.no)} · issued ${fd(v.cert.at)}</p><p class="subt" style="margin:4px 0 0">Attendance on the certificate: ${v.cert.P} of ${v.cert.work} days (${v.cert.pct}%)</p></div>`:""}</div></div>`}
+
+/* ---------- add / edit ---------- */
+function sheetRot(v){const n=!v;v=v||{name:"",inst:"",program:"FCPS",spec:"",year:"",unit:"Cardiac Surgery",sup:"",start:iso(TODAY),end:"",cnic:"",pmdc:"",mobile:"",email:"",letter:"",notes:""};
+ openSheet(n?"Add rotating trainee":"Edit · Dr. "+v.name,`<label class="f">Full name <span class="h">without "Dr."</span><input name="name" value="${esc(v.name)}"></label>
+ <label class="f">Parent institute<input name="inst" value="${esc(v.inst||"")}" list="rot-inst" placeholder="e.g. Holy Family Hospital, Rawalpindi"></label><datalist id="rot-inst">${[...new Set(visList().map(x=>x.inst).filter(Boolean))].map(x=>`<option value="${esc(x)}">`).join("")}</datalist>
+ <div class="grid2"><label class="f">Programme<select name="program">${opt(ROT_PROGS,v.program||"FCPS")}</select></label><label class="f">Their specialty<input name="spec" value="${esc(v.spec||"")}" placeholder="e.g. General Surgery"></label></div>
+ <div class="grid2"><label class="f">Training year<input name="year" value="${esc(v.year||"")}" placeholder="e.g. 3"></label><label class="f">Rotation unit at RIC<input name="unit" list="rot-units" value="${esc(v.unit||"")}"></label></div><datalist id="rot-units">${ROT_UNITS.map(u=>`<option value="${esc(u)}">`).join("")}</datalist>
+ <label class="f">Supervisor at RIC<select name="sup"><option value="">Not assigned</option>${DB.faculty.filter(f=>f.active!==false).sort((a,b)=>a.name.localeCompare(b.name)).map(f=>`<option value="${f.id}" ${v.sup===f.id?"selected":""}>${esc(facName(f))} · ${esc(f.spec)}</option>`).join("")}</select></label>
+ <div class="grid2"><label class="f">Rotation starts<input type="date" name="start" value="${v.start||""}"></label><label class="f">Rotation ends<input type="date" name="end" value="${v.end||""}"></label></div>
+ <div class="chips">${[1,2,3,6].map(m=>`<button type="button" class="chip" data-rotlen="${m}">${m} month${m>1?"s":""}</button>`).join("")}</div>
+ <div class="grid2"><label class="f">Mobile<input name="mobile" value="${esc(v.mobile||"")}" placeholder="03xx-xxxxxxx"></label><label class="f">Email<input name="email" value="${esc(v.email||"")}"></label></div>
+ <div class="grid2"><label class="f">CNIC<input name="cnic" value="${esc(v.cnic||"")}"></label><label class="f">PMDC no.<input name="pmdc" value="${esc(v.pmdc||"")}"></label></div>
+ <label class="f">Rotation letter / NOC ref. <span class="h">optional</span><input name="letter" value="${esc(v.letter||"")}"></label>
+ ${n?"":`<label class="f">Left early on <span class="h">only if the rotation ended before the planned date</span><input type="date" name="left" value="${v.left||""}"></label>`}
+ <label class="f">Notes<textarea name="notes">${esc(v.notes||"")}</textarea></label>`,()=>{
+  const name=fv("name").replace(/^(dr\.?\s+)+/i,"");if(name.length<3)return fail("Enter the full name.");if(!fv("inst"))return fail("Enter the parent institute.");if(!fv("unit"))return fail("Enter the rotation unit.");
+  if(!fv("start")||!fv("end"))return fail("Enter the rotation dates.");if(fv("end")<fv("start"))return fail("The end date is before the start date.");
+  let mob=fv("mobile").replace(/\D/g,"");if(mob.startsWith("92"))mob="0"+mob.slice(2);if(mob&&mob.length!==11)return fail("Enter the mobile as 03xx-xxxxxxx.");
+  const rec={name,inst:fv("inst"),program:fv("program"),spec:fv("spec"),year:fv("year"),unit:fv("unit"),sup:fv("sup"),start:fv("start"),end:fv("end"),mobile:mob?mob.slice(0,4)+"-"+mob.slice(4):"",email:fv("email").toLowerCase(),cnic:fv("cnic"),pmdc:fv("pmdc").toUpperCase(),letter:fv("letter"),notes:fv("notes")};
+  if(!n){const l=fv("left");if(l&&(l<rec.start||l>rec.end))return fail("The leaving date must be within the rotation.");rec.left=l||null}
+  if(n){const nv={id:uid("V"),...rec,pin:rotPin(),att:{}};visList().push(nv);log(`Rotating trainee added: Dr. ${name}, ${rec.inst}, ${rec.unit} (${fd(rec.start)} – ${fd(rec.end)})`,"rot-"+nv.id);toast("Added. PIN "+nv.pin);go("rot-"+nv.id)}
+  else{Object.assign(v,rec);if(!v.left)delete v.left;log(`Rotating trainee edited: Dr. ${name}`,"rot-"+v.id);toast("Saved")}return true})}
+
+/* ---------- experience certificate ---------- */
+function sheetRotCert(v){const s=rotStats(v),st=rotState(v);
+ openSheet(v.cert?"Experience certificate":"Issue experience certificate",`${st==="Current"?`<div class="flag">The rotation is still running (ends ${fd(v.end)}). The certificate will show attendance up to today.</div>`:""}
+ ${s.pct!=null&&s.pct<75?`<div class="flag">Attendance is ${s.pct}%, below 75%.</div>`:""}
+ <dl class="kv"><dt>Rotation</dt><dd>${esc(v.unit)}, ${fd(v.start)} – ${fd(v.left||v.end)}</dd><dt>Attendance</dt><dd>${s.P} of ${s.work} working days (${s.pct??0}%)${s.L?`, ${s.L} on leave`:""}</dd></dl>
+ <label class="f">Conduct<select name="conduct">${opt(["satisfactory","good","excellent","—"],v.cert?.conduct||"satisfactory")}</select></label>
+ <label class="f">Signed by<input name="signer" value="${esc(v.cert?.signer||SELF)}"></label><label class="f">Designation<input name="sdesig" value="${esc(v.cert?.sdesig||"Director of Medical Education")}"></label>
+ <label class="check"><input type="checkbox" name="supsig" ${v.cert?.supsig!==false&&v.sup?"checked":""} ${v.sup?"":"disabled"}> Add a signature line for the supervisor${v.sup?` (${esc(rotFac(v))})`:""}</label>
+ ${v.cert?`<p class="subt" style="margin:0">Certificate no. ${esc(v.cert.no)}, first issued ${fd(v.cert.at)}. Downloading again keeps the same number.</p>`:""}`,()=>{
+  const yr=TODAY.getFullYear(),seq=visList().filter(x=>x.cert&&x.cert.no.includes(`/${yr}/`)).length+1;
+  const supsig=!!document.querySelector('#sheetform [name="supsig"]')?.checked;
+  v.cert={...(v.cert||{}),no:v.cert?.no||`RIC/DME/ROT/${yr}/${String(seq).padStart(3,"0")}`,at:v.cert?.at||iso(TODAY),conduct:fv("conduct"),signer:fv("signer"),sdesig:fv("sdesig"),supsig,P:s.P,work:s.work,pct:s.pct??0,L:s.L};
+  log(`Experience certificate ${v.cert.no} for Dr. ${v.name}`,"rot-"+v.id);rotCertPdf(v).catch(e=>toast(e.message||"Could not make the PDF"));return true},v.cert?"Download PDF":"Issue and download")}
+async function rotCertPdf(v){await bioLoadPdf();const{jsPDF}=window.jspdf;const d=new jsPDF({unit:"pt",format:"a4"}),W=595,c=v.cert,L=64,R=W-64;
+ const logo=document.querySelector('img[alt="RIC logo"]')?.src;if(logo&&logo.startsWith("data:"))try{d.addImage(logo,"JPEG",W/2-32,40,64,64)}catch(e){}
+ d.setFont("times","bold");d.setFontSize(16);d.text("RAWALPINDI INSTITUTE OF CARDIOLOGY",W/2,126,{align:"center"});d.setFont("times","normal");d.setFontSize(11.5);d.text("Department of Medical Education & Training · Rawal Road, Rawalpindi",W/2,143,{align:"center"});
+ d.setDrawColor(109,31,43);d.setLineWidth(1.4);d.line(L,154,R,154);
+ d.setFontSize(10.5);d.text(`No. ${c.no}`,L,180);d.text(`Dated: ${fd(iso(TODAY))}`,R,180,{align:"right"});
+ d.setFont("times","bold");d.setFontSize(15);d.text("EXPERIENCE CERTIFICATE",W/2,222,{align:"center"});d.setLineWidth(.6);d.setDrawColor(0);const tw=d.getTextWidth("EXPERIENCE CERTIFICATE");d.line(W/2-tw/2,225,W/2+tw/2,225);
+ const end=v.left||v.end;const prog=[v.program,v.spec].filter(Boolean).join(" ");
+ const p1=`This is to certify that Dr. ${v.name}${prog?`, ${prog} trainee`:""}${v.year?` (year ${v.year})`:""} of ${v.inst}, completed a rotation in ${v.unit} at the Rawalpindi Institute of Cardiology, Rawalpindi, from ${fd(v.start)} to ${fd(end)}${v.sup?`, under the supervision of ${rotFac(v)}`:""}.`;
+ const p2=`During this period the trainee attended ${c.P} of ${c.work} working days (${c.pct}%)${c.L?`, with ${c.L} day${c.L>1?"s":""} of approved leave`:""}.${c.conduct&&c.conduct!=="—"?` The trainee's conduct remained ${c.conduct}.`:""}`;
+ const p3="We wish the trainee success in future endeavours.";
+ d.setFont("times","normal");d.setFontSize(12.5);let y=262;[p1,p2,p3].forEach(p=>{const ls=d.splitTextToSize(p,R-L);d.text(ls,L,y,{lineHeightFactor:1.6,align:"justify",maxWidth:R-L});y+=ls.length*12.5*1.6+14});
+ const sy=Math.max(y+80,560);d.setLineWidth(.5);
+ if(c.supsig&&v.sup){d.line(L,sy,L+190,sy);d.setFont("times","bold");d.setFontSize(11.5);d.text(rotFac(v),L,sy+15);d.setFont("times","normal");d.text(`Supervisor, ${v.unit}`,L,sy+30);d.text("Rawalpindi Institute of Cardiology",L,sy+45)}
+ d.line(R-200,sy,R,sy);d.setFont("times","bold");d.text(c.signer,R,sy+15,{align:"right"});d.setFont("times","normal");d.text(c.sdesig,R,sy+30,{align:"right"});d.text("Rawalpindi Institute of Cardiology",R,sy+45,{align:"right"});
+ d.setFontSize(8.5);d.setTextColor(110);d.text(`Attendance recorded daily in the DME Office attendance register. Certificate no. ${c.no}.`,W/2,800,{align:"center"});
+ d.save(`Experience certificate - Dr ${v.name.replace(/[^A-Za-z0-9 ]+/g,"")}.pdf`)}
+
+/* ---------- attendance kiosk (DME office computer) ---------- */
+UI.kio={sel:null,pin:"",msg:null};
+const kioskOn=()=>{try{return sessionStorage.getItem("dme-kiosk")==="1"}catch(e){return false}};
+function vKiosk(){try{sessionStorage.setItem("dme-kiosk","1")}catch(e){}document.body.classList.add("kiosk");const t=iso(TODAY),K=UI.kio;
+ const cur=visList().filter(v=>rotState(v)==="Current").sort((a,b)=>a.name.localeCompare(b.name));
+ const now=new Date();
+ if(K.msg)return`<div class="kio"><div class="kio-done ${K.msg.ok?"ok":"bad"}"><b>${esc(K.msg.t)}</b><span>${esc(K.msg.s||"")}</span></div></div>`;
+ if(K.sel){const v=cur.find(x=>x.id===K.sel);if(!v){K.sel=null;return vKiosk()}
+  return`<div class="kio"><h2>Dr. ${esc(v.name)}</h2><p class="subt">Enter your 4-digit PIN</p><div class="kio-pin">${[0,1,2,3].map(i=>`<span class="${K.pin.length>i?"f":""}"></span>`).join("")}</div>
+  <div class="kio-pad">${[1,2,3,4,5,6,7,8,9,"✕",0,"⌫"].map(k=>`<button data-kio="${k}">${k}</button>`).join("")}</div><button class="btn link" data-kio="back">Not you? Go back</button></div>`}
+ return`<div class="kio"><div class="kio-h"><img src="${esc(document.querySelector('img[alt="RIC logo"]')?.src||"")}" alt=""><div><h2>Daily attendance</h2><p>Rotating trainees · Department of Medical Education</p></div><div class="kio-clock"><b>${now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}</b>${now.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"})}</div></div>
+  <p class="subt" style="text-align:center">Tap your name, then enter your PIN.</p>
+  <div class="kio-names">${cur.map(v=>{const m=v.att?.[t];return`<button data-kio-sel="${v.id}" class="${m?.s==="P"?"done":""}"><b>Dr. ${esc(v.name)}</b><span>${esc(v.unit)}${m?.s==="P"?` · marked ${m.t}`:""}</span></button>`}).join("")||`<p class="subt">No rotating trainees today.</p>`}</div>
+  <button class="btn link kio-exit" data-kio="exit">Exit kiosk (staff)</button></div>`}
+function kioMsg(ok,t,s){UI.kio={sel:null,pin:"",msg:{ok,t,s}};render();clearTimeout(UI.kioT);UI.kioT=setTimeout(()=>{UI.kio.msg=null;if(route.v==="kiosk")render()},3500)}
+async function kioExit(){if(LIVE&&SYNC.email){const pw=prompt("Staff password to leave the kiosk");if(pw==null)return;const{error}=await SYNC.sb.auth.signInWithPassword({email:SYNC.email,password:pw});if(error){toast("Wrong password");return}}
+ else if(!confirm("Leave the attendance kiosk?"))return;try{sessionStorage.removeItem("dme-kiosk")}catch(e){}document.body.classList.remove("kiosk");go("rotating")}
+document.addEventListener("click",e=>{if(route.v!=="kiosk")return;const s=e.target.closest("[data-kio-sel]");if(s){UI.kio={sel:s.dataset.kioSel,pin:"",msg:null};render();return}
+ const b=e.target.closest("[data-kio]");if(!b)return;const k=b.dataset.kio,K=UI.kio;
+ if(k==="exit")return kioExit();if(k==="back"||k==="✕"){UI.kio={sel:null,pin:"",msg:null};render();return}
+ if(k==="⌫"){K.pin=K.pin.slice(0,-1);render();return}if(K.pin.length>=4)return;K.pin+=k;
+ if(K.pin.length<4){render();return}
+ const v=visList().find(x=>x.id===K.sel),t=iso(TODAY);if(!v)return;
+ if(K.pin!==String(v.pin)){K.fails=(K.fails||0)+1;return kioMsg(false,"Wrong PIN","Try again, or ask the DME office.")}
+ if(v.att?.[t]?.s==="P")return kioMsg(true,`Already marked, Dr. ${v.name}`,`Marked present at ${v.att[t].t}`);
+ markAtt(v,t,"P","Kiosk");persist();kioMsg(true,`Thank you, Dr. ${v.name}`,`Marked present at ${v.att[t].t} · ${fd(t)}`)});
+document.addEventListener("keydown",e=>{if(route.v!=="kiosk"||!UI.kio.sel)return;if(/^\d$/.test(e.key)){const b=document.querySelector(`[data-kio="${e.key}"]`);if(b)b.click()}if(e.key==="Backspace"){const b=document.querySelector('[data-kio="⌫"]');if(b)b.click()}});
+/* the kiosk stays on screen until a staff member exits it */
+if(kioskOn()&&location.hash!=="#kiosk")location.hash="#kiosk";
+window.addEventListener("hashchange",()=>{if(kioskOn()&&location.hash!=="#kiosk"){location.hash="#kiosk"}});
+setInterval(()=>{if(route.v==="kiosk"&&!UI.kio.sel&&!UI.kio.msg){const c=document.querySelector(".kio-clock b");if(c)c.textContent=new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"});
+ const today=iso(new Date(new Date().toDateString()));if(today!==iso(TODAY)){TODAY.setTime(new Date(new Date().toDateString()).getTime());render()}}},20000);
+
+/* ---------- staff actions ---------- */
+document.addEventListener("click",e=>{const r=e.target.closest("[data-rottab],[data-att],[data-attcyc],[data-rotlen],[data-act^='rot-']");if(!r)return;
+ if(r.dataset.rottab){UI.rotTab=r.dataset.rottab;render();return}
+ if(r.dataset.rotlen){const s=document.querySelector('#sheetform [name="start"]'),en=document.querySelector('#sheetform [name="end"]');if(s&&s.value){const d=P(s.value);d.setMonth(d.getMonth()+ +r.dataset.rotlen);d.setDate(d.getDate()-1);en.value=iso(d)}return}
+ if(r.dataset.att){if(isViewer())return;const[id,ds,s]=r.dataset.att.split("|"),v=visList().find(x=>x.id===id);if(!v)return;const cur=v.att?.[ds]?.s;markAtt(v,ds,cur===s?null:s);persist();const y=window.scrollY;render();window.scrollTo(0,y);return}
+ if(r.dataset.attcyc){if(isViewer())return;const[id,ds]=r.dataset.attcyc.split("|"),v=visList().find(x=>x.id===id);if(!v)return;const order=[undefined,"P","A","L","H"],cur=v.att?.[ds]?.s,nx=order[(order.indexOf(cur)+1)%order.length];markAtt(v,ds,nx||null);persist();const y=window.scrollY;render();window.scrollTo(0,y);return}
+ const act=r.dataset.act;if(act==="rot-add")return sheetRot();if(act==="rot-off")return sheetRotOff();
+ const v=visList().find(x=>x.id===r.dataset.id);if(!v)return;
+ if(act==="rot-edit")return sheetRot(v);if(act==="rot-cert")return sheetRotCert(v);
+ if(act==="rot-pin"){v.pin=rotPin();log(`New attendance PIN for Dr. ${v.name}`,"rot-"+v.id);render();return}
+ if(act==="rot-del"){if(r.dataset.armed!=="1"){r.dataset.armed="1";r.textContent="Tap again to remove";return}DB.visitors=visList().filter(x=>x!==v);log(`Rotating trainee removed: Dr. ${v.name} (${v.inst})`);toast("Removed");go("rotating")}});
+document.addEventListener("input",e=>{if(e.target.id==="rotq"){UI.rotQ=e.target.value;const p=e.target.selectionStart;render();const n=document.getElementById("rotq");n.focus();n.setSelectionRange(p,p)}});
+function sheetRotOff(){const D=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],o=rotOff();
+ openSheet("Weekly off days",`<p class="subt" style="margin:0">Days not counted as working days for rotating trainees. Public holidays can be marked "H" on each trainee's attendance calendar.</p>${D.map((d,i)=>`<label class="check"><input type="checkbox" name="off${i}" ${o.includes(i)?"checked":""}> ${d}</label>`).join("")}`,()=>{
+  DB.settings.rotOff=D.map((d,i)=>document.querySelector(`#sheetform [name="off${i}"]`).checked?i:null).filter(x=>x!=null);log("Weekly off days for rotating trainees changed");toast("Saved");return true})}
+VIEW_ACTS.add("rot-cert");
+EXPORTS.rotating=()=>({file:"Rotating trainees",sheets:[sheetFrom("Rotating trainees",visList().map(v=>{const s=rotStats(v);return{"Name":"Dr. "+v.name,"Parent institute":v.inst,"Programme":v.program,"Specialty":v.spec,"Year":v.year,"Rotation unit":v.unit,"Supervisor":rotFac(v),"Start":v.start,"End":v.left||v.end,"Status":rotState(v),"Working days":s.work,"Present":s.P,"Leave":s.L,"Absent":s.A,"Attendance %":s.pct??"","Mobile":v.mobile||"","Certificate":v.cert?.no||""}}))]});
+function rotDashCard(){const cur=visList().filter(v=>rotState(v)==="Current"),t=iso(TODAY),due=visList().filter(v=>rotState(v)!=="Current"&&rotState(v)!=="Upcoming"&&!v.cert);if(!cur.length&&!due.length&&!visList().some(rotNew))return"";
+ return card("Rotating trainees",cur.length,"rotating",olist([...cur.slice(0,4).map(v=>oli("rot-"+v.id,"Dr. "+esc(v.name),esc(v.unit)+" · until "+fd(v.end).slice(0,6),(m=>m?.s==="P"?`<span class="pill p-ric">${m.t||"present"}</span>`:m?.s==="A"?'<span class="pill p-bad">absent</span>':m?.s==="L"?'<span class="pill p-leave">leave</span>':'<span class="pill p-pause">not marked</span>')(v.att?.[t]))),...(visList().some(rotNew)?[oli("rotating",`${visList().filter(rotNew).length} new online registration${visList().filter(rotNew).length>1?"s":""} to check`,"","")]:[]),...(due.length?[oli("rotating",`${due.length} experience certificate${due.length>1?"s":""} to issue`,"","")]:[])],"None at RIC."))}
+
+/* =====================================================================
+   V21 · ONLINE REGISTRATION FOR ROTATING TRAINEES (?rot=1)
+   Movement order required, PMDC certificate optional
+   ===================================================================== */
+const rotLink=()=>LIVE?pubBase()+"?rot=1":"https://dme.ric.example/rotation";
+let ROTPUB={sups:[]};
+async function rotPublicPage(){document.body.classList.add("public");
+ try{const{data}=await SYNC.sb.rpc("dme_public_lists");ROTPUB.sups=(data&&data.faculty||[]).map(f=>f.n).sort()}catch(e){}
+ rotPubRender()}
+function rotPubRender(done){
+ if(done)return pubShell(`<div class="panel fbform">${formHead(null,"Registration received","Rotating trainees · Department of Medical Education")}
+  <p>Thank you, Dr. ${esc(done.name)}. Your rotation in <b>${esc(done.unit)}</b> from ${fd(done.start)} to ${fd(done.end)} is now recorded with the DME office.</p>
+  <div class="flag ok" style="display:grid;gap:4px"><span>Your attendance PIN</span><b style="font-size:32px;letter-spacing:.25em;font-family:var(--f-mono)">${esc(done.pin)}</b><span class="subt">Write it down. Mark your attendance every working day on the attendance computer in the Medical Education Department.</span></div>
+  <p class="subt">Bring your original movement order to the DME office on your first day.</p></div>`);
+ const f=(n,l,o={})=>`<label class="f"><span class="${o.opt?"":"req"}">${l}${o.h?` <span class="h">${o.h}</span>`:o.opt?` <span class="h">optional</span>`:""}</span><input name="${n}" ${o.type?`type="${o.type}"`:""} ${o.ph?`placeholder="${o.ph}"`:""} ${o.list?`list="${o.list}"`:""} ${o.mode?`inputmode="${o.mode}"`:""}></label>`;
+ pubShell(`<form class="panel fbform" id="rotform" novalidate>${formHead(null,"Rotation registration","For postgraduate trainees from other institutes joining RIC for a rotation")}
+  <fieldset class="pfsec"><legend>About you</legend>${f("name","Full name",{h:'without "Dr."',ph:"e.g. Ahmed Raza"})}${f("father","Father's name",{opt:1})}
+   <div class="grid2">${f("cnic","CNIC",{ph:"37405-1234567-1",mode:"numeric"})}${f("pmdc","PMDC number",{opt:1,ph:"e.g. 93232-P"})}</div>
+   <div class="grid2">${f("mobile","Mobile",{ph:"03xx-xxxxxxx",type:"tel",mode:"numeric"})}${f("email","Email",{opt:1,type:"email"})}</div></fieldset>
+  <fieldset class="pfsec"><legend>Your training</legend>${f("inst","Parent institute / hospital",{ph:"e.g. Holy Family Hospital, Rawalpindi"})}
+   <div class="grid2"><label class="f"><span class="req">Programme</span><select name="program">${opt(["",...ROT_PROGS],"")}</select></label>${f("spec","Your specialty",{ph:"e.g. General Surgery"})}</div>
+   ${f("year","Training year",{opt:1,ph:"e.g. 3"})}</fieldset>
+  <fieldset class="pfsec"><legend>Rotation at RIC</legend>
+   <label class="f"><span class="req">Department / unit</span><select name="unit">${opt(["",...ROT_UNITS,"Other"],"")}</select></label><label class="f" id="rp-uo" hidden><span class="req">Which unit?</span><input name="unitOther"></label>
+   <div class="grid2">${f("start","Rotation starts",{type:"date"})}${f("end","Rotation ends",{type:"date"})}</div>
+   <div class="chips">${[1,2,3,6].map(m=>`<button type="button" class="chip" data-rplen="${m}">${m} month${m>1?"s":""}</button>`).join("")}</div>
+   <label class="f"><span>Supervisor at RIC <span class="h">if you know it</span></span><select name="supName">${opt(["",...ROTPUB.sups],"")}</select></label>
+   ${f("letter","Movement order no. / date",{opt:1})}</fieldset>
+  <fieldset class="pfsec"><legend>Documents</legend><p class="qd" style="margin:0">Photo or PDF, up to 5 MB each.</p>
+   <label class="f"><span class="req">Movement order</span><input type="file" name="movement" accept="image/jpeg,image/png,image/webp,application/pdf"></label>
+   <label class="f"><span>PMDC certificate <span class="h">optional</span></span><input type="file" name="pmdcdoc" accept="image/jpeg,image/png,image/webp,application/pdf"></label></fieldset>
+  <label class="check2"><input type="checkbox" id="rp-decl"> The information I have given is correct.</label>
+  <div class="err" id="rperr" role="alert"></div><button class="btn primary" type="button" data-act="rp-submit" style="justify-self:start">Submit</button></form>`)}
+document.addEventListener("change",e=>{if(e.target.name==="unit"&&e.target.closest("#rotform"))document.getElementById("rp-uo").hidden=e.target.value!=="Other"});
+document.addEventListener("click",async e=>{const lb=e.target.closest("[data-rplen]");if(lb){const fm=document.getElementById("rotform"),s=fm.start.value;if(!s){document.getElementById("rperr").textContent="Choose the start date first.";return}const d=P(s);d.setMonth(d.getMonth()+ +lb.dataset.rplen);d.setDate(d.getDate()-1);fm.end.value=iso(d);return}
+ const b=e.target.closest('[data-act="rp-submit"]');if(!b)return;const fm=document.getElementById("rotform"),er=document.getElementById("rperr"),g=n=>(fm[n]?.value||"").trim();
+ const bad=m=>{er.textContent=m;return};
+ const name=g("name").replace(/^(dr\.?\s+)+/i,"");if(name.length<3)return bad("Enter your full name.");
+ const cn=g("cnic").replace(/\D/g,"");if(cn.length!==13)return bad("Enter your 13-digit CNIC.");
+ let mob=g("mobile").replace(/\D/g,"");if(mob.startsWith("92"))mob="0"+mob.slice(2);if(!/^03\d{9}$/.test(mob))return bad("Enter your mobile as 03xx-xxxxxxx.");
+ if(g("email")&&!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(g("email")))return bad("Check the email address.");
+ if(!g("inst"))return bad("Enter your parent institute.");if(!g("program"))return bad("Choose your programme.");if(!g("spec"))return bad("Enter your specialty.");
+ const unit=g("unit")==="Other"?g("unitOther"):g("unit");if(!unit)return bad("Choose the department or unit of your rotation.");
+ if(!g("start")||!g("end"))return bad("Enter the rotation dates.");if(g("end")<g("start"))return bad("The end date is before the start date.");
+ const mv=fm.movement.files[0],pd=fm.pmdcdoc.files[0];if(!mv)return bad("Attach your movement order.");
+ for(const x of [mv,pd].filter(Boolean)){if(x.size>5*1024*1024)return bad(`${x.name} is larger than 5 MB.`);if(!/^(image\/(jpeg|png|webp)|application\/pdf)$/.test(x.type))return bad(`${x.name}: use a photo (JPG, PNG) or a PDF.`)}
+ if(!document.getElementById("rp-decl").checked)return bad("Tick the declaration to submit.");
+ er.textContent="";b.disabled=true;b.textContent="Uploading…";const folder=`rotating/${Date.now()}-${Math.random().toString(36).slice(2,8)}`,docs={};
+ try{for(const[k,x] of [["movement",mv],["pmdc",pd]]){if(!x)continue;const path=`${folder}/${k}.${(x.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")}`;
+   const{error}=await SYNC.sb.storage.from("dme-uploads").upload(path,x,{contentType:x.type||undefined});if(error)throw new Error("upload");docs[k]=path}
+  b.textContent="Sending…";const p={name,father:g("father"),cnic:cn,pmdc:g("pmdc"),mobile:mob.slice(0,4)+"-"+mob.slice(4),email:g("email"),inst:g("inst"),program:g("program"),spec:g("spec"),year:g("year"),unit,start:g("start"),end:g("end"),supName:g("supName"),letter:g("letter"),docs};
+  const{data,error}=await SYNC.sb.rpc("dme_submit_rot",{p});if(error||!data)throw new Error("send");
+  if(data.error){b.disabled=false;b.textContent="Submit";return bad(data.error==="duplicate"?"You are already registered for a rotation at RIC on these dates. Contact the DME office.":"Some details are missing or not valid. Check the form.")}
+  rotPubRender({...p,pin:data.pin});window.scrollTo(0,0)}
+ catch(x){b.disabled=false;b.textContent="Submit";bad(x.message==="upload"?"A document could not be uploaded. Check the connection and try again.":"Could not send. Check the connection and try again.")}});
+/* staff side: link, new-registration badge, documents */
+const rotNew=v=>v.src==="form"&&!v.checked;
+function rotLinkPanel(){if(isViewer())return"";const n=visList().filter(rotNew).length;
+ return`<div class="panel" style="display:grid;gap:8px"><div class="toolbar"><span class="subt">Registration link for rotating trainees</span><input id="rotlink" readonly value="${esc(rotLink())}" style="flex:1;min-width:220px;font-family:var(--f-mono);font-size:13px"><button class="btn small" data-act="rot-copylink">Copy link</button>${waNum?`<a class="btn small" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("Rotation registration, Rawalpindi Institute of Cardiology (Department of Medical Education). Please register before your first day and upload your movement order:\n"+rotLink())}">Share on WhatsApp</a>`:""}</div>
+  ${n?`<div class="flag info">${n} new online registration${n>1?"s":""}: check the movement order, then press <b>Documents checked</b> on the profile.</div>`:""}</div>`}
+function rotDocsHtml(v){const D=[["movement","Movement order"],["pmdc","PMDC certificate"]];if(!v.docs&&v.src!=="form")return"";
+ return`<div class="panel"><h3>Documents</h3><div class="docs">${D.map(([k,l])=>{const pth=v.docs&&v.docs[k];return`<div class="doc"><b>${l}</b>${pth?`<button class="btn link" data-act="doc-open" data-path="${esc(pth)}">Open</button>`:k==="pmdc"?"Not uploaded (optional)":"Not uploaded"}</div>`}).join("")}</div>
+  ${rotNew(v)&&!isViewer()?`<div style="margin-top:10px"><button class="btn primary small" data-act="rot-checked" data-id="${v.id}">Documents checked</button></div>`:v.checked?`<p class="subt" style="margin:8px 0 0">Checked${v.checkedBy?" by "+esc(v.checkedBy):""}.</p>`:""}</div>`}
+document.addEventListener("click",e=>{const a=e.target.closest('[data-act="rot-copylink"],[data-act="rot-checked"]');if(!a)return;
+ if(a.dataset.act==="rot-copylink")return copyText(document.getElementById("rotlink").value,a);
+ const v=visList().find(x=>x.id===a.dataset.id);if(!v)return;v.checked=true;v.checkedBy=ME;log(`Documents checked for rotating trainee Dr. ${v.name}`,"rot-"+v.id);toast("Marked as checked");render()});
 
 /* ---------- events ---------- */
 document.addEventListener("click",e=>{
