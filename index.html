@@ -576,6 +576,33 @@ body.kiosk main,body.kiosk #main{grid-column:1/-1!important;width:100%;max-width
 #cr-specwrap[hidden]{display:none}
 #bioform .req::after,#attform .req::after{content:" *";color:var(--brand)}
 #bioform [hidden]{display:none!important}
+
+/* V12 structured proposal fields */
+.sbw{display:grid;gap:10px;min-width:0}
+.sbday{border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--sunk);display:grid;gap:8px;min-width:0}
+.sbdh{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}.sbdh .btn{margin-left:auto}
+.sbrows{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.sbrow{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;display:grid;gap:8px 10px;align-items:end;min-width:0}
+.sbc{display:grid;gap:3px;min-width:0}.sbc>span{font-size:11.5px;color:var(--muted);font-weight:600}
+.sbw[data-sbw=sched] .sbrow{grid-template-columns:132px 132px minmax(0,1fr) minmax(0,1fr);grid-template-areas:"st en ty ty" "to to by by" "ft ft ft ft"}
+.sbst{grid-area:st}.sben{grid-area:en}.sbty{grid-area:ty}.sbto{grid-area:to}.sbby{grid-area:by}.sbfoot{grid-area:ft}
+.sbw[data-sbw=sched] .sbrow.brk{grid-template-areas:"st en ty ty" "to to to to" "ft ft ft ft";background:var(--gold-soft)}
+.sbna{color:var(--muted);font-size:13px;align-self:center}
+.sbfoot{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:22px}
+.sbbtn{display:flex;gap:6px;margin-left:auto}
+.sbrow.bad{border-color:var(--bad)}.sbrow.bad .sbdur{color:var(--bad);font-weight:600}
+.sbadd{display:flex;gap:8px;flex-wrap:wrap}.sbw>.btn.link{justify-self:start}
+.sbtot{font-size:13.5px}
+.sbw[data-sbw=roster] .sbrow{grid-template-columns:repeat(2,minmax(0,1fr))}.sbw[data-sbw=roster] .sbfoot{grid-area:auto;grid-column:1/-1}
+.sbw[data-sbw=items] .sbrow{grid-template-columns:minmax(0,2fr) 90px 120px 110px auto}.sbw[data-sbw=items] .sbbtn{align-self:center}
+.itot b{padding:8px 0;font-variant-numeric:tabular-nums}
+.sbw input[readonly]{background:transparent;border-style:dashed;color:var(--muted)}
+table.prop .sbw[data-sbw=sched] .sbrow,table.prop .sbw[data-sbw=sched] .sbrow.brk{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"st en" "ty ty" "to to" "by by" "ft ft"}table.prop .sbw[data-sbw=items] .sbrow{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}table.prop .sbw[data-sbw=items] .iitem{grid-column:1/-1}table.prop .sbw[data-sbw=roster] .sbrow{grid-template-columns:minmax(0,1fr)}
+.sbshow{border-collapse:collapse;width:100%;font-size:13.5px}.sbshow td,.sbshow th{padding:4px 6px;border-bottom:1px solid var(--line);vertical-align:top;text-align:left;white-space:normal}
+.sbshow td,.sbshow th{width:auto!important;min-width:0!important}table.prop td:has(>.sbw){min-width:340px}
+.sbshow th{color:var(--brand);font-size:12px;text-transform:uppercase;letter-spacing:.05em}.sbshow .tm{white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--muted)}.sbshow tr.brk td{color:var(--muted)}
+@media(max-width:600px){.sbw[data-sbw=sched] .sbrow,.sbw[data-sbw=sched] .sbrow.brk{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"st en" "ty ty" "to to" "by by" "ft ft"}
+ .sbw[data-sbw=roster] .sbrow{grid-template-columns:minmax(0,1fr)}.sbw[data-sbw=items] .sbrow{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.sbw[data-sbw=items] .iitem{grid-column:1/-1}}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:sl .18s ease-out}@keyframes sl{from{transform:translateX(24px)}to{transform:none}}}
 </style>
 
@@ -1185,7 +1212,7 @@ function vWs(){
  return`<div><a href="#workshops" class="btn link" style="padding-left:0">← All workshops</a></div>
  <div class="panel" style="display:grid;gap:14px"><div class="prof"><div class="who"><div class="code">${mLabel(w.month)}${w.date?" · "+fd(w.date):""}</div><h2>${esc(w.title)} ${w.example?'<span class="pill p-done" style="vertical-align:5px">Example</span>':""}</h2>
   <div class="meta"><span>${esc(w.dept)}</span><span>Focal person: ${nameLink(w.focal)||"not assigned"}</span><span>Course director: ${nameLink(w.director||w.focal)||"not set"}</span>${w.series?`<span>Series: ${esc(w.series)}</span>`:""}</div></div>
-  <div class="actions">${w.proposal?`<a class="btn" href="#prop-${w.id}">Proposal</a>`:""}${w.stage>=4?`<a class="btn" href="#cert-${w.id}">Certificates</a>`:""}<button class="btn" data-act="ws-edit">Edit details</button>${w.stage>0&&w.stage<6?`<button class="btn" data-act="ws-back">Move back a step</button>`:""}<button class="btn" data-act="t-new" data-link="ws-${w.id}" data-title="${esc(w.title)}: ">Add task</button><button class="btn danger" data-act="ws-del">Delete</button></div></div>
+  <div class="actions">${w.proposal?`<a class="btn" href="#prop-${w.id}">Proposal</a>`:""}${progData(w)?`<button class="btn" data-act="ws-prog" data-id="${w.id}">Print programme</button>`:""}${w.stage>=4?`<a class="btn" href="#cert-${w.id}">Certificates</a>`:""}<button class="btn" data-act="ws-edit">Edit details</button>${w.stage>0&&w.stage<6?`<button class="btn" data-act="ws-back">Move back a step</button>`:""}<button class="btn" data-act="t-new" data-link="ws-${w.id}" data-title="${esc(w.title)}: ">Add task</button><button class="btn danger" data-act="ws-del">Delete</button></div></div>
   <div class="stepper">${STAGES.map((s,i)=>`<div class="${i<w.stage?"done":i===w.stage?"now":""}">${s}</div>`).join("")}</div></div>
  ${fl.length?`<div class="flag">${fl.map(esc).join("<br>")}</div>`:""}
  ${linkedTasks("ws-"+w.id)}
@@ -1804,14 +1831,14 @@ function vOverview(){
 /* =====================================================================
    FORM BUILDER (Google Forms style) for feedback and proposal forms
    ===================================================================== */
-const QTYPES=[["short","Short answer"],["para","Paragraph"],["mc","Multiple choice"],["cb","Checkboxes"],["dd","Dropdown"],["scale","Linear scale"],["num","Number"],["date","Date"],["time","Time"],["list","List, one per line"]];
+const QTYPES=[["short","Short answer"],["para","Paragraph"],["mc","Multiple choice"],["cb","Checkboxes"],["dd","Dropdown"],["scale","Linear scale"],["num","Number"],["date","Date"],["time","Time"],["list","List, one per line"],["sched","Programme schedule (sessions with times)"],["roster","Faculty table"],["items","Items to procure, with costs"]];
 const CHOICE=new Set(["mc","cb","dd"]);
 const OPT_TOKENS={"@depts":["All departments",()=>wsDepts()],"@faculty":["All faculty names",()=>DB.faculty.map(facName)],"@workshops":["All workshop titles",()=>[...new Set(DB.workshops.filter(w=>!w.example).map(w=>w.title))]]};
 const qOpts=q=>(q.opts||[]).flatMap(o=>OPT_TOKENS[o]?OPT_TOKENS[o][1]():[o]);
 const Q=(k,t,type,o={})=>({k,t,type,d:"",req:false,opts:[],other:false,min:1,max:5,minL:"",maxL:"",section:"",...o});
 const qEmpty=v=>v==null||v===""||(Array.isArray(v)&&!v.length);
 const isOther=v=>typeof v==="string"&&v.startsWith("Other");
-function qCtrl(q,v,name,dis){const d=dis?"disabled":"";const O=qOpts(q);
+function qCtrl(q,v,name,dis){if(PB_KINDS.has(q.type))return pbCtrl(q,v,name,dis);const d=dis?"disabled":"";const O=qOpts(q);
  const otherTxt=Array.isArray(v)?(v.find(isOther)||""):isOther(v)?v:"";const ot=otherTxt.replace(/^Other:?\s*/,"");
  const otherBox=q.other?`<input class="otherbox" name="${name}-other" value="${esc(ot)}" placeholder="Other (please specify)" ${d} aria-label="Other, please specify">`:"";
  switch(q.type){
@@ -1825,7 +1852,7 @@ function qCtrl(q,v,name,dis){const d=dis?"disabled":"";const O=qOpts(q);
   case"cb":{const arr=Array.isArray(v)?v:[];return`<div class="chips">${O.map(o=>`<label class="chip"><input type="checkbox" class="sr" name="${name}" value="${esc(o)}" ${arr.includes(o)?"checked":""} ${d}> ${esc(o)}</label>`).join("")}${q.other?`<label class="chip"><input type="checkbox" class="sr" name="${name}" value="__other" ${arr.some(isOther)?"checked":""} ${d}> Other</label>`:""}</div>${otherBox}`}
   case"scale":{const n=[];for(let i=+q.min;i<=+q.max;i++)n.push(i);return`<div class="scalewrap">${q.minL?`<span class="subt">${esc(q.minL)}</span>`:""}<div class="scale" role="radiogroup" aria-label="${esc(q.t)}">${n.map(i=>`<label><input type="radio" name="${name}" value="${i}" ${+v===i?"checked":""} ${d}><span>${i}</span></label>`).join("")}</div>${q.maxL?`<span class="subt">${esc(q.maxL)}</span>`:""}</div>`}
   default:{const dl=(q.opts||[]).find(o=>OPT_TOKENS[o]);return`<input name="${name}" value="${esc(v||"")}" ${dl?`list="dl-${name}"`:""} ${d}>${dl?`<datalist id="dl-${name}">${qOpts(q).map(o=>`<option value="${esc(o)}">`).join("")}</datalist>`:""}`}}}
-function qRead(root,q,name){const el=root.querySelector(`[name="${name}"]`);const oth=()=>{const t=(root.querySelector(`[name="${name}-other"]`)?.value||"").trim();return t?"Other: "+t:"Other"};
+function qRead(root,q,name){if(PB_KINDS.has(q.type))return pbRead(root,q,name);const el=root.querySelector(`[name="${name}"]`);const oth=()=>{const t=(root.querySelector(`[name="${name}-other"]`)?.value||"").trim();return t?"Other: "+t:"Other"};
  switch(q.type){
   case"list":return(el?.value||"").split("\n").map(s=>s.trim()).filter(Boolean);
   case"num":{const v=(el?.value||"").trim();return v===""?"":+v}
@@ -1833,13 +1860,190 @@ function qRead(root,q,name){const el=root.querySelector(`[name="${name}"]`);cons
   case"dd":return el?.value==="__other"?oth():(el?.value||"");
   case"cb":return[...root.querySelectorAll(`[name="${name}"]:checked`)].map(c=>c.value==="__other"?oth():c.value);
   default:return(el?.value||"").trim()}}
-const qText=(q,v)=>qEmpty(v)?"":Array.isArray(v)?v.join("; "):String(v);
-const qShow=(q,v)=>{if(qEmpty(v))return'<span class="subt">—</span>';if(q.type==="list")return`<ul class="cm">${v.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;if(q.type==="cb")return v.map(x=>`<span class="pill p-done" style="margin:2px 4px 2px 0">${esc(x)}</span>`).join("");if(q.type==="date")return fd(v);if(q.type==="scale")return`${v} / ${q.max}`;return esc(v)};
+const qText=(q,v)=>qEmpty(v)?"":PB_KINDS.has(q.type)?pbText(q,v):Array.isArray(v)?v.join("; "):String(v);
+const qShow=(q,v)=>{if(qEmpty(v))return'<span class="subt">—</span>';if(PB_KINDS.has(q.type))return pbShow(q,v);if(q.type==="list")return`<ul class="cm">${v.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;if(q.type==="cb")return v.map(x=>`<span class="pill p-done" style="margin:2px 4px 2px 0">${esc(x)}</span>`).join("");if(q.type==="date")return fd(v);if(q.type==="scale")return`${v} / ${q.max}`;return esc(v)};
 function formHtml(qs,vals,prefix,dis){let h="",sec=null,open=false;
  qs.forEach(q=>{if(q.section!==sec){if(open)h+="</fieldset>";h+=`<fieldset class="pfsec">${q.section?`<legend>${esc(q.section)}</legend>`:""}`;open=true;sec=q.section}
   h+=`<div class="q"><div class="qt"><span class="${q.req?"req":""}">${esc(q.t)}</span></div>${q.d?`<p class="qd">${esc(q.d)}</p>`:""}${qCtrl(q,vals[q.k],prefix+q.k,dis)}</div>`});
  return h+(open?"</fieldset>":"")}
 function formRead(root,qs,prefix){const vals={},missing=[];qs.forEach(q=>{const v=qRead(root,q,prefix+q.k);vals[q.k]=v;if(q.req&&qEmpty(v))missing.push(q)});return{vals,missing}}
+
+/* =====================================================================
+   V12 · STRUCTURED PROPOSAL FIELDS
+   Programme schedule builder (start/end times, session type, topic, facilitator),
+   faculty table and items-to-procure table, instead of free-text lists.
+   ===================================================================== */
+const PB_TYPES=[
+ {k:"reg",l:"Registration & pre-test",d:30,opt:1},
+ {k:"open",l:"Welcome / inauguration",d:15,opt:1},
+ {k:"lecture",l:"Lecture",d:30},
+ {k:"handson",l:"Hands-on / skills station",d:45},
+ {k:"rotation",l:"Station rotation",d:60},
+ {k:"demo",l:"Live or video demonstration",d:30},
+ {k:"case",l:"Case discussion",d:30},
+ {k:"sim",l:"Simulation",d:45},
+ {k:"panel",l:"Panel discussion / Q&A",d:20},
+ {k:"assess",l:"Assessment (OSCE / DOPS)",d:30},
+ {k:"break",l:"Tea break",d:15,brk:1},
+ {k:"lunch",l:"Lunch & prayer break",d:45,brk:1},
+ {k:"close",l:"Post-test, feedback & certificates",d:30,opt:1}];
+const PB_KINDS=new Set(["sched","roster","items"]);
+const PB_PH={lecture:"Lecture title",handson:"Skill or station",rotation:"Stations, e.g. A: IABP set-up, B: ECMO circuit",demo:"What is demonstrated",case:"Case or theme",sim:"Scenario",panel:"Panel theme",assess:"What is assessed"};
+const PB_DESIG=["Professor","Associate Professor","Assistant Professor","Senior Registrar","Consultant","Registrar","Medical Officer","Nurse / Allied health","Perfusionist / Technologist"];
+const PB_ROLES=["Course director","Lecturer / speaker","Station facilitator","Demonstrator","Moderator","Panelist","Assessor"];
+const PB_RIC="Rawalpindi Institute of Cardiology";
+const pbT=k=>PB_TYPES.find(x=>x.k===k)||PB_TYPES[2];
+const pbMin=s=>{const m=/^(\d{1,2})[:.](\d{2})/.exec(String(s||""));return m?+m[1]*60+ +m[2]:null};
+const pbHM=n=>n==null||isNaN(n)?"":String(Math.floor(((n%1440)+1440)%1440/60)).padStart(2,"0")+":"+String(((n%60)+60)%60).padStart(2,"0");
+const pb12=s=>{const n=pbMin(s);if(n==null)return"";let h=Math.floor(n/60),m=n%60;const ap=h>=12?"pm":"am";h=h%12||12;return`${h}:${String(m).padStart(2,"0")} ${ap}`};
+const pbDur=n=>n<60?`${n} min`:`${Math.floor(n/60)} h${n%60?` ${n%60} min`:""}`;
+const pbPKR=n=>"PKR "+Math.round(+n||0).toLocaleString("en-US");
+const pbFac=()=>{const s=new Map();(DB.faculty||[]).filter(f=>f&&f.active!==false).forEach(f=>{const n=facName(f);if(n&&n!=="—"&&!s.has(n))s.set(n,f.desig||"")});return[...s].map(([n,d])=>({n,d})).sort((a,b)=>a.n.replace(/^(prof\.?\s*)?(dr\.?\s*)?/i,"").localeCompare(b.n.replace(/^(prof\.?\s*)?(dr\.?\s*)?/i,"")))};
+
+/* values saved by earlier versions were plain lines of text: read them into rows */
+function pbSched(v){if(!Array.isArray(v))return[];
+ if(v.every(x=>x&&typeof x==="object"))return v.map(r=>({day:+r.day||1,type:r.type||"lecture",start:r.start||"",end:r.end||"",topic:r.topic||"",by:r.by||""}));
+ const R=v.map(s=>{s=String(s).trim();const m=/^(\d{1,2}[:.]\d{2})\s*(?:[-–]\s*(\d{1,2}[:.]\d{2}))?\s*(.*)$/.exec(s);let rest=m?m[3]:s,by="";const c=rest.lastIndexOf(",");
+  if(c>0&&/\b(dr|prof|mr|ms)\b/i.test(rest.slice(c+1))){by=rest.slice(c+1).trim();rest=rest.slice(0,c).trim()}
+  const low=rest.toLowerCase(),type=/registration/.test(low)?"reg":/lunch|prayer/.test(low)?"lunch":/tea|break/.test(low)?"break":/post-test|certificate|closing/.test(low)?"close":/rotation|station/.test(low)?"rotation":/hands-on|hands on/.test(low)?"handson":/case/.test(low)?"case":/panel|q&a/.test(low)?"panel":"lecture";
+  return{day:1,type,start:m?pbHM(pbMin(m[1])):"",end:m&&m[2]?pbHM(pbMin(m[2])):"",topic:pbT(type).brk?"":rest.replace(/^lecture:\s*/i,""),by}});
+ R.forEach((r,i)=>{if(!r.end&&r.start){const nx=R[i+1]?.start;r.end=nx&&pbMin(nx)>pbMin(r.start)?nx:pbHM(pbMin(r.start)+pbT(r.type).d)}});return R}
+function pbRoster(v){if(!Array.isArray(v))return[];return v.map(x=>{if(x&&typeof x==="object")return{name:x.name||"",desig:x.desig||"",inst:x.inst||PB_RIC,role:x.role||""};
+ const p=String(x).split(",").map(s=>s.trim());const inst=p[2]||"RIC";return{name:p[0]||"",desig:p[1]||"",inst:/^ric$|rawalpindi institute of cardiology/i.test(inst)?PB_RIC:inst,role:""}})}
+function pbItems(v){if(!Array.isArray(v))return[];return v.map(x=>{if(x&&typeof x==="object")return{item:x.item||"",qty:x.qty??"",unit:x.unit??""};
+ const p=String(x).split(",").map(s=>s.trim());const q=parseInt(p[1])||1,c=+(String(p[2]||"").replace(/[^\d.]/g,""))||0;return{item:p[0]||"",qty:q,unit:c?Math.round(c/q):""}})}
+const pbIsLegacy=v=>Array.isArray(v)&&v.some(x=>typeof x==="string");
+
+/* ---- programme schedule ---- */
+function pbByOpts(sel,roster){const F=pbFac().map(f=>f.n),R=[...new Set((roster||[]).filter(Boolean))],others=F.filter(n=>!R.includes(n));
+ const o=n=>`<option ${n===sel?"selected":""}>${esc(n)}</option>`;
+ return`<option value="">Choose</option>${R.length?`<optgroup label="Faculty on this proposal">${R.map(o).join("")}</optgroup>`:""}<optgroup label="RIC faculty">${others.map(o).join("")}</optgroup>${sel&&!R.includes(sel)&&!F.includes(sel)?`<option selected>${esc(sel)}</option>`:""}`}
+function pbSchedRow(r,dis){const t=pbT(r.type),D=dis?"disabled":"";
+ return`<li class="sbrow${t.brk?" brk":""}">
+ <label class="sbc sbst"><span>Starts</span><input type="time" step="300" data-f="start" value="${esc(r.start||"")}" data-old="${esc(r.start||"")}" ${D}></label>
+ <label class="sbc sben"><span>Ends</span><input type="time" step="300" data-f="end" value="${esc(r.end||"")}" data-old="${esc(r.end||"")}" ${D}></label>
+ <label class="sbc sbty"><span>Session</span><select data-f="type" ${D}>${PB_TYPES.map(o=>`<option value="${o.k}" ${o.k===t.k?"selected":""}>${esc(o.l)}</option>`).join("")}</select></label>
+ ${t.brk?`<span class="sbc sbto sbna">No topic or facilitator needed</span>`:`<label class="sbc sbto"><span>Topic${t.opt?" (optional)":""}</span><input data-f="topic" value="${esc(r.topic||"")}" placeholder="${esc(PB_PH[t.k]||"Optional")}" ${D}></label>
+ <label class="sbc sbby"><span>Facilitator / speaker${t.opt?" (optional)":""}</span><select data-f="by" ${D}>${pbByOpts(r.by,[])}</select></label>`}
+ <span class="sbfoot"><span class="sbdur subt"></span>${dis?"":`<span class="sbbtn"><button type="button" class="btn link" data-sb="up" aria-label="Move up">↑</button><button type="button" class="btn link" data-sb="down" aria-label="Move down">↓</button><button type="button" class="btn link" data-sb="del">Delete</button></span>`}</span></li>`}
+function pbDayHtml(d,R,dis){return`<div class="sbday"><div class="sbdh"><b class="sbdn">Day ${d}</b><span class="sbsum subt"></span>${!dis&&d>1?`<button type="button" class="btn link" data-sb="rmday">Remove this day</button>`:""}</div>
+ <ol class="sbrows">${R.map(r=>pbSchedRow(r,dis)).join("")}</ol>
+ ${dis?"":`<div class="sbadd"><button type="button" class="btn small" data-sb="add" data-t="lecture">+ Session</button><button type="button" class="btn small" data-sb="add" data-t="break">+ Break</button></div>`}</div>`}
+function pbSchedHtml(v,name,dis){let rows=pbSched(v);if(!rows.length)rows=[{day:1,type:"reg",start:"09:00",end:"09:30"},{day:1,type:"lecture",start:"09:30",end:"10:00"}];
+ const n=Math.max(1,...rows.map(r=>r.day));let h=`<div class="sbw" data-sbw="sched" data-name="${esc(name)}">${pbIsLegacy(v)?`<div class="flag info">This schedule was sent as plain text. Times and sessions were read from it; check each row.</div>`:""}`;
+ for(let d=1;d<=n;d++)h+=pbDayHtml(d,rows.filter(r=>r.day===d),dis);
+ return h+(dis?"":`<button type="button" class="btn link" data-sb="addday">+ Add another day</button>`)+`<div class="sbtot subt"></div></div>`}
+const pbRowVal=li=>{const g=f=>li.querySelector(`[data-f="${f}"]`);const type=g("type").value,brk=pbT(type).brk;return{type,start:g("start").value,end:g("end").value,topic:brk?"":(g("topic")?.value||"").trim(),by:brk?"":(g("by")?.value||"")}};
+function pbReadSched(w){const out=[];w.querySelectorAll(".sbday").forEach((dy,i)=>dy.querySelectorAll(".sbrow").forEach(li=>out.push({day:i+1,...pbRowVal(li)})));return out}
+function pbSchedRefresh(w){let teach=0,first=null,last=null;
+ w.querySelectorAll(".sbday").forEach((dy,i)=>{dy.querySelector(".sbdn").textContent=`Day ${i+1}`;let tt=0,a=null,b=null,prevEnd=null;
+  dy.querySelectorAll(".sbrow").forEach(li=>{const r=pbRowVal(li),s=pbMin(r.start),e=pbMin(r.end),ok=s!=null&&e!=null&&e>s,ov=ok&&prevEnd!=null&&s<prevEnd;
+   li.querySelector(".sbdur").textContent=ok?pbDur(e-s)+(ov?" · overlaps the session above":""):s!=null&&e!=null?"Ends before it starts":"";li.classList.toggle("bad",(s!=null&&e!=null&&!ok)||ov);
+   if(ok){if(!pbT(r.type).brk)tt+=e-s;a=a==null?s:Math.min(a,s);b=b==null?e:Math.max(b,e);prevEnd=e}});
+  dy.querySelector(".sbsum").textContent=a!=null?`${pb12(pbHM(a))} – ${pb12(pbHM(b))} · ${pbDur(tt)} teaching`:"";teach+=tt;first=first??a;last=b??last});
+ const t=w.querySelector(".sbtot");if(t)t.textContent=teach?`Total teaching time ${pbDur(teach)}, breaks excluded.`:""}
+/* when a session's end time changes, later sessions that followed straight on move with it */
+const pbSet=(el,v)=>{el.value=v;el.dataset.old=v};
+function pbShift(li,oldEnd,newEnd){const d=pbMin(newEnd)-pbMin(oldEnd);if(isNaN(d)||!d)return;let prev=oldEnd,n=li.nextElementSibling;
+ while(n){const s=n.querySelector('[data-f="start"]'),e=n.querySelector('[data-f="end"]');if(s.value!==prev)break;prev=e.value;pbSet(s,pbHM(pbMin(s.value)+d));if(e.value)pbSet(e,pbHM(pbMin(e.value)+d));n=n.nextElementSibling}}
+function pbRechain(ol){let t=null;ol.querySelectorAll(".sbrow").forEach(li=>{const s=li.querySelector('[data-f="start"]'),e=li.querySelector('[data-f="end"]');const a=pbMin(s.value),b=pbMin(e.value),dur=a!=null&&b!=null&&b>a?b-a:30;
+ if(t==null)t=a??540;pbSet(s,pbHM(t));pbSet(e,pbHM(t+dur));t+=dur})}
+
+/* ---- faculty table ---- */
+function pbRosterRow(r,dis){const F=pbFac(),ric=!r.ext&&(!r.inst||r.inst===PB_RIC),D=dis?"disabled":"";const known=F.some(f=>f.n===r.name);
+ const sel=(f,list,v,ph)=>`<select data-f="${f}" ${D}><option value="">${ph}</option>${list.map(o=>`<option ${o===v?"selected":""}>${esc(o)}</option>`).join("")}${v&&!list.includes(v)?`<option selected>${esc(v)}</option>`:""}</select>`;
+ return`<li class="sbrow rrow" data-ext="${ric?0:1}">
+ <label class="sbc rname"><span>${ric?"RIC faculty":"Name (external)"}</span>${ric?`<select data-f="name" ${D}><option value="">Choose</option>${F.map(f=>`<option ${f.n===r.name?"selected":""} data-d="${esc(f.d)}">${esc(f.n)}</option>`).join("")}${r.name&&!known?`<option selected>${esc(r.name)}</option>`:""}</select>`:`<input data-f="name" value="${esc(r.name||"")}" placeholder="e.g. Dr. Full Name" ${D}>`}</label>
+ <label class="sbc rdes"><span>Designation</span>${sel("desig",PB_DESIG,r.desig,"Choose")}</label>
+ <label class="sbc rins"><span>Institution</span><input data-f="inst" value="${esc(ric?PB_RIC:r.inst||"")}" ${ric?"readonly tabindex=-1":D} placeholder="Hospital or university"></label>
+ <label class="sbc rrol"><span>Role in workshop</span>${sel("role",PB_ROLES,r.role,"Choose")}</label>
+ ${dis?"":`<span class="sbfoot"><span></span><span class="sbbtn"><button type="button" class="btn link" data-sb="del">Delete</button></span></span>`}</li>`}
+function pbRosterHtml(v,name,dis){let rows=pbRoster(v);if(!rows.length)rows=[{inst:PB_RIC}];
+ return`<div class="sbw" data-sbw="roster" data-name="${esc(name)}"><ol class="sbrows">${rows.map(r=>pbRosterRow(r,dis)).join("")}</ol>
+ ${dis?"":`<div class="sbadd"><button type="button" class="btn small" data-sb="radd">+ RIC faculty</button><button type="button" class="btn small" data-sb="radd" data-ext="1">+ External faculty</button></div>`}</div>`}
+function pbReadRoster(w){return[...w.querySelectorAll(".sbrow")].map(li=>{const g=f=>(li.querySelector(`[data-f="${f}"]`)?.value||"").trim();return{name:g("name"),desig:g("desig"),inst:li.dataset.ext==="1"?g("inst"):PB_RIC,role:g("role")}}).filter(r=>r.name||r.desig||r.role||(r.inst&&r.inst!==PB_RIC))}
+
+/* ---- items to procure ---- */
+function pbItemRow(r,dis){const D=dis?"disabled":"";return`<li class="sbrow irow">
+ <label class="sbc iitem"><span>Item</span><input data-f="item" value="${esc(r.item||"")}" placeholder="e.g. ECG electrodes" ${D}></label>
+ <label class="sbc iqty"><span>Quantity</span><input type="number" min="1" step="1" inputmode="numeric" data-f="qty" value="${esc(r.qty??"")}" ${D}></label>
+ <label class="sbc iunit"><span>Unit cost (PKR)</span><input type="number" min="0" step="1" inputmode="numeric" data-f="unit" value="${esc(r.unit??"")}" ${D}></label>
+ <span class="sbc itot"><span>Line total</span><b class="ilt"></b></span>
+ ${dis?"":`<span class="sbbtn"><button type="button" class="btn link" data-sb="del">Delete</button></span>`}</li>`}
+function pbItemsHtml(v,name,dis,est){let rows=pbItems(v);if(!rows.length)rows=[{}];
+ return`<div class="sbw" data-sbw="items" data-name="${esc(name)}" data-est="${esc(est)}"><ol class="sbrows">${rows.map(r=>pbItemRow(r,dis)).join("")}</ol>
+ ${dis?"":`<div class="sbadd"><button type="button" class="btn small" data-sb="iadd">+ Item</button></div>`}<div class="sbtot"></div></div>`}
+function pbReadItems(w){return[...w.querySelectorAll(".sbrow")].map(li=>{const g=f=>(li.querySelector(`[data-f="${f}"]`)?.value||"").trim();return{item:g("item"),qty:g("qty")===""?"":+g("qty"),unit:g("unit")===""?"":+g("unit")}}).filter(r=>r.item||r.qty!==""||r.unit!=="")}
+const pbItemsTotal=rows=>rows.reduce((a,r)=>a+(+r.qty||0)*(+r.unit||0),0);
+function pbEstBand(n){return n<25000?"Under PKR 25,000":n<=50000?"PKR 25,000 to 50,000":n<=100000?"PKR 50,000 to 100,000":"Over PKR 100,000"}
+function pbItemsRefresh(w,auto){const rows=pbReadItems(w);w.querySelectorAll(".sbrow").forEach(li=>{const q=+li.querySelector('[data-f="qty"]').value||0,u=+li.querySelector('[data-f="unit"]').value||0;li.querySelector(".ilt").textContent=q&&u?pbPKR(q*u):"—"});
+ const tot=pbItemsTotal(rows);w.querySelector(".sbtot").innerHTML=tot?`Estimated total <b>${pbPKR(tot)}</b>`:"";
+ if(auto&&tot){const root=w.closest("form,#propform")||document,s=root.querySelector(`select[name="${CSS.escape(w.dataset.est||"")}"]`);if(s&&!s.dataset.touched){const b=pbEstBand(tot);if([...s.options].some(o=>o.value===b||o.text===b))s.value=b}}}
+
+/* ---- shared ---- */
+function pbCtrl(q,v,name,dis){if(q.type==="sched")return pbSchedHtml(v,name,dis);if(q.type==="roster")return pbRosterHtml(v,name,dis);return pbItemsHtml(v,name,dis,name.slice(0,name.length-q.k.length)+"estCost")}
+function pbRead(root,q,name){const w=root.querySelector(`.sbw[data-name="${CSS.escape(name)}"]`);if(!w)return[];return q.type==="sched"?pbReadSched(w):q.type==="roster"?pbReadRoster(w):pbReadItems(w)}
+function pbSyncFacs(root){root=root||document;const R=[];root.querySelectorAll('.sbw[data-sbw="roster"] .sbrow [data-f="name"]').forEach(x=>{const n=x.value.trim();if(n)R.push(n)});
+ root.querySelectorAll('.sbw[data-sbw="sched"] select[data-f="by"]').forEach(s=>{if(s.disabled)return;const v=s.value;s.innerHTML=pbByOpts(v,R)})}
+function pbInit(w){if(w.dataset.init)return;w.dataset.init=1;if(w.dataset.sbw==="sched"){pbSyncFacs(w.closest("form,#propform")||document);pbSchedRefresh(w)}if(w.dataset.sbw==="items")pbItemsRefresh(w,false);if(w.dataset.sbw==="roster")pbSyncFacs(w.closest("form,#propform")||document)}
+new MutationObserver(()=>document.querySelectorAll(".sbw:not([data-init])").forEach(pbInit)).observe(document.documentElement,{childList:true,subtree:true});
+document.addEventListener("click",e=>{const b=e.target.closest("[data-sb]");if(!b)return;const w=b.closest(".sbw");if(!w)return;e.preventDefault();const a=b.dataset.sb,li=b.closest(".sbrow"),root=w.closest("form,#propform")||document;
+ if(w.dataset.sbw==="sched"){
+  if(a==="add"){const ol=b.closest(".sbday").querySelector(".sbrows"),lastE=[...ol.querySelectorAll('[data-f="end"]')].pop()?.value,t=b.dataset.t,s=lastE||"09:00";
+   ol.insertAdjacentHTML("beforeend",pbSchedRow({type:t,start:s,end:pbHM(pbMin(s)+pbT(t).d)},false));pbSyncFacs(root);ol.lastElementChild.querySelector(t==="break"?'[data-f="type"]':'[data-f="topic"]')?.focus()}
+  if(a==="del"&&li){li.remove()}
+  if((a==="up"||a==="down")&&li){const ol=li.parentElement;if(a==="up"&&li.previousElementSibling)ol.insertBefore(li,li.previousElementSibling);if(a==="down"&&li.nextElementSibling)ol.insertBefore(li.nextElementSibling,li);pbRechain(ol)}
+  if(a==="addday"){const days=w.querySelectorAll(".sbday");days[days.length-1].insertAdjacentHTML("afterend",pbDayHtml(days.length+1,[{type:"lecture",start:"09:00",end:"09:30"}],false));pbSyncFacs(root)}
+  if(a==="rmday")b.closest(".sbday").remove();
+  pbSchedRefresh(w);return}
+ if(w.dataset.sbw==="roster"){if(a==="radd"){w.querySelector(".sbrows").insertAdjacentHTML("beforeend",pbRosterRow(b.dataset.ext?{ext:1,inst:""}:{inst:PB_RIC},false));w.querySelector(".sbrows").lastElementChild.querySelector('[data-f="name"]').focus()}
+  if(a==="del"&&li)li.remove();pbSyncFacs(root);return}
+ if(w.dataset.sbw==="items"){if(a==="iadd"){w.querySelector(".sbrows").insertAdjacentHTML("beforeend",pbItemRow({},false));w.querySelector(".sbrows").lastElementChild.querySelector('[data-f="item"]').focus()}
+  if(a==="del"&&li)li.remove();pbItemsRefresh(w,true)}});
+document.addEventListener("change",e=>{const t=e.target;if(t.tagName==="SELECT"&&/estCost$/.test(t.name||""))t.dataset.touched=1;
+ const w=t.closest&&t.closest(".sbw");if(!w||!t.dataset.f)return;const li=t.closest(".sbrow"),root=w.closest("form,#propform")||document;
+ if(w.dataset.sbw==="sched"){
+  if(t.dataset.f==="type"){const r=pbRowVal(li),s=pbMin(r.start),e2=pbMin(r.end),old=li.dataset.type||"";const prevDur=s!=null&&e2!=null?e2-s:null;
+   const oldEnd=r.end;if(s!=null&&(prevDur==null||PB_TYPES.some(x=>x.d===prevDur)))r.end=pbHM(s+pbT(r.type).d);
+   const tmp=document.createElement("ol");tmp.innerHTML=pbSchedRow(r,false);const nl=tmp.firstElementChild;li.replaceWith(nl);if(oldEnd&&r.end!==oldEnd)pbShift(nl,oldEnd,r.end);pbSyncFacs(root);nl.querySelector(`[data-f="${pbT(r.type).brk?"type":"topic"}"]`)?.focus()}
+  if(t.dataset.f==="end"){if(t.dataset.old&&t.value)pbShift(li,t.dataset.old,t.value);t.dataset.old=t.value}
+  if(t.dataset.f==="start"){if(t.dataset.old&&t.value){const d=pbMin(t.value)-pbMin(t.dataset.old),e=li.querySelector('[data-f="end"]');if(d&&e.value){const oe=e.value;pbSet(e,pbHM(pbMin(oe)+d));pbShift(li,oe,e.value)}}t.dataset.old=t.value}
+  pbSchedRefresh(w);return}
+ if(w.dataset.sbw==="roster"){if(t.dataset.f==="name"&&t.tagName==="SELECT"){const d=t.selectedOptions[0]?.dataset.d,ds=li.querySelector('[data-f="desig"]');if(d&&ds&&!ds.value){if(![...ds.options].some(o=>o.text===d))ds.insertAdjacentHTML("beforeend",`<option>${esc(d)}</option>`);ds.value=d}}pbSyncFacs(root);return}
+ if(w.dataset.sbw==="items")pbItemsRefresh(w,true)});
+document.addEventListener("input",e=>{const t=e.target,w=t.closest&&t.closest(".sbw");if(!w)return;if(w.dataset.sbw==="items")pbItemsRefresh(w,true);if(w.dataset.sbw==="roster"&&t.dataset.f==="name")pbSyncFacs(w.closest("form,#propform")||document);if(w.dataset.sbw==="sched")pbSchedRefresh(w)});
+
+/* checks run when the form is submitted */
+function pbCheck(q,v,vals){const E=[];
+ if(q.type==="sched"){const rows=pbSched(v),n=Math.max(1,...rows.map(r=>r.day));
+  for(let d=1;d<=n;d++){const R=rows.filter(r=>r.day===d),pre=n>1?`Day ${d}, `:"";if(!R.length){E.push(`Programme schedule: Day ${d} has no sessions`);continue}
+   if(!R.some(r=>!pbT(r.type).brk&&!pbT(r.type).opt))E.push(`Programme schedule: ${pre||""}add at least one teaching session`);let prev=null;
+   R.forEach((r,i)=>{const s=pbMin(r.start),e=pbMin(r.end),t=pbT(r.type),at=`Programme schedule, ${pre}session ${i+1} (${t.l})`;
+    if(s==null||e==null)E.push(`${at}: enter the start and end time`);else if(e<=s)E.push(`${at}: ends before it starts`);else{if(prev!=null&&s<prev)E.push(`${at}: starts before the previous session ends`);if(s<7*60||e>21*60)E.push(`${at}: check the time (am or pm)`);prev=e}
+    if(!t.brk&&!t.opt){if(!r.topic)E.push(`${at}: add the topic`);if(!r.by)E.push(`${at}: choose the facilitator`)}})}
+  if(vals&&vals.length){const two=/two/i.test(vals.length);if(two&&n<2)E.push("Length is two days, so add Day 2 to the programme schedule");if(!two&&n>1)E.push(`Length is “${vals.length}”, but the programme schedule has ${n} days`)}}
+ if(q.type==="roster"){const rows=pbRoster(v);rows.forEach((r,i)=>{const at=`Faculty, row ${i+1}${r.name?` (${r.name})`:""}`;if(!r.name)E.push(`${at}: add the name`);if(!r.desig)E.push(`${at}: choose the designation`);if(!r.inst)E.push(`${at}: add the institution`);if(!r.role)E.push(`${at}: choose the role`)});
+  const seen=new Set();rows.forEach(r=>{const k=r.name.toLowerCase().replace(/^(prof\.?\s*)?(dr\.?\s*)?/,"").replace(/\s+/g," ");if(k&&seen.has(k))E.push(`Faculty: ${r.name} is listed twice`);seen.add(k)})}
+ if(q.type==="items")pbItems(v).forEach((r,i)=>{const at=`Items to procure, row ${i+1}`;if(!r.item)E.push(`${at}: add the item name`);if(!(+r.qty>0))E.push(`${at}: enter the quantity`);if(r.unit===""||!(+r.unit>=0))E.push(`${at}: enter the unit cost (0 if donated)`)});
+ return E}
+
+/* read-only views and text for exports */
+function pbShow(q,v){if(pbIsLegacy(v))return`<ul class="cm">${v.map(x=>`<li>${esc(x)}</li>`).join("")}</ul>`;
+ if(q.type==="sched"){const rows=pbSched(v),n=Math.max(1,...rows.map(r=>r.day));return`<table class="sbshow"><tbody>${Array.from({length:n},(_,i)=>i+1).map(d=>`${n>1?`<tr><th colspan="3">Day ${d}</th></tr>`:""}${rows.filter(r=>r.day===d).map(r=>{const t=pbT(r.type);return`<tr class="${t.brk?"brk":""}"><td class="tm">${esc(pb12(r.start))}–${esc(pb12(r.end))}</td><td><b>${esc(t.l)}</b>${r.topic?`<div>${esc(r.topic)}</div>`:""}</td><td>${esc(r.by||"")}</td></tr>`}).join("")}`).join("")}</tbody></table>`}
+ if(q.type==="roster")return`<ul class="cm">${pbRoster(v).map(r=>`<li><b>${esc(r.name)}</b>, ${esc(r.desig)}, ${esc(r.inst===PB_RIC?"RIC":r.inst)}${r.role?` · ${esc(r.role)}`:""}</li>`).join("")}</ul>`;
+ const rows=pbItems(v);return`<ul class="cm">${rows.map(r=>`<li>${esc(r.item)} × ${esc(r.qty)}${r.unit!==""?` @ ${pbPKR(r.unit)} = ${pbPKR((+r.qty||0)*(+r.unit||0))}`:""}</li>`).join("")}</ul>${rows.length?`<b>Total ${pbPKR(pbItemsTotal(rows))}</b>`:""}`}
+function pbText(q,v){if(pbIsLegacy(v))return v.join("; ");
+ if(q.type==="sched"){const rows=pbSched(v),n=Math.max(1,...rows.map(r=>r.day));return rows.map(r=>{const t=pbT(r.type);return`${n>1?`Day ${r.day} `:""}${r.start}–${r.end} ${t.l}${r.topic?": "+r.topic:""}${r.by?" ("+r.by+")":""}`}).join("; ")}
+ if(q.type==="roster")return pbRoster(v).map(r=>`${r.name} (${r.desig}, ${r.inst===PB_RIC?"RIC":r.inst})${r.role?" – "+r.role:""}`).join("; ");
+ const rows=pbItems(v);return rows.map(r=>`${r.item} × ${r.qty}${r.unit!==""?` @ ${pbPKR(r.unit)}`:""}`).join("; ")+(rows.length?`; Total ${pbPKR(pbItemsTotal(rows))}`:"")}
+
+/* proposal forms saved before this version used free-text lists */
+function pbUpgrade(w){let ch=false;(w&&w.pfq||[]).forEach(q=>{const nq=PB_DEF[q.k];if(nq&&q.type==="list"){q.type=nq.type;q.d=nq.d;if(nq.map)q.map=1;q.opts=[];ch=true}});return ch}
+const PB_DEF={
+ faculty:{type:"roster",map:1,d:"Choose RIC faculty from the list. Add external faculty with their institution. Everyone listed here can be picked as a facilitator in the schedule and gets a certificate."},
+ schedule:{type:"sched",map:1,d:"Add sessions in order with start and end times. A new session starts when the one above ends; change an end time and the sessions after it move with it."},
+ resources:{type:"items",d:"Leave out items already available at RIC. The estimated total cost below is filled in from these lines."}};
+
 
 /* ---- default forms ---- */
 function defFbQ(){return[
@@ -1869,7 +2073,7 @@ function defPfQ(){const L=true;return[
  Q("focalDesig","Focal person's designation","dd",{opts:["Professor","Associate Professor","Assistant Professor","Senior Registrar"],other:true,req:L,section:"People"}),
  Q("focalMobile","Focal person's mobile","short",{req:L,d:"Format 03xx-xxxxxxx",section:"People"}),
  Q("director","Course director","dd",{opts:["@faculty"],other:true,req:L,map:1,section:"People",d:"Receives the course director's share of net income"}),
- Q("faculty","Faculty and facilitators","list",{opts:["@faculty"],req:L,section:"People",d:"One per line: name, designation, institution"}),
+ Q("faculty","Faculty and facilitators","roster",{req:L,map:1,section:"People",d:PB_DEF.faculty.d}),
  Q("audience","Target audience","cb",{opts:AUD2.slice(),other:true,req:L,section:"Audience"}),
  Q("seats","Maximum seats","num",{req:L,map:1,section:"Audience"}),
  Q("ricSeats","Seats reserved for RIC","num",{section:"Audience"}),
@@ -1878,9 +2082,9 @@ function defPfQ(){const L=true;return[
  Q("assessment","Assessment method","cb",{opts:["Pre/post MCQ test","Skills checklist / DOPS","OSCE station","Case presentation","No formal assessment"],req:L,section:"Learning plan"}),
  Q("handouts","Handouts or reading material","mc",{opts:["Printed","Digital (PDF)","Both","None"],req:L,section:"Learning plan"}),
  Q("cme","Request CME accreditation?","mc",{opts:["Yes","No"],req:L,section:"Learning plan"}),
- Q("schedule","Programme schedule","list",{req:L,section:"Schedule",d:"One session per line: time, session, facilitator. Example: 09:30 Lecture on the CPB circuit, Dr. Azam"}),
+ Q("schedule","Programme schedule","sched",{req:L,map:1,section:"Schedule",d:PB_DEF.schedule.d}),
  Q("equip","Equipment needed","cb",{opts:["Simulator or manikin","Wet lab / animal tissue","Ultrasound or echo machine","Consumables","Projector and sound","Laptops"],other:true,section:"Resources"}),
- Q("resources","Items to procure","list",{section:"Resources",d:"One per line: item, quantity, estimated cost"}),
+ Q("resources","Items to procure","items",{section:"Resources",d:PB_DEF.resources.d}),
  Q("estCost","Estimated total cost","dd",{opts:["Under PKR 25,000","PKR 25,000 to 50,000","PKR 50,000 to 100,000","Over PKR 100,000"],req:L,section:"Resources"}),
  Q("sponsor","Sponsorship","mc",{opts:["No sponsor","Consumables","Equipment","Catering","More than one of these"],req:L,section:"Sponsorship",d:"Sponsors have no role in topics, speakers or content"}),
  Q("sponsorName","Sponsoring company","short",{section:"Sponsorship"})]}
@@ -2042,7 +2246,7 @@ function propAction(a){const w=DB.workshops.find(x=>x.id===route.id);const{vals}
  if(changed){if(w.stage>=3)applyProposal(w);wlog(w,"Affirmed proposal edited by DME"+(w.stage>=3?"; workshop details updated":""));persist();toast("Saved")}else toast("No change to save");render()}
 
 /* ---- example proposal for the sample workshop ---- */
-function exampleProposal(){const v={title:"Basics of ECG Interpretation",dept:"General Cardiology",collab:["Cardiac Imaging"].filter(()=>false),date:"2026-09-19",altDate:"2026-09-26",length:"Half day (up to 4 hours)",venue:"Auditorium",format:"Lectures + hands-on",focal:"Other: Example focal person",focalDesig:"Assistant Professor",focalMobile:"0300-0000000",director:"Other: Example course director",faculty:["Example faculty 1, Assistant Professor, RIC","Example faculty 2, Senior Registrar, RIC"],audience:["Cardiology PGTs","Medical officers","Nurses"],seats:50,ricSeats:15,fee:"PKR 3,000",objectives:["Use a systematic approach to read a 12-lead ECG","Recognise common arrhythmias","Identify acute ischaemia patterns"],assessment:["Pre/post MCQ test"],handouts:"Printed",cme:"Yes",schedule:["09:00 Registration and pre-test","09:30 Lecture: basics of the 12-lead ECG","10:30 Hands-on stations (rotation)","12:30 Case quiz, post-test and certificates"],equip:["Consumables","Projector and sound"],resources:["ECG paper and electrodes, 50 sets, 12000"],estCost:"PKR 25,000 to 50,000",sponsor:"Catering",sponsorName:"Example sponsor"};
+function exampleProposal(){const v={title:"Basics of ECG Interpretation",dept:"General Cardiology",collab:["Cardiac Imaging"].filter(()=>false),date:"2026-09-19",altDate:"2026-09-26",length:"Half day (up to 4 hours)",venue:"Auditorium",format:"Lectures + hands-on",focal:"Other: Example focal person",focalDesig:"Assistant Professor",focalMobile:"0300-0000000",director:"Other: Example course director",faculty:[{name:"Example faculty 1",desig:"Assistant Professor",inst:PB_RIC,role:"Lecturer / speaker"},{name:"Example faculty 2",desig:"Senior Registrar",inst:PB_RIC,role:"Station facilitator"}],audience:["Cardiology PGTs","Medical officers","Nurses"],seats:50,ricSeats:15,fee:"PKR 3,000",objectives:["Use a systematic approach to read a 12-lead ECG","Recognise common arrhythmias","Identify acute ischaemia patterns"],assessment:["Pre/post MCQ test"],handouts:"Printed",cme:"Yes",schedule:[{day:1,type:"reg",start:"09:00",end:"09:30",topic:"",by:""},{day:1,type:"lecture",start:"09:30",end:"10:15",topic:"Basics of the 12-lead ECG",by:"Example faculty 1"},{day:1,type:"break",start:"10:15",end:"10:30",topic:"",by:""},{day:1,type:"rotation",start:"10:30",end:"12:30",topic:"A: Lead placement, B: Arrhythmias, C: Ischaemia patterns",by:"Example faculty 2"},{day:1,type:"close",start:"12:30",end:"13:00",topic:"Case quiz",by:""}],equip:["Consumables","Projector and sound"],resources:[{item:"ECG paper and electrodes (sets)",qty:50,unit:240}],estCost:"PKR 25,000 to 50,000",sponsor:"Catering",sponsorName:"Example sponsor"};
  return{submitted:{values:v,at:"2026-07-21T09:00:00Z",by:"Example focal person"},final:{...v,seats:40,fee:"PKR 2,000"},versions:1}}
 /* =====================================================================
    PHASE 6: exam candidates, exam history on PGT profile, conduct records
@@ -2495,7 +2699,8 @@ function formHtml(qs,vals,prefix,dis){let h="",sec=null,open=false;vals=vals||{}
   const sh=(q.show||[]).length?` data-show="${esc(JSON.stringify(q.show.map(c=>({n:prefix+c.k,v:c.v}))))}"`:"";
   h+=`<div class="q"${sh} ${condMet(q,vals)?"":"hidden"}><div class="qt"><span class="${q.req?"req":""}">${esc(q.t)}</span></div>${q.d?`<p class="qd">${esc(q.d)}</p>`:""}${qCtrl(q,vals[q.k],prefix+q.k,dis)}</div>`});
  return h+(open?"</fieldset>":"")}
-function formRead(root,qs,prefix){const vals={},missing=[];qs.forEach(q=>{if(!condMet(q,vals)){vals[q.k]="";return}const v=qRead(root,q,prefix+q.k);vals[q.k]=v;if(q.req&&qEmpty(v))missing.push(q)});return{vals,missing}}
+function formRead(root,qs,prefix){const vals={},missing=[];qs.forEach(q=>{if(!condMet(q,vals)){vals[q.k]="";return}const v=qRead(root,q,prefix+q.k);vals[q.k]=v;if(q.req&&qEmpty(v))missing.push(q);else if(PB_KINDS.has(q.type)&&!qEmpty(v))pbCheck(q,v,vals).forEach(t=>missing.push({t}))});
+ if(missing.length>5){const n=missing.length-4;missing.splice(4,n,{t:`and ${n} more`})}return{vals,missing}}
 /* live show/hide while someone fills the form */
 function domVal(root,n){const els=[...root.querySelectorAll(`[name="${CSS.escape(n)}"]`)];if(!els.length)return"";const q=els[0].closest(".q");if(q&&q.hidden)return"";
  if(els[0].type==="radio"||els[0].type==="checkbox"){const v=els.filter(e=>e.checked).map(e=>e.value==="__other"?"Other":e.value);return els[0].type==="radio"?(v[0]||""):v}
@@ -2564,6 +2769,7 @@ document.addEventListener("change",e=>{const t=e.target;if(t.dataset&&t.dataset.
    ===================================================================== */
 function migrate9(d){let ch=false;
  if(!d.exitTypes){d.exitTypes=DEF_EXITS.map(n=>({name:n,active:true}));ch=true}
+ (d.workshops||[]).forEach(w=>{if(pbUpgrade(w))ch=true});
  (d.workshops||[]).forEach(w=>{if(w.rgq&&!w.rgq.some(q=>q.k==="atric")&&!(w.regs||[]).length){w.rgq=defRgQ();ch=true}if(!w.cert){w.cert=null}});
  if(!d.certCfg){d.certCfg=defCertCfg();ch=true}
  d.status.forEach(s=>{if(!s.id){s.id=uid("S");ch=true}});
@@ -2590,7 +2796,9 @@ const certKey=(g,n)=>g+"|"+String(n).toLowerCase().replace(/^dr\.?\s*/,"").repla
 /* ---------- who gets a certificate ---------- */
 function wsCertPeople(w){const C=certOf(w),L=[];const add=(name,group,role,src)=>{name=stripOther(String(name||"")).replace(/\s+/g," ").trim();if(name.length<2)return;const key=certKey(group,name);if(L.some(x=>x.key===key))return;L.push({key,name,group,role,src})};
  const R=regsOf(w).filter(r=>r.status==="Confirmed"),att=R.some(r=>r.present);R.filter(r=>!att||r.present).forEach(r=>add(r.a.name,"participant","Participant",att?"Marked present":"Confirmed registration"));
- (w.proposal?.final?.faculty||[]).forEach(l=>add(String(l).split(",")[0],"faculty","Facilitator","From the proposal"));
+ const PB_CR={"Course director":"Course Director","Lecturer / speaker":"Speaker","Station facilitator":"Facilitator","Demonstrator":"Demonstrator","Moderator":"Moderator","Panelist":"Panelist","Assessor":"Assessor"};
+ (w.proposal?.final?.faculty||[]).forEach(l=>{if(l&&typeof l==="object"){if(l.role==="Course director")add(l.name,"organiser","Course Director","From the proposal");else add(l.name,"faculty",PB_CR[l.role]||"Facilitator","From the proposal")}else add(String(l).split(",")[0],"faculty","Facilitator","From the proposal")});
+ (Array.isArray(w.proposal?.final?.schedule)?w.proposal.final.schedule:[]).forEach(r=>{if(r&&typeof r==="object"&&r.by)add(r.by,"faculty",["lecture","panel"].includes(r.type)?"Speaker":"Facilitator","From the schedule")});
  if(w.director||w.focal)add(w.director||w.focal,"organiser","Course Director","Workshop details");
  if(w.focal&&w.focal!==(w.director||w.focal))add(w.focal,"organiser","Academic Focal Person","Workshop details");
  C.extra.forEach(x=>add(x.name,x.group,x.role,"Added by hand"));
@@ -2944,7 +3152,7 @@ let PUB=null;
 async function publicPage(kind,id){document.body.classList.add("public");
  const{data,error}=await SYNC.sb.rpc("dme_public_form",{p_kind:kind,p_id:id});
  if(error||!data||data.error)return screen(`<h2>Form not found</h2><p>Check the link, or contact the DME office.</p>`);
- PUB={kind,w:data.w};DB={faculty:data.faculty||[],specs:data.specs||[],settings:data.settings||{},workshops:[data.w],pgts:[],staff:[],tasks:[],leaves:[],status:[],sups:[],rots:[],exams:[]};
+ PUB={kind,w:data.w};pbUpgrade(PUB.w);DB={faculty:data.faculty||[],specs:data.specs||[],settings:data.settings||{},workshops:[data.w],pgts:[],staff:[],tasks:[],leaves:[],status:[],sups:[],rots:[],exams:[]};
  pubRender()}
 function pubShell(inner){document.body.classList.add("solo");document.getElementById("main").innerHTML=inner}
 function pubRender(done){const w=PUB.w,k=PUB.kind;const head=(t,s)=>formHead(w,t,s);
@@ -4216,6 +4424,31 @@ document.addEventListener("click",async e=>{if(!ATTPUB)return;if(e.target.closes
  b.disabled=true;b.textContent="Checking…";let r=null;try{const x=await SYNC.sb.rpc("dme_checkin",{p_id:ATTPUB.id,p_mobile:m});r=x.data}catch(err){}
  if(r&&r.ok){try{localStorage.setItem("dme-att-mobile",m)}catch(x){}return attPubRender(r)}
  attPubRender({error:!r?"Could not connect. Try again.":r.error==="not_registered"?"This number is not among the confirmed registrations. Please see the registration desk.":r.error==="closed"?"Check-in has just closed. Please see the registration desk.":"Check the number and try again."})});
+
+/* =====================================================================
+   V24 · PRINT PROGRAMME: a clean programme on RIC letterhead from the
+   proposal's schedule (affirmed version if there is one), day by day
+   ===================================================================== */
+const t12=s=>{const[h,m]=String(s||"").split(":").map(Number);if(isNaN(h))return"";return`${h%12||12}:${String(m||0).padStart(2,"0")} ${h<12?"am":"pm"}`};
+function progData(w){if(!w||!w.proposal)return null;const V=w.proposal.final||w.proposal.submitted.values;const q=(w.pfq||[]).find(x=>x.type==="sched");
+ const R=q?pbSched(V[q.k]||[]).filter(r=>r.start||r.topic):[];return R.length?{R,V}:null}
+function progPrint(w){const p=progData(w);if(!p)return;const lg=document.querySelector('img[alt="RIC logo"]')?.src||"";const x=window.open("","_blank");if(!x){toast("Allow pop-ups to print the programme");return}
+ const days=[...new Set(p.R.map(r=>r.day||1))].sort((a,b)=>a-b),dt=w.date||p.V.date,ven=String(w.venue||p.V.venue||"").replace(/^Other:?\s*/,"");
+ const dayDate=d=>{if(!dt)return"";const x=new Date(dt+"T00:00");x.setDate(x.getDate()+d-1);return fd(iso(x))};
+ const rows=d=>p.R.filter(r=>(r.day||1)===d).map(r=>{const t=pbT(r.type);return`<tr class="${t.brk?"brk":""}"><td class="t">${esc(t12(r.start))}${r.end?" – "+esc(t12(r.end)):""}</td><td><span class="ty">${esc(t.l)}</span>${r.topic?`<div>${esc(r.topic)}</div>`:""}</td><td class="who">${esc(r.by||"")}</td></tr>`}).join("");
+ x.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Programme · ${esc(w.title)}</title><style>body{font:14px/1.45 Georgia,serif;margin:40px;color:#222}header{text-align:center;margin-bottom:14px}header img{width:64px}h1{font-size:22px;margin:6px 0 2px}h2{font-size:15px;font-weight:normal;margin:0;color:#555}h3{font-size:15px;margin:22px 0 0;color:#6D1F2B}table{width:100%;border-collapse:collapse;margin-top:8px}td,th{border-bottom:1px solid #ccc;padding:8px 6px;text-align:left;vertical-align:top}th{background:#f3eee6}td.t{white-space:nowrap;width:140px;font-family:Arial,sans-serif;font-size:13px}.ty{font-weight:bold}.who{color:#555;font-size:13px}.brk td{background:#faf7f2;color:#666}@media print{body{margin:16mm}}</style></head><body>
+  <header>${lg?`<img src="${lg}" alt="">`:""}<div style="font-size:13px;letter-spacing:.06em">RAWALPINDI INSTITUTE OF CARDIOLOGY · DEPARTMENT OF MEDICAL EDUCATION</div><h1>${esc(w.title)}</h1><h2>${dt?fd(dt):""}${days.length>1&&dt?" – "+dayDate(days[days.length-1]):""}${ven?" · "+esc(ven):""}</h2>${w.director||w.focal?`<div style="font-size:13px;margin-top:4px">Course director: ${esc(String(w.director||w.focal).replace(/^Other:?\s*/,""))}</div>`:""}</header>
+  ${days.map(d=>`${days.length>1?`<h3>Day ${d}${dt?" · "+dayDate(d):""}</h3>`:""}<table><thead><tr><th>Time</th><th>Session</th><th>Speaker / facilitator</th></tr></thead><tbody>${rows(d)}</tbody></table>`).join("")}
+  <script>setTimeout(()=>print(),300)<\/script></body></html>`);x.document.close()}
+document.addEventListener("click",e=>{const b=e.target.closest('[data-act="ws-prog"]');if(!b)return;const w=DB.workshops.find(x=>x.id===b.dataset.id);if(w)progPrint(w)});
+VIEW_ACTS.add("ws-prog");
+/* compatibility: proposals saved with the short-lived V24 table format (9 Nov) */
+{const MAP={"Registration":"reg","Pre-test":"reg","Inauguration / welcome":"open","Lecture":"lecture","Demonstration":"demo","Hands-on station":"handson","Case discussion":"case","Panel discussion":"panel","Tea break":"break","Lunch / prayer break":"lunch","Post-test":"close","Feedback":"close","Closing and certificates":"close","Other":"lecture"};
+ const fixVals=V=>{if(!V)return false;let ch=false;
+  if(Array.isArray(V.schedule))V.schedule.forEach(r=>{if(r&&typeof r==="object"){if(r.who!=null&&r.by==null){r.by=r.who;delete r.who;ch=true}if(MAP[r.type]){r.type=MAP[r.type];ch=true}}});
+  if(Array.isArray(V.resources))V.resources.forEach(r=>{if(r&&typeof r==="object"&&r.cost!=null&&r.unit==null){r.unit=r.cost;delete r.cost;ch=true}});return ch};
+ const _u=pbUpgrade;pbUpgrade=function(w){let ch=false;(w&&w.pfq||[]).forEach(q=>{if(q.type==="people"){q.type="roster";ch=true}});
+  if(w&&w.proposal){if(fixVals(w.proposal.submitted&&w.proposal.submitted.values))ch=true;if(fixVals(w.proposal.final))ch=true}return _u(w)||ch}}
 
 /* ---------- events ---------- */
 document.addEventListener("click",e=>{
