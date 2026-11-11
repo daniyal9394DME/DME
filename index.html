@@ -1359,7 +1359,7 @@ function vSettings(){const S=DB.settings;const num=(k,l)=>`<label class="f">${l}
    ${DB.leaveTypes.map((t,i)=>`<tr><td>${esc(t.name)}</td><td class="num">${DB.leaves.filter(l=>l.type===t.name).length}</td><td><span class="pill ${t.active?"p-ric":"p-done"}">${t.active?"In use":"Retired"}</span></td><td><button class="btn link" data-act="lt-edit" data-i="${i}">Rename</button><button class="btn link" data-act="lt-toggle" data-i="${i}">${t.active?"Retire":"Restore"}</button></td></tr>`).join("")}
    </tbody></table></div><p class="code" style="padding:0 16px 14px;margin:8px 0 0">Retired items stay on old records but are not offered for new entries.</p></div>
  </div>
- ${exitTypesPanel()}${contactImportPanel()}${updPanel()}${binPanel()}
+ ${exitTypesPanel()}${contactImportPanel()}${updPanel()}${exrPanel()}${binPanel()}
  <div class="cols two">
   <div class="panel" id="set-units" style="display:grid;gap:10px"><h3 style="margin:0">Units</h3><div class="chips">${DB.units.map(u=>{const n=DB.faculty.filter(f=>f.unit===u).length;return`<span class="chip">${esc(u)}<span class="c">${n} faculty</span><button class="btn link" style="padding:0" data-act="unit-rm" data-v="${esc(u)}" aria-label="Remove ${esc(u)}">✕</button></span>`}).join("")}</div>
    <div class="toolbar"><input id="newunit" placeholder="e.g. Unit 5" aria-label="New unit"><button class="btn small" data-act="unit-add">Add unit</button></div></div>
@@ -2288,7 +2288,7 @@ function exCandPanel(x){if(x.stage>=3)return"";const C=exCands(x),ex=exExcluded(
 function pgtExams(p){return DB.exams.filter(x=>(x.cands?x.cands.includes(p.id):false)&&(x.marks[p.id]!=null||x.absent[p.id])).sort((a,b)=>a.month<b.month?-1:1).map(x=>{
  const peers=exCands(x).filter(q=>q.spec===p.spec&&!x.absent[q.id]&&x.marks[q.id]!=null),m=x.marks[p.id],ab=!!x.absent[p.id];
  const sorted=peers.map(q=>+x.marks[q.id]).sort((a,b)=>b-a);const mean=sorted.length?sorted.reduce((a,b)=>a+b,0)/sorted.length:null;
- return{x,m:ab?null:+m,ab,pass:!ab&&+m>=x.passMark,rank:ab?null:sorted.indexOf(+m)+1,of:sorted.length,mean,year:examYear(x,p)||null,pub:x.stage>=5}})}
+ return{x,m:ab?null:+m,ab,pass:!ab&&exPass(x,p,+m),rank:ab?null:sorted.indexOf(+m)+1,of:sorted.length,mean,year:examYear(x,p)||null,pub:x.stage>=5}})}
 function examChart(rows){const R=rows.filter(r=>r.m!=null);if(R.length<1)return"";const W=Math.max(260,R.length*86),H=150,pad=28,bw=34;const y=v=>H-pad-(v/100)*(H-pad-12);
  const pm=R[R.length-1].x.passMark;
  return`<div class="tblwrap"><svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="Internal exam marks over time">
@@ -2376,7 +2376,7 @@ function examSpecPanel(x,specs,cands,sp,canMark){
   <div class="tblwrap" style="margin-top:8px"><table><thead><tr><th>Roll no.</th><th>PGT</th><th>Prog.</th><th>Year at RIC (at exam)</th><th>Marks %</th><th>Absent</th><th>Result</th><th></th></tr></thead><tbody>
   ${C.map(p=>{const m=x.marks[p.id],ab=x.absent[p.id];return`<tr><td>${x.roll?`<input data-exroll="${p.id}" value="${esc(x.roll[p.id]||"")}" style="width:96px;font-family:var(--f-mono)" ${x.stage>=5?"disabled":""} aria-label="Roll number for Dr. ${esc(p.name)}">`:'<span class="subt">—</span>'}</td><td>${pgtName(p)}<div class="code">${esc(p.code)}</div></td><td>${esc(p.program)}</td><td>${yOf(p)?"RIC year "+yOf(p):"Not in a RIC year"}</td>
    <td><input type="number" min="0" max="100" step="0.5" style="width:90px" data-exmark="${p.id}" value="${m??""}" ${canMark&&!ab?"":"disabled"} aria-label="Marks for Dr. ${esc(p.name)}"></td><td><input type="checkbox" data-exabs="${p.id}" ${ab?"checked":""} ${canMark?"":"disabled"} aria-label="Absent"></td>
-   <td>${ab?'<span class="pill p-done">Absent</span>':m==null?"—":m>=x.passMark?'<span class="pill p-ric">Pass</span>':'<span class="pill p-bad">Fail</span>'}</td><td>${x.stage<3?`<button class="btn link" data-act="ex-excl" data-id="${p.id}">Exclude</button>`:`<a class="btn link" href="#pgt-${p.id}">Profile</a>`}</td></tr>`}).join("")||`<tr><td colspan="8" class="empty">No candidates in this list.</td></tr>`}
+   <td>${ab?'<span class="pill p-done">Absent</span>':m==null?"—":exPass(x,p,m)?'<span class="pill p-ric">Pass</span>':'<span class="pill p-bad">Fail</span>'}</td><td>${x.stage<3?`<button class="btn link" data-act="ex-excl" data-id="${p.id}">Exclude</button>`:`<a class="btn link" href="#pgt-${p.id}">Profile</a>`}</td></tr>`}).join("")||`<tr><td colspan="8" class="empty">No candidates in this list.</td></tr>`}
  </tbody></table></div></div>`}
 const evalbeeRows=(x,list)=>[["ROLLNO","NAME","PHONENO","EMAILID"],...list.sort((a,b)=>(x.roll?.[a.id]||"").localeCompare(x.roll?.[b.id]||"")).map(p=>[x.roll?.[p.id]||"","Dr. "+p.name,p.mobile||"",p.email||""])];
 EXPORTS.evalbee=(id,sp,yr)=>{const x=DB.exams.find(e=>e.id===id);const list=exCands(x).filter(p=>(!sp||p.spec===sp)&&(yr===undefined||yr===""||examYear(x,p)===+yr));
@@ -2478,8 +2478,8 @@ function importAction(a){const x=DB.exams.find(e=>e.id===route.id);if(a==="ev-ca
 /* ---------- statistics ---------- */
 const BANDS=[[0,40,"Under 40"],[40,50,"40–49"],[50,60,"50–59"],[60,70,"60–69"],[70,80,"70–79"],[80,101,"80+"]];
 function statsOf(vals,pass){const v=vals.slice().sort((a,b)=>a-b),n=v.length;if(!n)return{n:0};const mean=v.reduce((a,b)=>a+b,0)/n,med=n%2?v[(n-1)/2]:(v[n/2-1]+v[n/2])/2;
- return{n,mean,med,min:v[0],max:v[n-1],pass:v.filter(x=>x>=pass).length,rate:Math.round(v.filter(x=>x>=pass).length/n*100),bands:BANDS.map(([a,b])=>v.filter(x=>x>=a&&x<b).length)}}
-const exVals=(x,f)=>exCands(x).filter(p=>!x.absent[p.id]&&x.marks[p.id]!=null&&(!f||f(p))).map(p=>+x.marks[p.id]);
+ const np=vals.ok?vals.ok.filter(Boolean).length:v.filter(x=>x>=pass).length;return{n,mean,med,min:v[0],max:v[n-1],pass:np,rate:Math.round(np/n*100),bands:BANDS.map(([a,b])=>v.filter(x=>x>=a&&x<b).length)}}
+const exVals=(x,f)=>{const C=exCands(x).filter(p=>!x.absent[p.id]&&x.marks[p.id]!=null&&(!f||f(p))),v=C.map(p=>+x.marks[p.id]);v.ok=C.map(p=>exPass(x,p,+x.marks[p.id]));return v};
 const bandBar=(b,pass)=>{const t=b.reduce((a,c)=>a+c,0)||1;const C=["var(--bad)","#C8794B","var(--gold)","#7FA37A","var(--ok)","#1F5233"];return`<span class="dist" title="${BANDS.map(([,,l],i)=>`${l}: ${b[i]}`).join(", ")}">${b.map((n,i)=>n?`<i style="width:${n/t*100}%;background:${C[i]}"></i>`:"").join("")}</span>`};
 const bandLegend=()=>`<div class="legend">${BANDS.map(([,,l],i)=>`<span><i style="background:${["var(--bad)","#C8794B","var(--gold)","#7FA37A","var(--ok)","#1F5233"][i]}"></i>${l}%</span>`).join("")}</div>`;
 function examResultsPanel(x){const all=exVals(x);if(!all.length)return"";const S=statsOf(all,x.passMark),specs=exSpecs(x).filter(s=>exVals(x,p=>p.spec===s).length);
@@ -2822,7 +2822,7 @@ function wsCertPeople(w){const C=certOf(w),L=[];const add=(name,group,role,src)=
  C.extra.forEach(x=>add(x.name,x.group,x.role,"Added by hand"));
  C.issued.forEach(x=>{if(!L.some(y=>y.key===x.key))L.push({key:x.key,name:x.name,group:x.group,role:x.role,src:"Issued earlier"})});
  return L.map(p=>({...p,iss:C.issued.find(x=>x.key===p.key)}))}
-function examMerit(x){const C=certOf(x),top=+C.top||1;const by=C.by;const pool=exCands(x).filter(p=>x.marks[p.id]!=null&&(!C.passOnly||x.marks[p.id]>=x.passMark));
+function examMerit(x){const C=certOf(x),top=+C.top||1;const by=C.by;const pool=exCands(x).filter(p=>x.marks[p.id]!=null&&(!C.passOnly||exPass(x,p,+x.marks[p.id])));
  const grp=p=>by==="spec"?p.spec:p.spec+"|"+examYear(x,p);const G={};pool.forEach(p=>{(G[grp(p)]=G[grp(p)]||[]).push(p)});const L=[];
  Object.keys(G).sort((a,b)=>{const[sa,ya]=a.split("|"),[sb,yb]=b.split("|");return specIdx(sa)-specIdx(sb)||(+ya||0)-(+yb||0)}).forEach(k=>{const A=G[k].sort((a,b)=>x.marks[b.id]-x.marks[a.id]);
   A.forEach((p,i)=>{const pos=A.findIndex(q=>x.marks[q.id]===x.marks[p.id])+1;if(pos>top)return;const y=examYear(x,p);
@@ -3628,7 +3628,8 @@ function updPanel(){if(!isAdmin())return"";const u=UI.upd;
  return`<div class="panel" id="set-upd" style="display:grid;gap:10px"><h3 style="margin:0">Apply a trainee update file</h3>${body}</div>`}
 document.addEventListener("change",async e=>{if(e.target.id!=="upd-file"||!e.target.files[0])return;let j;
  try{j=JSON.parse(await e.target.files[0].text())}catch(x){toast("That file could not be read");return}
- if(j.kind!=="dme-pgt-update"){toast("That is not a trainee update file");return}
+ if(j.kind==="dme-exam-results"){exrInit(j);e.target.value="";const y=window.scrollY;render();window.scrollTo(0,y);return}
+ if(j.kind!=="dme-pgt-update"){toast("That is not a DME update file");return}
  UI.upd={title:j.title||"Update",j,plan:updPlan(j)};const y=window.scrollY;render();window.scrollTo(0,y)});
 document.addEventListener("click",e=>{const a=e.target.closest("[data-act]");if(!a)return;
  if(a.dataset.act==="upd-x"){UI.upd=null;const y=window.scrollY;render();window.scrollTo(0,y)}
@@ -3907,7 +3908,7 @@ function examSpecPanel(x,specs,cands,sp,canMark){const S=UI.exSel;S.sp=S.sp.filt
   <div class="tblwrap" style="margin-top:8px"><table><thead><tr><th>Roll no.</th><th>PGT</th>${multi?"<th>Specialty</th>":""}<th>Prog.</th><th>Year (at exam)</th><th>Marks %</th><th>Absent</th><th>Result</th><th></th></tr></thead><tbody>
   ${C.map(p=>{const m=x.marks[p.id],ab=x.absent[p.id];return`<tr><td>${x.roll?`<input data-exroll="${p.id}" value="${esc(x.roll[p.id]||"")}" style="width:96px;font-family:var(--f-mono)" ${x.stage>=5?"disabled":""} aria-label="Roll number for Dr. ${esc(p.name)}">`:'<span class="subt">—</span>'}</td><td>${pgtName(p)}<div class="code">${esc(p.code)}</div></td>${multi?`<td>${esc(p.spec)}</td>`:""}<td>${esc(p.program)}</td><td>${EXG_L(exGrp(x,p))}</td>
    <td><input type="number" min="0" max="100" step="0.5" style="width:90px" data-exmark="${p.id}" value="${m??""}" ${canMark&&!ab?"":"disabled"} aria-label="Marks for Dr. ${esc(p.name)}"></td><td><input type="checkbox" data-exabs="${p.id}" ${ab?"checked":""} ${canMark?"":"disabled"} aria-label="Absent"></td>
-   <td>${ab?'<span class="pill p-done">Absent</span>':m==null?"—":m>=x.passMark?'<span class="pill p-ric">Pass</span>':'<span class="pill p-bad">Fail</span>'}</td><td>${x.stage<3?`<button class="btn link" data-act="ex-excl" data-id="${p.id}">Exclude</button>`:`<a class="btn link" href="#pgt-${p.id}">Profile</a>`}</td></tr>`}).join("")||`<tr><td colspan="9" class="empty">No candidates match this selection.</td></tr>`}
+   <td>${ab?'<span class="pill p-done">Absent</span>':m==null?"—":exPass(x,p,m)?'<span class="pill p-ric">Pass</span>':'<span class="pill p-bad">Fail</span>'}</td><td>${x.stage<3?`<button class="btn link" data-act="ex-excl" data-id="${p.id}">Exclude</button>`:`<a class="btn link" href="#pgt-${p.id}">Profile</a>`}</td></tr>`}).join("")||`<tr><td colspan="9" class="empty">No candidates match this selection.</td></tr>`}
  </tbody></table></div></div>`}
 EXPORTS.evalbeesel=id=>{const x=DB.exams.find(e=>e.id===id);return{file:`Evalbee ${exSelLabel().replace(/[^A-Za-z0-9 ,.-]+/g," ").slice(0,90)} ${x.session}`,sheets:[{name:"Template",rows:evalbeeRows(x,exSelList(x))}]}};
 document.addEventListener("click",e=>{const b=e.target.closest("[data-exsp2],[data-exg],[data-exprog]");if(!b)return;const S=UI.exSel;
@@ -4474,6 +4475,60 @@ document.addEventListener("click",e=>{const b=e.target.closest('[data-act="userm
  if(b){e.stopPropagation();const o=!box.classList.contains("open");box.classList.toggle("open",o);b.setAttribute("aria-expanded",String(o));return}
  if(box.classList.contains("open")&&!e.target.closest(".whobox")){box.classList.remove("open");box.querySelector(".avbtn")?.setAttribute("aria-expanded","false")}},true);
 window.addEventListener("hashchange",()=>{const box=document.getElementById("userbox");if(box)box.classList.remove("open")});
+
+/* =====================================================================
+   V25 · OFFICIAL RESULT SHEETS: results that came as signed mark sheets
+   (PDF / Excel) instead of Evalbee files. Imported from a prepared
+   "dme-exam-results" file in Settings, matched to trainees, and shown on
+   each PGT's profile. The pass / fail written on the signed sheet is kept
+   as the official result; otherwise each department's pass mark applies.
+   ===================================================================== */
+function exPass(x,p,m){const r=x&&x.res&&p&&x.res[p.id];if(r)return r==="Pass";
+ const pm=x&&x.passSpec&&p&&x.passSpec[p.spec]!=null?+x.passSpec[p.spec]:+(x?x.passMark:50);return +m>=pm}
+UI.exr=null;
+const exrNorm=s=>String(s||"").toLowerCase().replace(/^dr\.?\s+/,"").replace(/[^a-z]/g,"");
+function exrGuess(b){const k=v=>String(v||"").toLowerCase().replace(/[^a-z0-9]/g,"");return(DB.exams.find(x=>x.month===b.month)||DB.exams.find(x=>k(x.session)===k(b.session))||{}).id||"new"}
+function exrInit(j){const sel=(j.blocks||[]).map(b=>({exam:exrGuess(b),map:b.rows.map(r=>{const p=r.pid&&DB.pgts.find(q=>q.id===r.pid)||(r.pmdc&&DB.pgts.find(q=>String(q.pmdc||"").replace(/\D/g,"").startsWith(String(r.pmdc).replace(/\D/g,""))&&String(r.pmdc).length>=4))||DB.pgts.find(q=>exrNorm(q.name)===exrNorm(r.name));return p?p.id:""})}));
+ UI.exr={j,sel};UI.upd=null}
+const exrPgtOpts=cur=>`<option value="">Not in the register: keep on the exam only</option>`+DB.pgts.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(p=>`<option value="${p.id}" ${p.id===cur?"selected":""}>${esc(pgtLabel(p))}${p.reg!=="Verified"?" ("+esc(p.reg||"")+")":""}</option>`).join("");
+function exrPanel(){if(!isAdmin()||!UI.exr)return"";const{j,sel}=UI.exr;
+ const blocks=j.blocks.map((b,bi)=>{const s=sel[bi],n=s.map.filter(Boolean).length;
+  return`<div style="display:grid;gap:8px;border-top:1px solid var(--line);padding-top:10px"><div class="head"><h4 style="margin:0">${esc(b.label)}</h4><span class="subt">${b.rows.length} results · ${n} matched to trainees · ${b.rows.length-n} kept on the exam only</span></div>
+  <p class="subt" style="margin:0">Source: ${esc(b.source||"")}. Pass marks on the sheet: ${Object.entries(b.passByDept||{}).map(([k,v])=>esc(k)+" "+v+"%").join(", ")}.</p>
+  <label class="f">Put these results in<select data-exr="${bi}|exam">${DB.exams.map(x=>`<option value="${x.id}" ${x.id===s.exam?"selected":""}>${esc(x.title)} · ${esc(x.session)}</option>`).join("")}<option value="new" ${s.exam==="new"?"selected":""}>Create a new exam: ${esc(b.session)}</option></select></label>
+  <div class="tblwrap" style="max-height:380px;overflow:auto"><table><thead><tr><th>Name on sheet</th><th>Department</th><th class="num">Marks</th><th class="num">%</th><th>Result</th><th>Trainee in the register</th></tr></thead><tbody>
+  ${b.rows.map((r,ri)=>`<tr class="${s.map[ri]?"":"changed"}"><td>${esc(r.name)}<div class="subt">${esc(r.program||"")}${r.roll?" · roll "+esc(r.roll):""}</div></td><td>${esc(r.sheetSpec)}</td><td class="num">${r.obtained}/${r.total}</td><td class="num">${r.pct}</td><td>${r.result==="Pass"?'<span class="pill p-ric">Pass</span>':'<span class="pill p-bad">Fail</span>'}</td><td><select data-exr="${bi}|r|${ri}" aria-label="Trainee for ${esc(r.name)}" style="max-width:320px">${exrPgtOpts(s.map[ri])}</select></td></tr>`).join("")}
+  </tbody></table></div></div>`}).join("");
+ return`<div class="panel" id="set-exr" style="display:grid;gap:10px"><h3 style="margin:0">Import official results · ${esc(j.title||"")}</h3>
+ <p class="subt" style="margin:0">Check the trainee for each name, then import. Rows marked yellow are not matched; they are kept on the exam page so the record stays complete. Importing again later updates the same results and never makes duplicates.</p>${blocks}
+ <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-act="exr-go">Import results</button><button class="btn" data-act="exr-x">Cancel</button></div></div>`}
+document.addEventListener("change",e=>{const t=e.target.closest("[data-exr]");if(!t||!UI.exr)return;const[bi,k,ri]=t.dataset.exr.split("|");const s=UI.exr.sel[+bi];
+ if(k==="exam")s.exam=t.value;else{const v=t.value;if(v){const o=s.map.indexOf(v);if(o>=0&&o!==+ri&&!confirm(`That trainee is already matched to “${UI.exr.j.blocks[+bi].rows[o].name}”. Move the match here?`)){t.value=s.map[+ri];return}if(o>=0&&o!==+ri)s.map[o]=""}s.map[+ri]=v;const y=window.scrollY;render();window.scrollTo(0,y)}});
+function exrApply(){const{j,sel}=UI.exr;let tot=0,ex=0;
+ j.blocks.forEach((b,bi)=>{const s=sel[bi];let x=DB.exams.find(e=>e.id===s.exam);
+  if(!x){x={id:uid("EX"),title:"Internal PGT Examination",session:b.session,month:b.month,date:b.date||null,venue:"",passMark:Math.min(...Object.values(b.passByDept||{60:60}))||60,scope:"all",stage:0,papers:{},marks:{},absent:{},cands:null,added:[],removed:{},log:[]};DB.exams.push(x);xlog(x,"Examination created for the official result sheet")}
+  x.marks=x.marks||{};x.absent=x.absent||{};x.res=x.res||{};x.raw=x.raw||{};x.passSpec=x.passSpec||{};x.removed=x.removed||{};
+  const hadMarks=Object.keys(x.marks).length>0,parts=[],specs=new Set();
+  b.rows.forEach((r,ri)=>{const p=DB.pgts.find(q=>q.id===s.map[ri]);
+   if(!p){x.extra=(x.extra||[]).filter(e=>exrNorm(e.name)!==exrNorm(r.name)||e.sheetSpec!==r.sheetSpec);x.extra.push({name:r.name,sheetSpec:r.sheetSpec,program:r.program||"",obtained:r.obtained,total:r.total,pct:r.pct,result:r.result});ex++;return}
+   if(x.extra)x.extra=x.extra.filter(e=>exrNorm(e.name)!==exrNorm(r.name));
+   x.marks[p.id]=r.pct;x.raw[p.id]={o:r.obtained,t:r.total};x.res[p.id]=r.result;delete x.absent[p.id];delete x.removed[p.id];
+   const pm=(b.passByDept||{})[r.spec];if(pm!=null)x.passSpec[p.spec]=pm;parts.push(p.id);specs.add(p.spec);tot++});
+  /* the frozen candidate list: keep everyone who already has a mark, drop listed candidates of these departments the sheet shows did not sit, add every trainee on the sheet */
+  const base=(x.cands||(hadMarks?exCands(x).map(p=>p.id):[])).filter(id=>{const p=DB.pgts.find(q=>q.id===id);return p&&(x.marks[id]!=null||x.absent[id]||!specs.has(p.spec))});
+  x.cands=[...new Set([...base,...parts])];
+  if(!x.date&&b.date)x.date=b.date;x.stage=Math.max(x.stage||0,5);x.resultSource=b.source||"";
+  xlog(x,`Official results imported from ${b.source||"the result sheet"}: ${parts.length} trainees${(x.extra||[]).length?`, ${(x.extra||[]).length} names not in the register kept on the exam`:""}`)});
+ log(`Imported official exam results: ${tot} trainee results${ex?`, ${ex} kept as exam-only names`:""}`,"exams");
+ UI.exr=null;persist();toast(`${tot} results added to trainee profiles`);render()}
+document.addEventListener("click",e=>{const a=e.target.closest('[data-act="exr-go"],[data-act="exr-x"]');if(!a)return;if(a.dataset.act==="exr-x"){UI.exr=null;render();return}if(UI.exr)exrApply()});
+
+/* exam page: where the results came from, and names not in the register */
+{const _e=examResultsPanel;examResultsPanel=function(x){const E=x.extra||[];
+ const src=x.resultSource?`<div class="panel" style="display:grid;gap:8px"><h3 style="margin:0">Official result sheet</h3><p class="subt" style="margin:0">Results imported from <b>${esc(x.resultSource)}</b>. Pass / fail is as written on the signed sheet${x.passSpec&&Object.keys(x.passSpec).length?`; department pass marks: ${Object.entries(x.passSpec).map(([k,v])=>esc(k)+" "+v+"%").join(", ")}`:""}.</p>
+ ${E.length?`<p style="margin:4px 0 0"><b>${E.length} name${E.length>1?"s":""} on the sheet not in the trainee register</b> <span class="subt">(left RIC before the register, or other programmes)</span></p><div class="tblwrap"><table><thead><tr><th>Name on sheet</th><th>Department</th><th>Programme</th><th class="num">Marks</th><th class="num">%</th><th>Result</th></tr></thead><tbody>${E.map(r=>`<tr><td>Dr. ${esc(r.name)}</td><td>${esc(r.sheetSpec)}</td><td>${esc(r.program)}</td><td class="num">${r.obtained}/${r.total}</td><td class="num">${r.pct}</td><td>${r.result==="Pass"?'<span class="pill p-ric">Pass</span>':'<span class="pill p-bad">Fail</span>'}</td></tr>`).join("")}</tbody></table></div>`:""}</div>`:"";
+ return src+_e(x)}}
+VIEW_ACTS.add("exr-x");
 
 /* ---------- events ---------- */
 document.addEventListener("click",e=>{
