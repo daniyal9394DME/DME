@@ -655,7 +655,7 @@ const DEF_SPECS=[
 ["Paediatric Cardiology",0,null,{"FCPS":3,"UHS (MD)":3},"FCPS / MD Paediatric Cardiology","Level 4","CPSP, UHS",1],
 ["Paediatric Cardiac Surgery",0,null,{"FCPS":3},"Paediatric and Congenital Cardiac Surgery","Level 4","CPSP",1],
 ["Electrophysiology",0,null,{"FCPS":2},"FCPS Clinical Cardiac Electrophysiology","Level 4","CPSP",1],
-["Nephrology",0,null,{},"","","",0],["Pulmonology",0,null,{},"","","",0]
+["Nephrology",0,null,{},"","","",0],["Pulmonology",0,null,{},"","","",0],["Pathology",0,null,{},"","","",0]
 ].map(([name,rot,rule,dur,title,level,councils,teaching])=>({name,rotational:!!rot,rule:rule||[2,3,.5,1.5,3],dur,title,level,councils,teaching:!!teaching,active:true}));
 const specOf=n=>DB.specs.find(s=>s.name===n);
 const specNames=teach=>DB.specs.filter(s=>s.active&&(!teach||s.teaching)).map(s=>s.name);
@@ -867,7 +867,7 @@ function vFac(){
  <div class="cols two">
   <div class="panel"><h3>Credentials</h3><dl class="kv">
    ${CRED.map(t=>{const x=c.cr[t];const s=t===CRED[0]?c.pmdc:t===CRED[1]?c.cpsp:c.uhs;return`<dt>${t.replace(" Supervisory Certificate"," supervisory").replace(" Faculty Registration"," faculty reg.")}</dt><dd>${credPill(s)}${x?`<div class="code" style="margin-top:3px">Issued ${fd(x.issue)} · expires ${fd(x.expiry)}</div>`:""}</dd>`}).join("")}
-   ${facSpecLines(f,c)}<dt>PMDC number</dt><dd class="code">${esc(f.pmdc)||"—"}</dd><dt>Faculty reg. no.</dt><dd class="code">${esc(f.regno)||"—"}</dd></dl></div>
+   ${facSpecLines(f,c)}<dt>PMDC number</dt><dd class="code">${esc(f.pmdc)||"—"}</dd><dt>Faculty reg. no.</dt><dd class="code">${esc(f.regno)||"—"}</dd>${typeof facContactDl==="function"?facContactDl(f):""}</dl></div>
   <div class="panel flush"><h3>Certificate history</h3><div class="tblwrap"><table><thead><tr><th>Type</th><th>Issued</th><th>Expires</th><th></th></tr></thead><tbody>
    ${hist.map(x=>`<tr><td>${esc(x.type)}${x.type!==CRED[0]&&x.spec?`<div class="subt">${esc(x.spec)}</div>`:""}</td><td>${fd(x.issue)}</td><td>${fd(x.expiry)}</td><td>${certViewBtn(x)}<button class="btn link" data-del="cred" data-id="${x.id}">Delete</button></td></tr>`).join("")||`<tr><td colspan="4" class="empty">No certificates on file. Add one with "Add certificate".</td></tr>`}</tbody></table></div></div>
  </div>
@@ -3610,47 +3610,50 @@ document.addEventListener("change",async e=>{if(e.target.id!=="ci-file"||!e.targ
    so anything edited in the app since is never overwritten.
    ===================================================================== */
 UI.upd=null;
-const UPD_L={mobile:"Mobile",mobile2:"Second mobile",email:"Email",emailAlt:"Alternate email",cnic:"CNIC",passport:"Passport no.",name:"Name",notes:"Notes",domicile:"Domicile",father:"Father's name",pmdc:"PMDC no."};
+const UPD_L={mobile:"Mobile",mobile2:"Second mobile",email:"Email",emailAlt:"Alternate email",desig:"Designation",cnic:"CNIC",passport:"Passport no.",name:"Name",notes:"Notes",domicile:"Domicile",father:"Father's name",pmdc:"PMDC no."};
 const updNorm=v=>String(v??"").trim().toLowerCase();
 function updPlan(j){const out={apply:[],done:[],clash:[],add:[],dup:[]};
- (j.changes||[]).forEach(c=>{const p=DB.pgts.find(x=>x.id===c.id)||DB.pgts.find(x=>updNorm(x.name)===updNorm(c.name));if(!p){out.clash.push({c,why:"trainee not found"});return}
+ (j.changes||[]).forEach(c=>{const L=c.coll==="faculty"?DB.faculty:DB.pgts,p=L.find(x=>x.id===c.id&&updNorm(x.name)===updNorm(c.name))||L.find(x=>updNorm(x.name)===updNorm(c.name));if(!p){out.clash.push({c,why:(c.coll==="faculty"?"faculty member":"trainee")+" not found"});return}
   const cur=p[c.field];if(updNorm(cur)===updNorm(c.to))out.done.push({c,p});else if(!cur||updNorm(cur)===updNorm(c.from)||(c.field==="notes"&&!String(cur).includes(c.to.trim())))out.apply.push({c,p});else out.clash.push({c,p,why:"changed in the app to “"+cur+"”"})});
- (j.add||[]).forEach(a=>{const dg=s=>String(s||"").replace(/\D/g,"");const ex=DB.pgts.find(x=>(dg(a.pgt.cnic)&&dg(x.cnic)===dg(a.pgt.cnic))||updNorm(x.name)===updNorm(a.pgt.name));(ex?out.dup:out.add).push(a)});
+ (j.add||[]).forEach(a=>{if(a.fac){const nn=s=>updNorm(s).replace(/^(prof\.?\s+)?(dr\.?\s+)?/,"");(DB.faculty.some(x=>nn(x.name)===nn(a.fac.name))?out.dup:out.add).push(a);return}const dg=s=>String(s||"").replace(/\D/g,"");const ex=DB.pgts.find(x=>(dg(a.pgt.cnic)&&dg(x.cnic)===dg(a.pgt.cnic))||updNorm(x.name)===updNorm(a.pgt.name));(ex?out.dup:out.add).push(a)});
  return out}
 function updPanel(){if(!isAdmin())return"";const u=UI.upd;
- let body=`<p class="subt" style="margin:0">Choose a trainee update file (for example <b>dme-trainee-update-nov2026.json</b>). You will see every change before anything is saved. A value is only replaced if it has not been edited in the app since.</p>
+ let body=`<p class="subt" style="margin:0">Choose an update file (for example <b>dme-faculty-update-nov2026.json</b>). You will see every change before anything is saved. A value is only replaced if it has not been edited in the app since.</p>
  <label class="f">Update file<input type="file" id="upd-file" accept=".json,application/json"></label>`;
- if(u){const P=u.plan,row=x=>`<tr><td>${esc(x.p?x.p.name:x.c.name)}</td><td>${UPD_L[x.c.field]||esc(x.c.field)}</td><td>${esc(x.c.from||"—")}</td><td><b>${esc(x.c.to)}</b></td><td class="subt">${esc(x.why||x.c.why||"")}</td></tr>`;
-  body+=`<div class="status ${P.apply.length||P.add.length?"":"ok"}" style="display:block"><b>${esc(u.title)}</b>: ${P.apply.length} changes to make${P.add.length?`, ${P.add.length} new trainee${P.add.length>1?"s":""} to add`:""}. ${P.done.length} already done${P.clash.length?`, ${P.clash.length} skipped because the app has a newer value`:""}${P.dup.length?`, ${P.dup.length} new trainee already in the app`:""}.</div>
-  ${P.apply.length||P.clash.length?`<div class="tblwrap" style="max-height:340px;overflow:auto"><table><thead><tr><th>Trainee</th><th>Detail</th><th>Now</th><th>Will become</th><th>Reason</th></tr></thead><tbody>${P.apply.map(row).join("")}${P.clash.map(x=>row(x).replace("<tr>",'<tr style="opacity:.6">')).join("")}</tbody></table></div>`:""}
-  ${P.add.map(a=>`<p style="margin:0">New: <b>Dr. ${esc(a.pgt.name)}</b>, ${esc(a.pgt.spec)}. Added to <b>New registrations</b> for you to verify.</p>`).join("")}
+ if(u){const P=u.plan,row=x=>`<tr><td>${x.c.coll==="faculty"?'<span class="subt">Faculty</span> ':""}${esc(x.p?x.p.name:x.c.name)}</td><td>${UPD_L[x.c.field]||esc(x.c.field)}</td><td>${esc(x.c.from||"—")}</td><td><b>${esc(x.c.to)}</b></td><td class="subt">${esc(x.why||x.c.why||"")}</td></tr>`;
+  body+=`<div class="status ${P.apply.length||P.add.length?"":"ok"}" style="display:block"><b>${esc(u.title)}</b>: ${P.apply.length} changes to make${P.add.length?`, ${P.add.length} new ${P.add[0].fac?"faculty member":"trainee"}${P.add.length>1?"s":""} to add`:""}. ${P.done.length} already done${P.clash.length?`, ${P.clash.length} skipped because the app has a newer value`:""}${P.dup.length?`, ${P.dup.length} ${P.dup[0].fac?"faculty member":"new trainee"}${P.dup.length>1?"s":""} already in the app`:""}.</div>
+  ${P.apply.length||P.clash.length?`<div class="tblwrap" style="max-height:340px;overflow:auto"><table><thead><tr><th>Name</th><th>Detail</th><th>Now</th><th>Will become</th><th>Reason</th></tr></thead><tbody>${P.apply.map(row).join("")}${P.clash.map(x=>row(x).replace("<tr>",'<tr style="opacity:.6">')).join("")}</tbody></table></div>`:""}
+  ${P.add.map(a=>a.fac?`<p style="margin:0">New faculty: <b>${esc(facName(a.fac))}</b>, ${esc(a.fac.desig)}, ${esc(a.fac.spec)}.</p>`:`<p style="margin:0">New: <b>Dr. ${esc(a.pgt.name)}</b>, ${esc(a.pgt.spec)}. Added to <b>New registrations</b> for you to verify.</p>`).join("")}
   <div style="display:flex;gap:8px;flex-wrap:wrap">${P.apply.length||P.add.length?`<button class="btn primary" data-act="upd-go">Apply ${P.apply.length+P.add.length} updates</button>`:""}<button class="btn" data-act="upd-x">Close</button></div>`}
- return`<div class="panel" id="set-upd" style="display:grid;gap:10px"><h3 style="margin:0">Apply a trainee update file</h3>${body}</div>`}
+ return`<div class="panel" id="set-upd" style="display:grid;gap:10px"><h3 style="margin:0">Apply an update file (trainees or faculty)</h3>${body}</div>`}
 document.addEventListener("change",async e=>{if(e.target.id!=="upd-file"||!e.target.files[0])return;let j;
  try{j=JSON.parse(await e.target.files[0].text())}catch(x){toast("That file could not be read");return}
  if(j.kind==="dme-exam-results"){exrInit(j);e.target.value="";const y=window.scrollY;render();window.scrollTo(0,y);return}
- if(j.kind!=="dme-pgt-update"){toast("That is not a DME update file");return}
+ if(j.kind!=="dme-pgt-update"&&j.kind!=="dme-update"){toast("That is not a DME update file");return}
  UI.upd={title:j.title||"Update",j,plan:updPlan(j)};const y=window.scrollY;render();window.scrollTo(0,y)});
 document.addEventListener("click",e=>{const a=e.target.closest("[data-act]");if(!a)return;
  if(a.dataset.act==="upd-x"){UI.upd=null;const y=window.scrollY;render();window.scrollTo(0,y)}
  if(a.dataset.act==="upd-go"&&UI.upd){const P=updPlan(UI.upd.j);let n=0;
   P.apply.forEach(({c,p})=>{if(c.field==="notes")p.notes=((p.notes||"")+" "+c.to.replace(p.notes||"","")).trim();else p[c.field]=c.to;n++});
-  P.add.forEach(a=>{const r={...a.pgt};if(DB.pgts.some(x=>x.id===r.id))r.id=uid("P");if(DB.pgts.some(x=>x.code===r.code))r.code=nextCode(r);DB.pgts.push(r);
+  P.add.forEach(a=>{if(a.fac){const f={title:"Dr.",pmdc:"",regno:"",unit:"",cpsp:false,uhs:false,active:true,notes:"",...a.fac};f.id=DB.faculty.some(x=>x.id===f.id)||!f.id?uid("F"):f.id;
+   if(f.spec&&!DB.specs.some(s=>s.name===f.spec))DB.specs.push({name:f.spec,rotational:false,rule:[2,3,.5,1.5,3],dur:{},title:"",level:"",councils:"",teaching:false,active:true});
+   f.sups=[{spec:f.spec,cpsp:!!f.cpsp,uhs:!!f.uhs}];DB.faculty.push(f);log(`Added faculty member ${facName(f)} from ${UI.upd.title}`,"fac-"+f.id);n++;return}
+   const r={...a.pgt};if(DB.pgts.some(x=>x.id===r.id))r.id=uid("P");if(DB.pgts.some(x=>x.code===r.code))r.code=nextCode(r);DB.pgts.push(r);
    DB.status.push({...a.status,id:uid("S"),pid:r.id});if(a.sup&&DB.faculty.some(f=>f.id===a.sup.fid))DB.sups.push({...a.sup,id:uid("V"),pid:r.id});n++});
-  log(`${UI.upd.title}: ${P.apply.length} trainee details updated${P.add.length?`, ${P.add.length} new trainee added for verification`:""}`);
+  log(`${UI.upd.title}: ${P.apply.length} details updated${P.add.length?`, ${P.add.length} new trainee added for verification`:""}`);
   UI.upd=null;toast(`${n} updates applied`);const y=window.scrollY;render();window.scrollTo(0,y)}});
 
 /* ---------- contact details in "Edit details" (hidden in the prototype) ---------- */
 const CE_F=[["father","Father's name"],["cnic","CNIC","xxxxx-xxxxxxx-x"],["passport","Passport no.","foreign nationals"],["pmdc","PMDC no."],["mobile","Mobile","03xx-xxxxxxx"],["mobile2","Second mobile","optional"],["email","Email"],["emailAlt","Alternate email","optional"]];
-function contactEditHtml(p){if(!LIVE&&!p.cnic)return"";return`<div class="grid2">${CE_F.map(([k,l,h])=>`<label class="f">${l}${h?` <span class="h">${h}</span>`:""}<input name="ce-${k}" value="${esc(p[k]||"")}"></label>`).join("")}</div>`}
-function contactEditRead(p){if(!document.querySelector('[name="ce-mobile"]'))return"";const g=k=>(document.querySelector(`[name="ce-${k}"]`)?.value||"").trim();
+function contactEditHtml(p,F=CE_F){if(!LIVE&&!p.cnic)return"";return`<div class="grid2">${F.map(([k,l,h])=>`<label class="f">${l}${h?` <span class="h">${h}</span>`:""}<input name="ce-${k}" value="${esc(p[k]||"")}"></label>`).join("")}</div>`}
+function contactEditRead(p,F=CE_F,href){if(!document.querySelector('[name="ce-mobile"]'))return"";const g=k=>(document.querySelector(`[name="ce-${k}"]`)?.value||"").trim();
  const mob=v=>{let x=v.replace(/\D/g,"");if(x.startsWith("92"))x="0"+x.slice(2);if(x.length===10&&x[0]==="3")x="0"+x;return x.length===11?x.slice(0,4)+"-"+x.slice(4):v};
  for(const k of["mobile","mobile2"])if(g(k)&&mob(g(k)).length!==12)return"Enter mobile numbers as 03xx-xxxxxxx.";
  for(const k of["email","emailAlt"])if(g(k)&&!/^\S+@\S+\.\S+$/.test(g(k)))return"Check the email address.";
- const cn=g("cnic").replace(/\D/g,"");if(g("cnic")&&cn.length!==13&&!g("passport"))return"A CNIC has 13 digits. For a foreign national, enter the passport number instead.";
- const v={father:g("father"),cnic:cn.length===13?cn.replace(/^(\d{5})(\d{7})(\d)$/,"$1-$2-$3"):g("cnic"),passport:g("passport"),pmdc:g("pmdc").toUpperCase(),mobile:g("mobile")?mob(g("mobile")):"",mobile2:g("mobile2")?mob(g("mobile2")):"",email:g("email").toLowerCase(),emailAlt:g("emailAlt").toLowerCase()};
+ const cn=g("cnic").replace(/\D/g,"");if(g("cnic")&&cn.length!==13&&!g("passport"))return F.some(x=>x[0]==="passport")?"A CNIC has 13 digits. For a foreign national, enter the passport number instead.":"A CNIC has 13 digits.";
+ const v0={father:g("father"),cnic:cn.length===13?cn.replace(/^(\d{5})(\d{7})(\d)$/,"$1-$2-$3"):g("cnic"),passport:g("passport"),pmdc:g("pmdc").toUpperCase(),mobile:g("mobile")?mob(g("mobile")):"",mobile2:g("mobile2")?mob(g("mobile2")):"",email:g("email").toLowerCase(),emailAlt:g("emailAlt").toLowerCase()},v={};F.forEach(([k])=>v[k]=v0[k]);
  const ch=Object.keys(v).filter(k=>(p[k]||"")!==v[k]);ch.forEach(k=>{if(v[k])p[k]=v[k];else delete p[k]});
- if(ch.length)log(`Contact details of Dr. ${p.name} edited: ${ch.map(k=>CE_F.find(f=>f[0]===k)[1]).join(", ")}`,"pgt-"+p.id);return""}
+ if(ch.length)log(`Contact details of Dr. ${p.name} edited: ${ch.map(k=>CE_F.find(f=>f[0]===k)[1]).join(", ")}`,href||"pgt-"+p.id);return""}
 
 /* =====================================================================
    BIO DATA FORM (RIC-RWP-HRM-F-04) — shared by the PGT registration
@@ -4529,6 +4532,18 @@ document.addEventListener("click",e=>{const a=e.target.closest('[data-act="exr-g
  ${E.length?`<p style="margin:4px 0 0"><b>${E.length} name${E.length>1?"s":""} on the sheet not in the trainee register</b> <span class="subt">(left RIC before the register, or other programmes)</span></p><div class="tblwrap"><table><thead><tr><th>Name on sheet</th><th>Department</th><th>Programme</th><th class="num">Marks</th><th class="num">%</th><th>Result</th></tr></thead><tbody>${E.map(r=>`<tr><td>Dr. ${esc(r.name)}</td><td>${esc(r.sheetSpec)}</td><td>${esc(r.program)}</td><td class="num">${r.obtained}/${r.total}</td><td class="num">${r.pct}</td><td>${r.result==="Pass"?'<span class="pill p-ric">Pass</span>':'<span class="pill p-bad">Fail</span>'}</td></tr>`).join("")}</tbody></table></div>`:""}</div>`:"";
  return src+_e(x)}}
 VIEW_ACTS.add("exr-x");
+
+/* =====================================================================
+   V26 · FACULTY CONTACT DETAILS: CNIC, father's name, mobiles and email
+   on each faculty member (live app only; never in the prototype)
+   ===================================================================== */
+const FCE_F=[["father","Father's name"],["cnic","CNIC","xxxxx-xxxxxxx-x"],["mobile","Mobile","03xx-xxxxxxx"],["mobile2","Second mobile","optional"],["email","Email"],["emailAlt","Alternate email","optional"]];
+function facContactDl(f){if(!LIVE&&!f.cnic&&!f.mobile&&!f.email)return"";const tel=v=>v?`<a href="tel:${esc(v.replace(/-/g,""))}">${esc(v)}</a>`:"—";
+ return`<dt>CNIC</dt><dd class="code">${esc(f.cnic)||"—"}</dd><dt>Father's name</dt><dd>${esc(f.father)||"—"}</dd><dt>Mobile</dt><dd class="code">${tel(f.mobile)}${f.mobile2?" · "+tel(f.mobile2):""}</dd><dt>Email</dt><dd>${f.email?`<a href="mailto:${esc(f.email)}">${esc(f.email)}</a>`:"—"}${f.emailAlt?`<div>${esc(f.emailAlt)}</div>`:""}</dd>`}
+{const _s=sheetFac;sheetFac=function(f){_s(f);const nt=document.querySelector('#sheetform textarea[name="notes"]');if(!nt)return;
+  const h=contactEditHtml(f||{},FCE_F);if(!h)return;nt.closest("label").insertAdjacentHTML("beforebegin",`<div class="subt" style="margin-top:4px">Contact details</div>`+h);
+  const o=SHEET.onSave;SHEET.onSave=(...a)=>{const _l=log;let err;try{log=()=>{};err=contactEditRead({...(f||{})},FCE_F)}finally{log=_l}if(err)return fail(err);
+   const n=DB.faculty.length,r=o(...a);if(r===false)return r;const t=f||(DB.faculty.length>n?DB.faculty[DB.faculty.length-1]:null);if(t)contactEditRead(t,FCE_F,"fac-"+t.id);return r}}}
 
 /* ---------- events ---------- */
 document.addEventListener("click",e=>{
