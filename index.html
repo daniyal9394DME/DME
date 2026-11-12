@@ -3172,7 +3172,7 @@ function renderChrome(cur){
 async function openStored(path){if(!LIVE||!path){toast("Files open in the live app");return}const w=window.open("","_blank");
  const{data,error}=await SYNC.sb.storage.from("dme-uploads").createSignedUrl(path,300);if(error||!data){if(w)w.close();toast("Could not open the file");return}if(w)w.location=data.signedUrl;else location.href=data.signedUrl}
 const DOC_L=[["photo","Photo"],["cnic","CNIC copy"],["pmdc","PMDC copy"],["joining","Joining letter"],["passport","Passport copy"]];
-function docsHtml(p){return DOC_L.filter(([k])=>!["passport","rtmc","acls","bls"].includes(k)||(p.docs&&p.docs[k])).map(([k,l])=>{const path=p.docs&&p.docs[k];return`<div class="doc"><b>${l}</b>${path?`<button class="btn link" data-act="doc-open" data-path="${esc(path)}">Open</button>`:p.example?"Uploaded":"Not on file"}</div>`}).join("")}
+function docsHtml(p){return DOC_L.filter(([k])=>(k!=="passport"||(p.docs&&p.docs.passport))&&(k!=="rtmc"||!/UHS/i.test(p.program||"")||(p.docs&&p.docs.rtmc))).map(([k,l])=>{const path=p.docs&&p.docs[k];return`<div class="doc"><b>${l}</b>${path?`<button class="btn link" data-act="doc-open" data-path="${esc(path)}">Open</button>`:p.example?"Uploaded":["rtmc","acls","bls"].includes(k)?`Not on file<span class="subt" style="display:block;font-size:12px">${p.survey?"not uploaded in the status form":"status form not sent yet"}</span>`:"Not on file"}</div>`}).join("")}
 function personalHtml(p){const v=x=>x?esc(x):'<span class="subt">not recorded</span>';if(!LIVE&&!p.cnic){const h='<dd class="masked">hidden in prototype</dd>';return["Father's name","CNIC","PMDC","Mobile","Email"].map(t=>`<dt>${t}</dt>${h}`).join("")}
  return`<dt>Father's name</dt><dd>${v(p.father)}</dd><dt>CNIC</dt><dd>${v(p.cnic)}</dd><dt>PMDC</dt><dd>${v(p.pmdc)}</dd><dt>Mobile</dt><dd>${v([p.mobile,p.mobile2].filter(Boolean).join(" · "))}</dd><dt>Email</dt><dd>${v([p.email,p.emailAlt].filter(Boolean).join(" · "))}</dd>${p.passport?`<dt>Passport</dt><dd>${esc(p.passport)}</dd>`:""}`}
 
@@ -4750,7 +4750,7 @@ function surProfile(p){const s=p.survey;if(!s||!canSee("pgts"))return"";const st
   <dt>Research</dt><dd>${esc(RES_KIND.find(x=>x[0]===R.kind)?.[1]||"—")}${R.topic?`<div><i>${esc(R.topic)}</i></div>`:""}</dd>${R.note?`<dt>Holding it up</dt><dd>${esc(R.note)}</dd>`:""}</dl>
   <ol class="surtrack">${S.map(([k,l],i)=>{const v=R.steps&&R.steps[k];return`<li class="${v?"done":i===st.i+1?"next":""}">${l}${typeof v==="string"?` <span class="subt">${mLabel(v)}</span>`:""}</li>`}).join("")}</ol></div></div>`}
 {const _x=pgtExamPanel;pgtExamPanel=function(p){return surProfile(p)+_x(p)}}
-DOC_L.push(["rtmc","RTMC registration certificate"],["acls","ACLS certificate"],["bls","BLS certificate"]);
+DOC_L.push(["rtmc","RTMC certificate"],["acls","ACLS certificate"],["bls","BLS certificate"]);
 if(typeof NAV_ICON==="object"&&typeof _ic==="function")NAV_ICON.status=_ic('<rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M9 3.5h6v3H9z"/><path d="m8.5 13 2.2 2.2 4.8-4.8"/>');
 
 /* ---------- events ---------- */
