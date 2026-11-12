@@ -4742,10 +4742,11 @@ EXPORTS.status=()=>({file:"RIC PGT training status",sheets:[sheetFrom("Training 
   (RES_STEPS.diss.concat(RES_STEPS.art.filter(x=>!RES_STEPS.diss.some(y=>y[0]===x[0])))).forEach(([k,l])=>{const v=R.steps&&R.steps[k];row[l.replace(/ \(.*\)/,"").replace(/CPSP|UHS/,"college")]=v?(v===true?"Yes":v):""});row["Research notes"]=R.note||"";return row}))]});
 
 /* ---------- on the PGT's profile ---------- */
+function surDoc(p,k){const path=p.docs&&p.docs[k];return path&&/^pgt\//.test(path)?` <button class="btn link" data-act="doc-open" data-path="${esc(path)}" style="padding:0 4px">View</button>`:""}
 function surProfile(p){const s=p.survey;if(!s||!canSee("pgts"))return"";const st=surStage(s),R=s.res||{},S=surSteps(s);
  return`<div class="panel" style="display:grid;gap:10px"><div class="head"><h3 style="margin:0">Training status</h3><span class="subt">From the training status form, ${fdt(s.at)}</span></div>
- <div class="cols two"><dl class="kv">${surNoReg(p)?"":`<dt>RTMC certificate</dt><dd>${s.reg&&s.reg.have==="yes"?'<span class="pill p-ric">Uploaded</span> <span class="subt">see Documents</span>':`<span class="pill p-bad">Not available</span><div class="subt">${esc(surReg(s))}</div>`}</dd>`}
-  <dt>ACLS</dt><dd>${esc(surLS(s.acls))}${s.acls&&s.acls.date?` <span class="subt">· ${mLabel(s.acls.date)}</span>`:""}</dd><dt>BLS</dt><dd>${esc(surLS(s.bls))}${s.bls&&s.bls.date?` <span class="subt">· ${mLabel(s.bls.date)}</span>`:""}</dd>
+ <div class="cols two"><dl class="kv">${surNoReg(p)?"":`<dt>RTMC certificate</dt><dd>${s.reg&&s.reg.have==="yes"?`<span class="pill p-ric">Uploaded</span>${surDoc(p,"rtmc")}`:`<span class="pill p-bad">Not available</span><div class="subt">${esc(surReg(s))}</div>`}</dd>`}
+  <dt>ACLS</dt><dd>${esc(surLS(s.acls))}${surDoc(p,"acls")}${s.acls&&s.acls.date?` <span class="subt">· ${mLabel(s.acls.date)}</span>`:""}</dd><dt>BLS</dt><dd>${esc(surLS(s.bls))}${surDoc(p,"bls")}${s.bls&&s.bls.date?` <span class="subt">· ${mLabel(s.bls.date)}</span>`:""}</dd>
   <dt>Research</dt><dd>${esc(RES_KIND.find(x=>x[0]===R.kind)?.[1]||"—")}${R.topic?`<div><i>${esc(R.topic)}</i></div>`:""}</dd>${R.note?`<dt>Holding it up</dt><dd>${esc(R.note)}</dd>`:""}</dl>
   <ol class="surtrack">${S.map(([k,l],i)=>{const v=R.steps&&R.steps[k];return`<li class="${v?"done":i===st.i+1?"next":""}">${l}${typeof v==="string"?` <span class="subt">${mLabel(v)}</span>`:""}</li>`}).join("")}</ol></div></div>`}
 {const _x=pgtExamPanel;pgtExamPanel=function(p){return surProfile(p)+_x(p)}}
