@@ -621,6 +621,18 @@ table.prop .sbw[data-sbw=sched] .sbrow,table.prop .sbw[data-sbw=sched] .sbrow.br
  #userbox .whobox .live .btn.link{font-size:14px;padding:4px 0}
 }
 @media(max-width:380px){.appbar .t h1{font-size:17px}.appbar .abwrap{gap:6px}}
+.calrow .rep{color:var(--ink-2,var(--muted));white-space:nowrap}
+.chips.srad{display:grid;gap:6px;grid-template-columns:repeat(auto-fill,minmax(190px,1fr))}.chips.srad .chip{cursor:pointer;display:flex;gap:10px;align-items:center;justify-content:flex-start;text-align:left;border-radius:10px;padding:10px 12px;font-size:15px;line-height:1.3}
+.chips.srad .chip:has(input:checked){background:var(--brand-50,#F6E9EB);border-color:var(--brand);box-shadow:inset 0 0 0 1px var(--brand);font-weight:600;color:var(--ink)}
+.chips.srad input{accent-color:var(--brand);margin:0;width:18px;height:18px;flex:none}
+.surstat{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.surstat>div{display:grid;gap:2px;align-content:start;padding:10px 12px;border:1px solid var(--line);border-radius:10px}.surstat b{font-size:24px;line-height:1.1}.surstat span{font-weight:600}.surstat small{font-size:12.5px}
+.surst{display:grid;gap:6px}.surst .check2{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center}.surst input[type=month]{max-width:160px}
+.surtrack{margin:0;padding:0;list-style:none;display:grid;gap:4px;counter-reset:st}.surtrack li{counter-increment:st;padding:3px 0 3px 30px;position:relative;color:var(--muted)}
+.surtrack li::before{content:counter(st);position:absolute;left:0;top:2px;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--line);font-size:11px;display:grid;place-items:center}
+.surtrack li.done{color:var(--ink)}.surtrack li.done::before{content:"✓";background:var(--ok);border-color:var(--ok);color:#fff}.surtrack li.next{color:var(--ink);font-weight:600}.surtrack li.next::before{border-color:var(--brand)}
+@media (max-width:560px){.surst .check2{grid-template-columns:auto 1fr}.surst input[type=month]{grid-column:2}}
+#surform [hidden],#surid [hidden]{display:none!important}
+.surhits{display:grid;gap:4px;margin-top:6px}.surhit{display:grid;gap:1px;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer;font:inherit;color:var(--ink)}.surhit:hover,.surhit:focus{border-color:var(--brand);outline:none;box-shadow:inset 0 0 0 1px var(--brand)}.surhit b{font-size:15.5px}.surhit span{font-size:12.5px;color:var(--muted)}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:sl .18s ease-out}@keyframes sl{from{transform:translateX(24px)}to{transform:none}}}
 </style>
 
@@ -762,7 +774,7 @@ function checks(p,c){const f=[];
  return f}
 
 /* ---------- routing ---------- */
-const NAV=[["rotating","Rotating trainees"],["kiosk","Attendance kiosk"],["calendar","Academic calendar"],["messages","WhatsApp"],["datacheck","Data checks"],["search","Search"],["overview","Overview"],["exits","Left training"],["tasks","Tasks"],["pgts","PGTs"],["leaves","Leave"],["verify","Verification"],["faculty","Faculty"],["supervisors","Supervisors"],["credentials","Faculty updates"],["workshops","Workshops"],["exams","Exams"],["orientation","Orientation"],["settings","Settings"],["audit","Audit log"]];
+const NAV=[["rotating","Rotating trainees"],["status","Training status"],["surform","Training status form"],["kiosk","Attendance kiosk"],["calendar","Academic calendar"],["messages","WhatsApp"],["datacheck","Data checks"],["search","Search"],["overview","Overview"],["exits","Left training"],["tasks","Tasks"],["pgts","PGTs"],["leaves","Leave"],["verify","Verification"],["faculty","Faculty"],["supervisors","Supervisors"],["credentials","Faculty updates"],["workshops","Workshops"],["exams","Exams"],["orientation","Orientation"],["settings","Settings"],["audit","Audit log"]];
 let route={v:"overview",id:null};
 function parse(){const h=location.hash.slice(1);const m=h.match(/^(pgt|fac|ws|fb|task|fbedit|pfedit|pfill|prop|exam|orient|reg|rgedit|cert|certx|attend|cred|rot)-(\w+)$/);if(m)return{v:m[1],id:m[2]};return{v:NAV.some(n=>n[0]===h)?h:"overview",id:null}}
 function go(h){if(location.hash==="#"+h)render();else location.hash=h}
@@ -773,10 +785,10 @@ function render(){
  TODAY.setTime(new Date(new Date().toDateString()).getTime());
  recompute();
  const pend=DB.pgts.filter(p=>p.reg==="Pending").length;
- const cur=route.v==="pgt"?"pgts":route.v==="fac"?"faculty":["ws","fb","fbedit","pfedit","pfill","prop","reg","rgedit","attend"].includes(route.v)?"workshops":route.v==="task"?"tasks":route.v==="exam"?"exams":route.v==="orient"?"orientation":route.v==="cert"?"workshops":route.v==="certx"?"exams":route.v==="cred"?"credentials":route.v==="rot"||route.v==="kiosk"?"rotating":route.v;
+ const cur=route.v==="pgt"?"pgts":route.v==="fac"?"faculty":["ws","fb","fbedit","pfedit","pfill","prop","reg","rgedit","attend"].includes(route.v)?"workshops":route.v==="task"?"tasks":route.v==="exam"?"exams":route.v==="orient"?"orientation":route.v==="cert"?"workshops":route.v==="certx"?"exams":route.v==="cred"?"credentials":route.v==="rot"||route.v==="kiosk"?"rotating":route.v==="surform"?"status":route.v;
  renderChrome(cur);if(!canSee(cur)){document.getElementById("main").innerHTML=`<div class="panel empty">You do not have access to this section. Ask the Director of Medical Education to change your access.</div>`;return}
  const m=document.getElementById("main");
- m.innerHTML=({overview:vOverview,pgts:vPgts,pgt:vPgt,verify:vVerify,faculty:vFaculty,fac:vFac,settings:vSettings,audit:vAudit,leaves:vLeaves,credentials:vCreds,workshops:vWorkshops,ws:vWs,tasks:vTasks,task:vTask,fb:vFb,fbedit:vFbEdit,pfedit:vPfEdit,pfill:vPfill,prop:vProp,exams:vExams,exam:vExam,orientation:vOrients,orient:vOrient,supervisors:vSupervisors,reg:vReg,rgedit:vRgEdit,attend:vAttend,search:vSearch,datacheck:vDataCheck,messages:vMessages,calendar:vCalendar,rotating:vRotating,rot:vRot,kiosk:vKiosk,cred:()=>{if(UI.credFac!==route.id){UI.credFac=route.id;UI.credType=null}return vCreds()},exits:vExits,cert:vCertWs,certx:vCertEx}[route.v]||vOverview)();
+ m.innerHTML=({overview:vOverview,pgts:vPgts,pgt:vPgt,verify:vVerify,faculty:vFaculty,fac:vFac,settings:vSettings,audit:vAudit,leaves:vLeaves,credentials:vCreds,workshops:vWorkshops,ws:vWs,tasks:vTasks,task:vTask,fb:vFb,fbedit:vFbEdit,pfedit:vPfEdit,pfill:vPfill,prop:vProp,exams:vExams,exam:vExam,orientation:vOrients,orient:vOrient,supervisors:vSupervisors,reg:vReg,rgedit:vRgEdit,attend:vAttend,search:vSearch,datacheck:vDataCheck,messages:vMessages,calendar:vCalendar,rotating:vRotating,status:vStatus,surform:vSurForm,rot:vRot,kiosk:vKiosk,cred:()=>{if(UI.credFac!==route.id){UI.credFac=route.id;UI.credType=null}return vCreds()},exits:vExits,cert:vCertWs,certx:vCertEx}[route.v]||vOverview)();
 }
 
 /* ---------- OVERVIEW ---------- */
@@ -1730,12 +1742,12 @@ const DESIGS={
 const meObj=()=>DB.staff.find(s=>s.name===ME)||DB.staff[0];
 const isAdmin=()=>meObj().role==="Admin";
 const seeAll=()=>isAdmin()||!!meObj().seeAll;
-const canSee=k=>{if(k==="exits")k="leaves";if(k==="rotating"||k==="kiosk")k="pgts";if(k==="datacheck")k="pgts";if(k==="messages"||k==="calendar")return true;return k==="overview"||k==="search"||isAdmin()||(meObj().sections||[]).includes(k)};
+const canSee=k=>{if(k==="exits")k="leaves";if(k==="rotating"||k==="kiosk"||k==="status")k="pgts";if(k==="datacheck")k="pgts";if(k==="messages"||k==="calendar")return true;return k==="overview"||k==="search"||isAdmin()||(meObj().sections||[]).includes(k)};
 const visibleTasks=()=>seeAll()?DB.tasks:DB.tasks.filter(t=>t.assignee===ME);
 const canAssign=()=>seeAll();
 
 /* ---------- side menu ---------- */
-const NAVG=[["","overview","Dashboard"],["","tasks","Tasks"],["","messages","WhatsApp"],["Postgraduate trainees","pgts","Trainee register"],["Postgraduate trainees","verify","New registrations"],["Postgraduate trainees","datacheck","Data checks"],["Postgraduate trainees","leaves","Leave"],["Postgraduate trainees","exits","Left training"],["Postgraduate trainees","rotating","Rotating trainees"],["Faculty","faculty","Faculty directory"],["Faculty","supervisors","Supervisors"],["Faculty","credentials","Credentials"],["Teaching and assessment","calendar","Academic calendar"],["Teaching and assessment","workshops","Workshops"],["Teaching and assessment","exams","Examinations"],["Teaching and assessment","orientation","Orientation"],["Administration","settings","Settings"],["Administration","audit","Audit log"],["Administration","search","Search"]];
+const NAVG=[["","overview","Dashboard"],["","tasks","Tasks"],["","messages","WhatsApp"],["Postgraduate trainees","pgts","Trainee register"],["Postgraduate trainees","verify","New registrations"],["Postgraduate trainees","datacheck","Data checks"],["Postgraduate trainees","leaves","Leave"],["Postgraduate trainees","exits","Left training"],["Postgraduate trainees","rotating","Rotating trainees"],["Postgraduate trainees","status","Training status"],["Faculty","faculty","Faculty directory"],["Faculty","supervisors","Supervisors"],["Faculty","credentials","Credentials"],["Teaching and assessment","calendar","Academic calendar"],["Teaching and assessment","workshops","Workshops"],["Teaching and assessment","exams","Examinations"],["Teaching and assessment","orientation","Orientation"],["Administration","settings","Settings"],["Administration","audit","Audit log"],["Administration","search","Search"]];
 function renderChrome(cur){
  const late=visibleTasks().filter(tOverdue).length,pend=DB.pgts.filter(p=>p.reg==="Pending").length,wa=DB.workshops.filter(w=>wsFlags(w).length).length;
  const badge={tasks:late?[late,"late"]:null,verify:pend?[pend,""]:null,workshops:wa?[wa,""]:null};
@@ -1808,7 +1820,7 @@ function vOverview(){
  if(canSee("orientation"))DB.orients.filter(o=>o.month===m0||o.month===m1).forEach(o=>ev.push([o.date||o.month+"-01",!!o.date,"Orientation",sessLong(o.cycle)+" cycle","orient-"+o.id]));
  if(canSee("pgts"))A.forEach(p=>{const c=C(p);if(inWin(c.comp))ev.push([c.comp,true,"Completion","Dr. "+p.name,"pgt-"+p.id]);if(c.pk==="rot"&&inWin(c.ret))ev.push([c.ret,true,"Return","Dr. "+p.name+" from "+c.rotSite,"pgt-"+p.id])});
  openT.filter(t=>inWin(t.due)).forEach(t=>ev.push([t.due,true,"Task",t.title,"task-"+t.id]));
- (DB.events||[]).filter(e=>e.status!=="Cancelled"&&inWin(e.date)).forEach(e=>ev.push([e.date,true,"Event",e.title,"calendar"]));
+ (DB.events||[]).forEach(e=>evExpand(e).filter(o=>o.status!=="Cancelled"&&inWin(o.date)).forEach(o=>ev.push([o.date,true,"Event",e.title,"calendar"])));
  ev.sort((a,b)=>a[0]<b[0]?-1:1);
  const ret=A.filter(p=>C(p).pk==="rot"&&C(p).toRet!=null&&C(p).toRet<=60).sort((a,b)=>C(a).toRet-C(b).toRet);
  const comp=A.filter(p=>C(p).toComp>0&&C(p).toComp<=180).sort((a,b)=>C(a).toComp-C(b).toComp);
@@ -3018,12 +3030,13 @@ function bootApp(){
    try{localStorage.setItem("dme-supabase",JSON.stringify({url:u,anonKey:k}))}catch(x){}location.reload()};return}
  if(!LIVE){if(!DB||!DB.pgts)DB=seed();if(migrate9(DB))persist();if(!DB.staff.some(s=>s.name===ME))ME=DB.staff[0].name;route=parse();render();return}
  document.body.classList.add("live");DB=null;try{localStorage.removeItem(KEY)}catch(e){}
- const q=new URLSearchParams(location.search);const pk=["reg","fb","prop","rot","bio","att"].find(k=>q.get(k));
+ const q=new URLSearchParams(location.search);const pk=["reg","fb","prop","rot","bio","att","sur"].find(k=>q.get(k));
  screen(`<p class="subt">Connecting…</p>`);
  loadScript(SUPA_JS).then(()=>{SYNC.sb=window.supabase.createClient(SUPA.url,SUPA.anonKey,{auth:{persistSession:true,detectSessionInUrl:true}});
   if(pk==="rot")return rotPublicPage();
   if(pk==="bio")return bioPublicPage(q.get("bio"));
   if(pk==="att")return attPublicPage(q.get("att"));
+  if(pk==="sur")return surPublicPage();
   if(pk)return publicPage(pk,q.get(pk));
   SYNC.sb.auth.onAuthStateChange((ev,ses)=>{if(ev==="PASSWORD_RECOVERY")return setPasswordScreen(true);if(ev==="SIGNED_OUT"){location.hash="";location.reload()}});
   return SYNC.sb.auth.getSession().then(({data})=>data.session?afterLogin(data.session):loginScreen())}).catch(e=>screen(`<h2>Cannot connect</h2><p>${esc(e.message||e)}</p><p class="subt">Check the internet connection and reload the page.</p>${localStorage.getItem("dme-supabase")?`<div class="actions"><button class="btn" onclick="localStorage.removeItem('dme-supabase');location.reload()">Change the Supabase settings</button></div>`:""}`))}
@@ -3159,7 +3172,7 @@ function renderChrome(cur){
 async function openStored(path){if(!LIVE||!path){toast("Files open in the live app");return}const w=window.open("","_blank");
  const{data,error}=await SYNC.sb.storage.from("dme-uploads").createSignedUrl(path,300);if(error||!data){if(w)w.close();toast("Could not open the file");return}if(w)w.location=data.signedUrl;else location.href=data.signedUrl}
 const DOC_L=[["photo","Photo"],["cnic","CNIC copy"],["pmdc","PMDC copy"],["joining","Joining letter"],["passport","Passport copy"]];
-function docsHtml(p){return DOC_L.filter(([k])=>k!=="passport"||(p.docs&&p.docs.passport)).map(([k,l])=>{const path=p.docs&&p.docs[k];return`<div class="doc"><b>${l}</b>${path?`<button class="btn link" data-act="doc-open" data-path="${esc(path)}">Open</button>`:p.example?"Uploaded":"Not on file"}</div>`}).join("")}
+function docsHtml(p){return DOC_L.filter(([k])=>!["passport","rtmc","acls","bls"].includes(k)||(p.docs&&p.docs[k])).map(([k,l])=>{const path=p.docs&&p.docs[k];return`<div class="doc"><b>${l}</b>${path?`<button class="btn link" data-act="doc-open" data-path="${esc(path)}">Open</button>`:p.example?"Uploaded":"Not on file"}</div>`}).join("")}
 function personalHtml(p){const v=x=>x?esc(x):'<span class="subt">not recorded</span>';if(!LIVE&&!p.cnic){const h='<dd class="masked">hidden in prototype</dd>';return["Father's name","CNIC","PMDC","Mobile","Email"].map(t=>`<dt>${t}</dt>${h}`).join("")}
  return`<dt>Father's name</dt><dd>${v(p.father)}</dd><dt>CNIC</dt><dd>${v(p.cnic)}</dd><dt>PMDC</dt><dd>${v(p.pmdc)}</dd><dt>Mobile</dt><dd>${v([p.mobile,p.mobile2].filter(Boolean).join(" · "))}</dd><dt>Email</dt><dd>${v([p.email,p.emailAlt].filter(Boolean).join(" · "))}</dd>${p.passport?`<dt>Passport</dt><dd>${esc(p.passport)}</dd>`:""}`}
 
@@ -3924,15 +3937,39 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-exsp2],[da
    conferences, meetings and milestones in one place; next three on the
    dashboard
    ===================================================================== */
-const EV_TYPES=[["talk","Expert talk","var(--brand)"],["workshop","Workshop","var(--gold)"],["exam","Examination","var(--info)"],["orient","Orientation","var(--ok)"],["conf","Conference / CME","#7A5AA6"],["research","Research activity","#3F7F7A"],["meeting","Meeting","var(--muted)"],["milestone","Milestone / deadline","var(--bad)"],["other","Other event","var(--muted)"]];
+const EV_TYPES=[["talk","Expert talk","var(--brand)"],["workshop","Workshop","var(--gold)"],["exam","Examination","var(--info)"],["orient","Orientation","var(--ok)"],["conf","Conference / CME","#7A5AA6"],["cpc","Clinicopathological conference (CPC)","#A0522D"],["clinconf","Clinical conference / case presentation","#2E6DA4"],["research","Research activity","#3F7F7A"],["meeting","Meeting","var(--muted)"],["milestone","Milestone / deadline","var(--bad)"],["other","Other event","var(--muted)"]];
 const EV_STATUS=["Planned","Confirmed","Held","Postponed","Cancelled"];
 const evT=k=>EV_TYPES.find(t=>t[0]===k)||EV_TYPES[EV_TYPES.length-1];
 const evList=()=>(DB.events=DB.events||[]);
-UI.calV="list";UI.calF=[];UI.calPast=false;UI.calM=null;
+UI.calV="list";
+/* ---------- repeating events: dates are worked out from the first date, so they keep appearing without being entered again ---------- */
+const REP_OPTS=[["","Does not repeat"],["w1","Every week"],["w2","Every 2 weeks"],["m1","Every month"],["m2","Every 2 months"],["m3","Every 3 months"],["m4","Every 4 months"],["m5","Every 5 months"],["m6","Every 6 months (biannually)"],["m12","Every year (annually)"]];
+const ORDN=["","1st","2nd","3rd","4th","5th"];
+const SPEAK_T=["talk","conf","cpc","clinconf"];
+function repModes(ds){if(!ds)return[["date","On the same date each time"]];const d=P(ds),day=d.getDate(),wd=d.toLocaleDateString("en-GB",{weekday:"long"}),dim=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+ const o=[["date",`On the ${day}${[,"st","nd","rd"][day%10>3||Math.floor(day/10)===1?0:day%10]||"th"} of the month`]];if(day<=28)o.push(["nth",`On the ${ORDN[Math.ceil(day/7)]} ${wd}`]);if(day+7>dim)o.push(["last",`On the last ${wd}`]);return o}
+function repLabel(e){const r=e&&e.rep;if(!r||!r.k)return"";const L=REP_OPTS.find(x=>x[0]===r.k);let t=L?L[1]:"Repeats";
+ if(r.k[0]==="m"&&r.mode&&r.mode!=="date"){const m=repModes(e.date).find(x=>x[0]===r.mode);if(m)t+=", "+m[1].replace(/^On the/,"on the")}
+ return t+(r.until?` until ${fd(r.until)}`:"")}
+const REP_AHEAD=24;/* months of future dates shown for a series with no end date */
+function evOccs(e){const r=e.rep;if(!r||!r.k)return[e.date];const hz=new Date(TODAY);hz.setMonth(hz.getMonth()+REP_AHEAD);let lim=iso(hz);if(r.until&&r.until<lim)lim=r.until;
+ const f=r.k[0],n=+r.k.slice(1)||1,s=P(e.date),out=[];
+ for(let i=0;i<800;i++){let d;
+  if(f==="w"){d=new Date(s);d.setDate(s.getDate()+7*n*i)}
+  else{const fm=new Date(s.getFullYear(),s.getMonth()+n*i,1),wd=s.getDay();
+   if(r.mode==="last"){d=new Date(fm.getFullYear(),fm.getMonth()+1,0);while(d.getDay()!==wd)d.setDate(d.getDate()-1)}
+   else if(r.mode==="nth"){d=new Date(fm);while(d.getDay()!==wd)d.setDate(d.getDate()+1);d.setDate(d.getDate()+7*(Math.ceil(s.getDate()/7)-1))}
+   else d=new Date(fm.getFullYear(),fm.getMonth(),Math.min(s.getDate(),new Date(fm.getFullYear(),fm.getMonth()+1,0).getDate()))}
+  const ds=iso(d);if(ds>lim)break;out.push(ds)}
+ return out}
+/* every date of an event with its own status (a single date of a series can be cancelled) */
+function evExpand(e){if(!e.date)return[];const span=e.end&&e.end>e.date?Math.round((P(e.end)-P(e.date))/864e5):0,rep=!!(e.rep&&e.rep.k);
+ return evOccs(e).map(ds=>{const o=rep&&e.occ&&e.occ[ds]||{};let end="";if(span){const x=P(ds);x.setDate(x.getDate()+span);end=iso(x)}return{date:ds,end,status:o.status||e.status||"Planned",occ:rep?ds:""}})}UI.calF=[];UI.calPast=false;UI.calM=null;
 
 /* everything on the calendar: own entries plus workshops, exams and orientations already in the app */
 function calItems(){const out=[],mon=d=>d.slice(0,7);
- evList().forEach(e=>{if(!e.date)return;out.push({key:"e:"+e.id,date:e.date,end:e.end||"",month:mon(e.date),type:e.type,title:e.title,time:e.time||"",venue:e.venue||"",sub:[e.speaker?(e.speaker+(e.speakerInfo?", "+e.speakerInfo:"")):"",e.sponsor?"Sponsored by "+e.sponsor:""].filter(Boolean).join(" · "),status:e.status||"Planned",ev:e})});
+ evList().forEach(e=>{const sub=[e.speaker?(e.speaker+(e.speakerInfo?", "+e.speakerInfo:"")):"",e.sponsor?"Sponsored by "+e.sponsor:""].filter(Boolean).join(" · ");
+  evExpand(e).forEach(o=>out.push({key:"e:"+e.id+(o.occ?":"+o.occ:""),date:o.date,end:o.end,month:mon(o.date),type:e.type,title:e.title,time:e.time||"",venue:e.venue||"",sub,status:o.status,ev:e,occ:o.occ}))});
  if(canSee("workshops"))DB.workshops.filter(w=>!w.example).forEach(w=>out.push({key:"w:"+w.id,date:w.date||"",month:w.date?mon(w.date):w.month,type:/research boot ?camp/i.test(w.title)?"research":"workshop",title:w.title,venue:w.venue||"",sub:[w.focal?"Focal: "+w.focal:"",w.dept].filter(Boolean).join(" · "),status:w.stage>=5?"Held":w.stage>=3?"Confirmed":"Planned",href:"ws-"+w.id}));
  const exM=new Set(),orM=new Set();
  if(canSee("exams"))DB.exams.forEach(x=>{exM.add(x.month);exM.add(mAdd(x.month,-1));exM.add(mAdd(x.month,1));out.push({key:"x:"+x.id,date:x.date||"",month:x.date?mon(x.date):x.month,type:"exam",title:`${x.title} · ${x.session}`,venue:x.venue||"",sub:`${exCands(x).length} candidates`,status:x.stage>=3?"Held":"Planned",href:"exam-"+x.id})});
@@ -3944,8 +3981,8 @@ const calKey=i=>(i.date||i.month+"-32");
 const calUpcoming=()=>{const t=iso(TODAY),m=t.slice(0,7);return calItems().filter(i=>i.status!=="Cancelled"&&i.status!=="Held"&&(i.date?(i.end||i.date)>=t:i.month>=m)).sort((a,b)=>{const ka=a.date||a.month+"-32",kb=b.date||b.month+"-32";return ka<kb?-1:ka>kb?1:(a.date?0:1)-(b.date?0:1)})};
 
 /* ---------- dashboard strip: the next three ---------- */
-function calStrip(){const U=calUpcoming().slice(0,3);if(!U.length)return"";
- return`<div class="upnext">${U.map(i=>{const d=i.date?P(i.date):null,t=evT(i.type);return`<a class="upi" href="#${i.href||"calendar"}" ${i.ev?`data-evopen="${i.ev.id}"`:""} style="--k:${t[2]}">
+function calStrip(){const U=calUpcoming().filter((i,x,A)=>!i.ev||A.findIndex(j=>j.ev===i.ev)===x).slice(0,3);/* a repeating event shows only its next date */if(!U.length)return"";
+ return`<div class="upnext">${U.map(i=>{const d=i.date?P(i.date):null,t=evT(i.type);return`<a class="upi" href="#${i.href||"calendar"}" ${i.ev?`data-evopen="${i.ev.id}" data-occ="${i.occ||""}"`:""} style="--k:${t[2]}">
   <span class="ud">${d?`<b>${d.getDate()}</b>${d.toLocaleDateString("en-GB",{month:"short"})}`:`<b style="font-size:13px">${P(i.month+"-01").toLocaleDateString("en-GB",{month:"short"})}</b>${i.month.slice(0,4)}`}</span>
   <span class="ut"><b>${esc(i.title)}</b><small>${t[1]}${d?" · "+d.toLocaleDateString("en-GB",{weekday:"short"}):" · date to be fixed"}${i.time?" · "+esc(i.time):""}${i.venue?" · "+esc(i.venue):""}</small></span></a>`}).join("")}
   <a class="upmore" href="#calendar">Calendar ›</a></div>`}
@@ -3962,8 +3999,8 @@ function vCalendar(){const all=calItems(),t=iso(TODAY),m0=t.slice(0,7),F=UI.calF
  ${UI.calV==="month"?calMonth(vis,m0):calAgenda(vis,t,m0)}`}
 function calRow(i,t){const d=i.date?P(i.date):null,ty=evT(i.type),past=i.date?(i.end||i.date)<t:false;
  return`<li class="calrow ${past?"past":""} ${i.status==="Cancelled"?"cx":""}" style="--k:${ty[2]}"><span class="cd">${d?`<b>${d.getDate()}</b>${d.toLocaleDateString("en-GB",{weekday:"short"})}`:`<b>—</b>date TBC`}</span>
-  <span class="cm"><span class="ct"><i class="cdot" style="background:${ty[2]}"></i>${ty[1]}${i.status!=="Planned"?` · <span class="${i.status==="Cancelled"?"d-red":i.status==="Postponed"?"d-amb":""}">${i.status}</span>`:""}</span>
-   ${i.ev?`<button class="clink" data-evopen="${i.ev.id}">${esc(i.title)}</button>`:`<a class="clink" href="#${i.href}">${esc(i.title)}</a>`}
+  <span class="cm"><span class="ct"><i class="cdot" style="background:${ty[2]}"></i>${ty[1]}${i.occ?` · <span class="rep" title="${esc(repLabel(i.ev))}">↻ ${esc(REP_OPTS.find(x=>x[0]===i.ev.rep.k)[1].replace(/ \(.*\)/,"").toLowerCase())}</span>`:""}${i.status!=="Planned"?` · <span class="${i.status==="Cancelled"?"d-red":i.status==="Postponed"?"d-amb":""}">${i.status}</span>`:""}</span>
+   ${i.ev?`<button class="clink" data-evopen="${i.ev.id}" data-occ="${i.occ||""}">${esc(i.title)}</button>`:`<a class="clink" href="#${i.href}">${esc(i.title)}</a>`}
    <span class="subt">${[i.end&&i.end!==i.date?"until "+fd(i.end):"",i.time,i.venue,i.sub].filter(Boolean).map(esc).join(" · ")}</span></span></li>`}
 function calAgenda(vis,t,m0){const L=vis.filter(i=>UI.calPast||(i.date?(i.end||i.date)>=t:i.month>=m0)).sort((a,b)=>calKey(a)<calKey(b)?-1:calKey(a)>calKey(b)?1:0);
  if(!L.length)return`<div class="panel empty">Nothing on the calendar${UI.calPast?"":" from today on"}. Use <b>Add event</b> to enter talks, meetings and milestones.</div>`;
@@ -3974,16 +4011,21 @@ function calMonth(vis,m0){const m=UI.calM||m0,first=P(m+"-01"),start=new Date(fi
  const inDay=ds=>vis.filter(i=>i.date&&ds>=i.date&&ds<=(i.end||i.date));const loose=vis.filter(i=>!i.date&&i.month===m);
  return`<div class="panel" style="display:grid;gap:10px"><div class="toolbar" style="justify-content:space-between"><button class="btn small" data-calm="${mAdd(m,-1)}">‹ ${mLabel(mAdd(m,-1))}</button><h3 style="margin:0">${first.toLocaleDateString("en-GB",{month:"long",year:"numeric"})}</h3><button class="btn small" data-calm="${mAdd(m,1)}">${mLabel(mAdd(m,1))} ›</button></div>
   ${loose.length?`<div class="flag info" style="display:grid;gap:4px"><b>This month, date to be fixed</b>${loose.map(i=>`<a href="#${i.href}">${esc(i.title)}</a>`).join("")}</div>`:""}
-  <div class="calgrid">${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(d=>`<div class="cgh">${d}</div>`).join("")}${days.map(d=>{const ds=iso(d),its=inDay(ds);return`<div class="cgd ${ds.slice(0,7)!==m?"out":""} ${ds===t?"today":""}"><span class="cgn">${d.getDate()}</span>${its.map(i=>`<${i.ev?"button":"a"} class="cge" style="--k:${evT(i.type)[2]}" ${i.ev?`data-evopen="${i.ev.id}"`:`href="#${i.href}"`} title="${esc(i.title)}">${esc(i.title)}</${i.ev?"button":"a"}>`).join("")}</div>`}).join("")}</div></div>`}
+  <div class="calgrid">${["Mon","Tue","Wed","Thu","Fri","Sat","Sun"].map(d=>`<div class="cgh">${d}</div>`).join("")}${days.map(d=>{const ds=iso(d),its=inDay(ds);return`<div class="cgd ${ds.slice(0,7)!==m?"out":""} ${ds===t?"today":""}"><span class="cgn">${d.getDate()}</span>${its.map(i=>`<${i.ev?"button":"a"} class="cge" style="--k:${evT(i.type)[2]}" ${i.ev?`data-evopen="${i.ev.id}" data-occ="${i.occ||""}"`:`href="#${i.href}"`} title="${esc(i.title)}">${esc(i.title)}</${i.ev?"button":"a"}>`).join("")}</div>`}).join("")}</div></div>`}
 
 /* ---------- add / edit an event ---------- */
-function sheetEvent(e){const n=!e;e=e||{type:"talk",title:"",date:iso(TODAY),end:"",time:"",venue:"",speaker:"",speakerInfo:"",sponsor:"",dept:"",focal:"",status:"Planned",notes:""};
- openSheet(n?"Add to the calendar":"Edit event",`<label class="f">Type<select name="type" id="ev-type">${opt(EV_TYPES.map(([k,l])=>[k,l]),e.type)}</select></label>
+function sheetEvent(e,occ){const n=!e;e=e||{type:"talk",title:"",date:iso(TODAY),end:"",time:"",venue:"",speaker:"",speakerInfo:"",sponsor:"",dept:"",focal:"",status:"Planned",notes:""};
+ const R=e.rep||{},oc=occ&&e.rep&&e.rep.k?occ:"",ocx=oc&&e.occ&&e.occ[oc]&&e.occ[oc].status==="Cancelled";
+ openSheet(n?"Add to the calendar":"Edit event",`${oc?`<div class="flag info" style="display:grid;gap:8px"><span><b>${fd(oc)}</b> is one date of an event that ${esc(repLabel(e).replace(/^E/,"e"))}.${ocx?" <b>This date is cancelled.</b>":""} Changes below apply to every date.</span><span><button type="button" class="btn small" data-act="ev-occx" data-id="${e.id}" data-occ="${oc}">${ocx?"Restore this date":"Cancel only this date"}</button></span></div>`:""}
+ <label class="f">Type<select name="type" id="ev-type">${opt(EV_TYPES.map(([k,l])=>[k,l]),e.type)}</select></label>
  <label class="f">Title <span class="h">for a talk, the topic</span><input name="title" value="${esc(e.title)}" placeholder="e.g. Heart failure: what's new in 2026"></label>
- <div class="grid2"><label class="f">Date<input type="date" name="date" value="${e.date||""}"></label><label class="f">Ends <span class="h">if more than one day</span><input type="date" name="end" value="${e.end||""}"></label></div>
+ <div class="grid2"><label class="f"><span id="ev-dl">${R.k?"First date":"Date"}</span><input type="date" name="date" id="ev-date" value="${e.date||""}"></label><label class="f">Ends <span class="h">if more than one day</span><input type="date" name="end" value="${e.end||""}"></label></div>
  <div class="grid2"><label class="f">Time<input name="time" value="${esc(e.time||"")}" placeholder="e.g. 2:00 pm"></label><label class="f">Venue<input name="venue" list="ev-venues" value="${esc(e.venue||"")}"></label></div>
  <datalist id="ev-venues">${VENUES.filter(v=>v!=="Other").map(v=>`<option value="${esc(v)}">`).join("")}</datalist>
- <div id="ev-talk" class="grid2" ${e.type==="talk"||e.type==="conf"?"":"hidden"}><label class="f">Speaker<input name="speaker" value="${esc(e.speaker||"")}" placeholder="e.g. Prof. Dr. ..."></label><label class="f">Speaker's designation / institution<input name="speakerInfo" value="${esc(e.speakerInfo||"")}"></label>
+ <div class="grid2"><label class="f">Repeats<select name="rep" id="ev-rep">${opt(REP_OPTS,R.k||"")}</select></label>
+  <label class="f" id="ev-modew" ${R.k&&R.k[0]==="m"?"":"hidden"}>Which day<select name="repmode" id="ev-mode">${opt(repModes(e.date),R.mode||"date")}</select></label></div>
+ <label class="f" id="ev-untilw" ${R.k?"":"hidden"}>Repeat until <span class="h">leave empty to keep repeating</span><input type="date" name="until" value="${R.until||""}"></label>
+ <div id="ev-talk" class="grid2" ${SPEAK_T.includes(e.type)?"":"hidden"}><label class="f">Speaker / presenter<input name="speaker" value="${esc(e.speaker||"")}" placeholder="e.g. Prof. Dr. ..."></label><label class="f">Speaker's designation / institution<input name="speakerInfo" value="${esc(e.speakerInfo||"")}"></label>
   <label class="f">Sponsor <span class="h">company</span><input name="sponsor" value="${esc(e.sponsor||"")}"></label></div>
  <div class="grid2"><label class="f">Department<select name="dept">${opt(["",...wsDepts()],e.dept||"")}</select></label><label class="f">Focal person<input name="focal" list="ev-fac" value="${esc(e.focal||"")}"></label></div>
  <datalist id="ev-fac">${DB.faculty.filter(f=>f.active!==false).map(f=>`<option value="${esc(facName(f))}">`).join("")}</datalist>
@@ -3991,13 +4033,21 @@ function sheetEvent(e){const n=!e;e=e||{type:"talk",title:"",date:iso(TODAY),end
  <label class="f">Notes<textarea name="notes">${esc(e.notes||"")}</textarea></label>
  ${n?"":`<button type="button" class="btn danger" data-act="ev-del" data-id="${e.id}" style="justify-self:start">Delete this event</button>`}`,()=>{
   if(fv("title").length<3)return fail("Enter a title.");if(!fv("date"))return fail("Choose the date.");if(fv("end")&&fv("end")<fv("date"))return fail("The end date is before the start date.");
-  const rec={type:fv("type"),title:fv("title"),date:fv("date"),end:fv("end"),time:fv("time"),venue:fv("venue"),speaker:fv("speaker"),speakerInfo:fv("speakerInfo"),sponsor:fv("sponsor"),dept:fv("dept"),focal:fv("focal"),status:fv("status"),notes:fv("notes")};
-  if(n){const ne={id:uid("E"),...rec};evList().push(ne);log(`Added to the academic calendar: ${evT(rec.type)[1]}, ${rec.title} (${fd(rec.date)})`)}
-  else{const was=e.date;Object.assign(e,rec);log(`Calendar event edited: ${rec.title}${was!==rec.date?` (moved from ${fd(was)} to ${fd(rec.date)})`:""}`)}
+  const rk=fv("rep");if(rk&&fv("until")&&fv("until")<fv("date"))return fail("“Repeat until” is before the first date.");
+  const rep=rk?{k:rk,mode:rk[0]==="m"?(repModes(fv("date")).some(m=>m[0]===fv("repmode"))?fv("repmode"):"date"):"",until:fv("until")||""}:null;
+  const rec={rep,type:fv("type"),title:fv("title"),date:fv("date"),end:fv("end"),time:fv("time"),venue:fv("venue"),speaker:fv("speaker"),speakerInfo:fv("speakerInfo"),sponsor:fv("sponsor"),dept:fv("dept"),focal:fv("focal"),status:fv("status"),notes:fv("notes")};
+  if(!rep)delete rec.rep;
+  if(n){const ne={id:uid("E"),...rec};evList().push(ne);log(`Added to the academic calendar: ${evT(rec.type)[1]}, ${rec.title} (${fd(rec.date)}${rep?", "+repLabel(ne).toLowerCase():""})`)}
+  else{const was=e.date;if(!rep)delete e.rep;if(!rep||rep.k!==(e.rep||{}).k||rec.date!==was)delete e.occ;Object.assign(e,rec);log(`Calendar event edited: ${rec.title}${was!==rec.date?` (moved from ${fd(was)} to ${fd(rec.date)})`:""}`)}
   toast("Saved");return true})}
-document.addEventListener("change",e=>{if(e.target.id==="ev-type"){const b=document.getElementById("ev-talk");if(b)b.hidden=!["talk","conf"].includes(e.target.value)}
+document.addEventListener("change",e=>{if(e.target.id==="ev-type"){const b=document.getElementById("ev-talk");if(b)b.hidden=!SPEAK_T.includes(e.target.value)}
+ if(e.target.id==="ev-rep"||e.target.id==="ev-date"){const k=document.getElementById("ev-rep").value,m=document.getElementById("ev-mode"),cur=m.value;
+  m.innerHTML=opt(repModes(document.getElementById("ev-date").value),cur);document.getElementById("ev-modew").hidden=!(k&&k[0]==="m");document.getElementById("ev-untilw").hidden=!k;document.getElementById("ev-dl").textContent=k?"First date":"Date"}
  if(e.target.id==="calpast"){UI.calPast=e.target.checked;render()}});
-document.addEventListener("click",e=>{const o=e.target.closest("[data-evopen]");if(o){e.preventDefault();const ev=evList().find(x=>x.id===o.dataset.evopen);if(ev){if(isViewer())return calInfo(ev);sheetEvent(ev)}return}
+document.addEventListener("click",e=>{const o=e.target.closest("[data-evopen]");if(o){e.preventDefault();const ev=evList().find(x=>x.id===o.dataset.evopen);if(ev){if(isViewer())return calInfo(ev,o.dataset.occ);sheetEvent(ev,o.dataset.occ)}return}
+ const ox=e.target.closest('[data-act="ev-occx"]');if(ox){const ev=evList().find(x=>x.id===ox.dataset.id),d=ox.dataset.occ;if(!ev)return;ev.occ=ev.occ||{};
+  if(ev.occ[d]&&ev.occ[d].status==="Cancelled"){delete ev.occ[d];log(`Calendar: ${ev.title} on ${fd(d)} restored`)}else{ev.occ[d]={status:"Cancelled"};log(`Calendar: ${ev.title} on ${fd(d)} cancelled (other dates unchanged)`)}
+  document.getElementById("overlay").innerHTML="";toast("Saved");render();return}
  const a=e.target.closest('[data-act="ev-add"],[data-act="ev-del"],[data-calv],[data-calf],[data-calm]');if(!a)return;
  if(a.dataset.calv){UI.calV=a.dataset.calv;render();return}
  if(a.dataset.calm){UI.calM=a.dataset.calm;render();return}
@@ -4005,8 +4055,8 @@ document.addEventListener("click",e=>{const o=e.target.closest("[data-evopen]");
  if(a.dataset.act==="ev-add")return sheetEvent();
  if(a.dataset.act==="ev-del"){if(a.dataset.armed!=="1"){a.dataset.armed="1";a.textContent="Tap again to delete";return}const ev=evList().find(x=>x.id===a.dataset.id);if(!ev)return;
   DB.events=evList().filter(x=>x!==ev);log(`Removed from the academic calendar: ${ev.title} (${fd(ev.date)})`);document.getElementById("overlay").innerHTML="";toast("Event deleted");render()}});
-function calInfo(ev){const t=evT(ev.type);openSheet(ev.title,`<dl class="kv"><dt>Type</dt><dd>${t[1]}</dd><dt>Date</dt><dd>${fd(ev.date)}${ev.end?" to "+fd(ev.end):""}${ev.time?" · "+esc(ev.time):""}</dd>${ev.venue?`<dt>Venue</dt><dd>${esc(ev.venue)}</dd>`:""}${ev.speaker?`<dt>Speaker</dt><dd>${esc(ev.speaker)}${ev.speakerInfo?", "+esc(ev.speakerInfo):""}</dd>`:""}${ev.sponsor?`<dt>Sponsor</dt><dd>${esc(ev.sponsor)}</dd>`:""}${ev.focal?`<dt>Focal person</dt><dd>${esc(ev.focal)}</dd>`:""}<dt>Status</dt><dd>${esc(ev.status||"Planned")}</dd>${ev.notes?`<dt>Notes</dt><dd>${esc(ev.notes)}</dd>`:""}</dl>`,()=>true,"Close")}
-EXPORTS.calendar=()=>({file:"RIC academic calendar",sheets:[sheetFrom("Calendar",calItems().sort((a,b)=>calKey(a)<calKey(b)?-1:1).map(i=>({"Date":i.date||"","Month":mLabel(i.month),"Type":evT(i.type)[1],"Title":i.title,"Time":i.time||"","Venue":i.venue||"","Speaker":i.ev?.speaker||"","Speaker details":i.ev?.speakerInfo||"","Sponsor":i.ev?.sponsor||"","Department":i.ev?.dept||"","Focal person":i.ev?.focal||"","Status":i.status,"Notes":i.ev?.notes||i.sub||""})))]});
+function calInfo(ev,occ){const t=evT(ev.type);openSheet(ev.title,`<dl class="kv"><dt>Type</dt><dd>${t[1]}</dd><dt>Date</dt><dd>${fd(occ||ev.date)}${ev.end&&!occ?" to "+fd(ev.end):""}${ev.rep&&ev.rep.k?`<div class="subt">${esc(repLabel(ev))}</div>`:""}${ev.time?" · "+esc(ev.time):""}</dd>${ev.venue?`<dt>Venue</dt><dd>${esc(ev.venue)}</dd>`:""}${ev.speaker?`<dt>Speaker</dt><dd>${esc(ev.speaker)}${ev.speakerInfo?", "+esc(ev.speakerInfo):""}</dd>`:""}${ev.sponsor?`<dt>Sponsor</dt><dd>${esc(ev.sponsor)}</dd>`:""}${ev.focal?`<dt>Focal person</dt><dd>${esc(ev.focal)}</dd>`:""}<dt>Status</dt><dd>${esc(ev.status||"Planned")}</dd>${ev.notes?`<dt>Notes</dt><dd>${esc(ev.notes)}</dd>`:""}</dl>`,()=>true,"Close")}
+EXPORTS.calendar=()=>({file:"RIC academic calendar",sheets:[sheetFrom("Calendar",calItems().sort((a,b)=>calKey(a)<calKey(b)?-1:1).map(i=>({"Date":i.date||"","Month":mLabel(i.month),"Type":evT(i.type)[1],"Title":i.title,"Repeats":i.occ?repLabel(i.ev):"","Time":i.time||"","Venue":i.venue||"","Speaker":i.ev?.speaker||"","Speaker details":i.ev?.speakerInfo||"","Sponsor":i.ev?.sponsor||"","Department":i.ev?.dept||"","Focal person":i.ev?.focal||"","Status":i.status,"Notes":i.ev?.notes||i.sub||""})))]});
 
 /* =====================================================================
    V20 · ROTATING TRAINEES (PGTs from other institutes on short
@@ -4252,24 +4302,24 @@ document.addEventListener("click",e=>{const a=e.target.closest('[data-act="rot-c
    ===================================================================== */
 
 /* ---------- 1. form settings + QR ---------- */
-const FORM_DEF={pgt:{open:true,msg:"",close:"",contact:""},rot:{open:true,msg:"",close:"",contact:"",units:ROT_UNITS.slice()}};
+const FORM_DEF={sur:{open:true,msg:"",close:"",contact:""},pgt:{open:true,msg:"",close:"",contact:""},rot:{open:true,msg:"",close:"",contact:"",units:ROT_UNITS.slice()}};
 const formCfg=k=>{const s=DB.settings.forms=DB.settings.forms||{};return{...FORM_DEF[k],...(s[k]||{})}};
-const formName=k=>k==="pgt"?"PGT registration":"Rotation registration";
-const formUrl=k=>k==="pgt"?(LIVE?pubBase().replace(/[^/]*$/,"")+"register.html":"https://dme.ric.example/register"):rotLink();
+const formName=k=>k==="sur"?"Training status":k==="pgt"?"PGT registration":"Rotation registration";
+const formUrl=k=>k==="sur"?(LIVE?pubBase()+"?sur=1":"https://dme.ric.example/status"):k==="pgt"?(LIVE?pubBase().replace(/[^/]*$/,"")+"register.html":"https://dme.ric.example/register"):rotLink();
 const formIsOpen=c=>c.open!==false&&!(c.close&&c.close<iso(TODAY));
 function regLinkPanel(k){if(isViewer())return"";const c=formCfg(k),open=formIsOpen(c),n=k==="rot"?visList().filter(rotNew).length:0;
  return`<div class="panel" style="display:grid;gap:10px"><div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
   <button class="qrthumb" data-act="form-qr" data-k="${k}" title="Show QR code">${qrSvg(formUrl(k),2)}</button>
   <div style="flex:1;min-width:240px;display:grid;gap:6px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>${formName(k)} form</b><span class="pill ${open?"p-ric":"p-bad"}">${open?"Open":"Closed"}</span>${c.close&&open?`<span class="subt">closes ${fd(c.close)}</span>`:""}</div>
-   <div class="toolbar"><input id="flink-${k}" readonly class="linkbox" value="${esc(formUrl(k))}" style="flex:1;min-width:200px;font-family:var(--f-mono);font-size:13px"><button class="btn small" data-act="form-copy" data-k="${k}">Copy link</button><button class="btn small" data-act="form-qr" data-k="${k}">QR code</button><a class="btn small" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent((k==="pgt"?"PGT registration, Rawalpindi Institute of Cardiology. Please fill in your details and upload your documents:\n":"Rotation registration, Rawalpindi Institute of Cardiology (Department of Medical Education). Please register before your first day and upload your movement order:\n")+formUrl(k))}">Share on WhatsApp</a><button class="btn small" data-act="form-edit" data-k="${k}">Form settings</button></div>
+   <div class="toolbar"><input id="flink-${k}" readonly class="linkbox" value="${esc(formUrl(k))}" style="flex:1;min-width:200px;font-family:var(--f-mono);font-size:13px"><button class="btn small" data-act="form-copy" data-k="${k}">Copy link</button><button class="btn small" data-act="form-qr" data-k="${k}">QR code</button><a class="btn small" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent((k==="sur"?"Training status form, Rawalpindi Institute of Cardiology (DME). Please report your registration certificate, ACLS / BLS and research progress:\n":k==="pgt"?"PGT registration, Rawalpindi Institute of Cardiology. Please fill in your details and upload your documents:\n":"Rotation registration, Rawalpindi Institute of Cardiology (Department of Medical Education). Please register before your first day and upload your movement order:\n")+formUrl(k))}">Share on WhatsApp</a><button class="btn small" data-act="form-edit" data-k="${k}">Form settings</button></div>
    ${c.msg?`<p class="subt" style="margin:0">Message on the form: ${esc(c.msg.slice(0,140))}${c.msg.length>140?"…":""}</p>`:""}</div></div>
   ${n?`<div class="flag info">${n} new online registration${n>1?"s":""}: check the movement order, then press <b>Documents checked</b> on the profile.</div>`:""}</div>`}
 function rotLinkPanel(){return regLinkPanel("rot")}
 function sheetFormCfg(k){const c=formCfg(k);
  openSheet(`${formName(k)} form`,`<p class="subt" style="margin:0">These settings show on the form the moment you save. The link and QR code stay the same, so printed QR codes keep working.</p>
- <label class="f">Status<select name="open">${opt([["1","Open: accepting registrations"],["0","Closed"]],c.open===false?"0":"1")}</select></label>
+ <label class="f">Status<select name="open">${opt([["1",k==="sur"?"Open: accepting responses":"Open: accepting registrations"],["0","Closed"]],c.open===false?"0":"1")}</select></label>
  <label class="f">Close automatically after <span class="h">optional</span><input type="date" name="close" value="${esc(c.close||"")}"></label>
- <label class="f">Message at the top of the form <span class="h">optional: instructions, deadline, what to bring</span><textarea name="msg" rows="4" placeholder="${k==="pgt"?"e.g. All PGTs joining in the July 2026 induction must register by 15 August. Keep your CNIC, PMDC certificate and joining letter ready.":"e.g. Register before your first day. Bring your original movement order to the DME office (Ground floor, Admin block)."}">${esc(c.msg||"")}</textarea></label>
+ <label class="f">Message at the top of the form <span class="h">optional: instructions, deadline, what to bring</span><textarea name="msg" rows="4" placeholder="${k==="sur"?"e.g. Fill this in before you leave the exam hall. Keep a photo of your RTMC certificate and ACLS / BLS cards ready.":k==="pgt"?"e.g. All PGTs joining in the July 2026 induction must register by 15 August. Keep your CNIC, PMDC certificate and joining letter ready.":"e.g. Register before your first day. Bring your original movement order to the DME office (Ground floor, Admin block)."}">${esc(c.msg||"")}</textarea></label>
  <label class="f">Contact for questions <span class="h">shown on the form</span><input name="contact" value="${esc(c.contact||"")}" placeholder="e.g. DME office, 051-xxxxxxx (9 am to 3 pm)"></label>
  ${k==="rot"?`<label class="f">Rotation units offered <span class="h">one per line; "Other" is always added</span><textarea name="units" rows="7">${esc((c.units||[]).join("\n"))}</textarea></label>`:""}`,()=>{
   const n={open:fv("open")==="1",close:fv("close"),msg:fv("msg"),contact:fv("contact")};if(k==="rot"){n.units=fv("units").split("\n").map(s=>s.trim()).filter(Boolean);if(!n.units.length)return fail("List at least one unit.")}
@@ -4278,11 +4328,11 @@ function qrPng(k){return new Promise((ok,no)=>{const url=formUrl(k);if(typeof qr
  const q=qrcode(0,"M");q.addData(url);q.make();const n=q.getModuleCount(),cell=Math.floor(900/n),qs=n*cell,W=1200,H=1650,cv=document.createElement("canvas");cv.width=W;cv.height=H;const g=cv.getContext("2d");
  g.fillStyle="#fff";g.fillRect(0,0,W,H);g.fillStyle="#6D1F2B";g.fillRect(0,0,W,22);
  const draw=()=>{g.fillStyle="#231A17";g.textAlign="center";g.font="600 44px Georgia,serif";g.fillText("RAWALPINDI INSTITUTE OF CARDIOLOGY",W/2,230);g.font="32px Arial,sans-serif";g.fillStyle="#6E625A";g.fillText("Department of Medical Education & Training",W/2,280);
-  g.fillStyle="#6D1F2B";g.font="bold 64px Arial,sans-serif";g.fillText(k==="pgt"?"PGT Registration":"Rotation Registration",W/2,390);g.fillStyle="#231A17";g.font="34px Arial,sans-serif";g.fillText(k==="pgt"?"Postgraduate trainees joining RIC":"Trainees from other institutes on rotation at RIC",W/2,445);
+  g.fillStyle="#6D1F2B";g.font="bold 64px Arial,sans-serif";g.fillText(k==="sur"?"Training Status Form":k==="pgt"?"PGT Registration":"Rotation Registration",W/2,390);g.fillStyle="#231A17";g.font="34px Arial,sans-serif";g.fillText(k==="sur"?"All PGTs: registration, ACLS / BLS and research progress":k==="pgt"?"Postgraduate trainees joining RIC":"Trainees from other institutes on rotation at RIC",W/2,445);
   const x0=(W-qs)/2,y0=500;g.fillStyle="#000";for(let r=0;r<n;r++)for(let c2=0;c2<n;c2++)if(q.isDark(r,c2))g.fillRect(x0+c2*cell,y0+r*cell,cell,cell);
   g.fillStyle="#6D1F2B";g.font="bold 46px Arial,sans-serif";g.fillText("Scan with your phone camera",W/2,y0+qs+90);g.fillStyle="#6E625A";g.font="26px monospace";g.fillText(url.length>70?url.slice(0,70)+"…":url,W/2,y0+qs+145);ok(cv.toDataURL("image/png"))};
  const lg=document.querySelector('img[alt="RIC logo"]');if(lg&&lg.complete){try{g.drawImage(lg,W/2-75,45,150,150)}catch(e){}}draw()})}
-function qrBig(k){const url=formUrl(k);document.getElementById("overlay").innerHTML=`<div class="scrim" data-act="close"></div><div class="qrfull" role="dialog" aria-modal="true" aria-label="QR code"><div class="code">Scan to open the registration form</div><h2>${formName(k)}</h2><div class="qrbig">${qrSvg(url,10)}</div><div class="code" style="font-size:13px;word-break:break-all">${esc(url)}</div>
+function qrBig(k){const url=formUrl(k);document.getElementById("overlay").innerHTML=`<div class="scrim" data-act="close"></div><div class="qrfull" role="dialog" aria-modal="true" aria-label="QR code"><div class="code">Scan to open the ${k==="sur"?"":"registration "}form</div><h2>${formName(k)}</h2><div class="qrbig">${qrSvg(url,10)}</div><div class="code" style="font-size:13px;word-break:break-all">${esc(url)}</div>
  <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center"><button class="btn primary" data-act="form-qrpng" data-k="${k}">Download printable QR (PNG)</button><button class="btn" data-act="close">Close</button></div></div>`}
 document.addEventListener("click",async e=>{const a=e.target.closest('[data-act="form-qr"],[data-act="form-copy"],[data-act="form-edit"],[data-act="form-qrpng"]');if(!a)return;const k=a.dataset.k;
  if(a.dataset.act==="form-copy")return copyText(formUrl(k),a);if(a.dataset.act==="form-edit")return sheetFormCfg(k);if(a.dataset.act==="form-qr")return qrBig(k);
@@ -4544,6 +4594,163 @@ function facContactDl(f){if(!LIVE&&!f.cnic&&!f.mobile&&!f.email)return"";const t
   const h=contactEditHtml(f||{},FCE_F);if(!h)return;nt.closest("label").insertAdjacentHTML("beforebegin",`<div class="subt" style="margin-top:4px">Contact details</div>`+h);
   const o=SHEET.onSave;SHEET.onSave=(...a)=>{const _l=log;let err;try{log=()=>{};err=contactEditRead({...(f||{})},FCE_F)}finally{log=_l}if(err)return fail(err);
    const n=DB.faculty.length,r=o(...a);if(r===false)return r;const t=f||(DB.faculty.length>n?DB.faculty[DB.faculty.length-1]:null);if(t)contactEditRead(t,FCE_F,"fac-"+t.id);return r}}}
+
+/* =====================================================================
+   V27 · TRAINING STATUS FORM: one QR code shown at the internal exam.
+   Each PGT confirms who they are (PGT ID / roll number + mobile or CNIC)
+   and reports: registration certificate (RTMC), ACLS and BLS, research
+   stage. Answers land on the PGT's profile and in "Training status".
+   ===================================================================== */
+const SUR_REASONS=["Applied, certificate awaited","Registration in process with CPSP / UHS","Not applied yet","Certificate misplaced","Other"];
+const SUR_LS=[["valid","Yes, certificate valid"],["expired","Yes, but it has expired"],["no","Not done"]];
+const RES_KIND=[["diss","Dissertation (CPSP)"],["thesis","Thesis (UHS)"],["art","One research article (CPSP option)"]];
+const RES_STEPS={
+ diss:[["topic","Topic selected"],["syn","Synopsis written"],["erbSub","Synopsis submitted to the ERB"],["erbOk","ERB approval received"],["authSub","Synopsis submitted to CPSP (RTMC)"],["authOk","Synopsis approved by CPSP"],["data","Data collection started"],["dataDone","Data collection completed"],["write","Dissertation written"],["final","Dissertation submitted to CPSP"]],
+ art:[["topic","Topic selected"],["erbSub","Submitted to the ERB"],["erbOk","ERB approval received"],["data","Data collection started"],["dataDone","Data collection completed"],["write","Manuscript written"],["final","Submitted to a journal"],["pub","Accepted / published"]]};
+RES_STEPS.thesis=RES_STEPS.diss.map(([k,l])=>[k,l.replace("CPSP (RTMC)","UHS (ASRB)").replace(/CPSP/,"UHS").replace("Dissertation","Thesis")]);
+const surUHS=p=>/UHS/i.test(p&&p.program||"");
+const surRegLabel=()=>"CPSP RTMC registration certificate";
+const surNoReg=p=>surUHS(p);/* UHS has no registration certificate */
+const surSteps=s=>RES_STEPS[(s&&s.res&&s.res.kind)||"diss"]||RES_STEPS.diss;
+function surStage(s){if(!s||!s.res)return null;const S=surSteps(s),st=s.res.steps||{};let last=-1;S.forEach(([k],i)=>{if(st[k])last=i});return last<0?{i:-1,l:"Not started",n:S.length}:{i:last,l:S[last][1],n:S.length}}
+const surLS=x=>!x||!x.st?"—":x.st==="no"?"Not done":`${x.by==="AHA"?"AHA certified":x.by==="Local"?"Local (non-AHA)":"?"}${x.st==="expired"?", expired":""}${x.avail==="no"?", certificate not with them":""}`;
+const surReg=s=>!s||!s.reg?"—":s.reg.have==="yes"?"Uploaded":(s.reg.reason||"Not available")+(s.reg.note?": "+s.reg.note:"");
+
+/* ---------- the form (public page on the live app; #surform in the prototype) ---------- */
+let SURPUB={who:null,code:"",key:"",cfg:null,inApp:false,list:null,sel:null,q:"",byId:false};
+async function surPublicPage(){document.body.classList.add("public");surLoadList();
+ try{const{data}=await SYNC.sb.rpc("dme_public_lists");SURPUB.cfg={...FORM_DEF.sur,...((data&&data.forms&&data.forms.sur)||{})}}catch(e){SURPUB.cfg={...FORM_DEF.sur}}
+ surRender()}
+function vSurForm(){SURPUB.inApp=true;surLoadList();SURPUB.cfg=formCfg("sur");setTimeout(()=>surRender(),0);return`<div id="surhost"></div>`}
+const surShell=h=>{if(SURPUB.inApp){const x=document.getElementById("surhost");if(x)x.innerHTML=`<div class="flag info">Prototype preview of the form PGTs open from the QR code. Any 11-digit number works here; on the live app the mobile number or CNIC must match the PGT's record.</div>`+h;return}pubShell(h)};
+async function surApi(fn,args){
+ if(LIVE){const r=await SYNC.sb.rpc(fn,args);if(r.error)throw r.error;return r.data}
+ const dg=s=>String(s||"").replace(/\D/g,""),p=DB.pgts.find(x=>x.reg==="Verified"&&dg(x.code)&&dg(x.code)===dg(args.p_code));
+ if(!formIsOpen(formCfg("sur")))return{error:"closed"};if(!p||dg(args.p_key).length<10)return{error:"not_found"};
+ if(fn==="dme_sur_who")return{ok:true,name:p.name,spec:p.spec,program:p.program,code:p.code,survey:p.survey||null};
+ const s={...args.p};delete s.files;s.at=new Date().toISOString();if(p.survey)p.surveyHist=[p.survey,...(p.surveyHist||[])].slice(0,5);p.survey=s;log(`Training status form submitted by Dr. ${p.name}`,"pgt-"+p.id);return{ok:true,name:p.name}}
+function surRender(done,err){const C=SURPUB.cfg||FORM_DEF.sur,head=formHead(null,"Training status","Postgraduate trainees · Department of Medical Education");
+ if(done)return surShell(`<div class="panel fbform">${head}<div class="flag ok" style="display:grid;gap:6px;text-align:center;padding:22px"><b style="font-size:21px">Thank you, Dr. ${esc(done.name)}</b><span>Your training status is recorded with the DME office. You can open the form again to update it at any time.</span></div></div>`);
+ if(!formIsOpen(C))return surShell(`<div class="panel fbform">${head}<p>This form is closed at the moment.</p>${C.msg?`<p style="white-space:pre-line">${esc(C.msg)}</p>`:""}${C.contact?`<p class="subt">Contact: ${esc(C.contact)}</p>`:""}</div>`);
+ const W=SURPUB.who;
+ if(!W)return surShell(`<form class="panel fbform" id="surid" novalidate>${head}${C.msg?`<div class="flag info" style="white-space:pre-line">${esc(C.msg)}</div>`:""}
+  ${surPickHtml()}
+  <label class="f"><span class="req">Your mobile number or CNIC</span><input name="key" inputmode="numeric" placeholder="03xx-xxxxxxx or 37405-xxxxxxx-x" value="${esc(SURPUB.key)}" style="font-size:18px"></label>
+  <p class="qd" style="margin:0">The mobile number or CNIC the DME office has on record.</p>
+  <div class="err" id="surerr" role="alert">${err?esc(err):""}</div><button class="btn primary" type="button" data-act="sur-who" style="justify-self:start;font-size:17px;padding:11px 22px">Continue</button>${C.contact?`<p class="subt" style="margin:0">Questions? ${esc(C.contact)}</p>`:""}</form>`);
+ const s=W.survey||{},R=s.reg||{},res=s.res||{kind:surUHS(W)?"thesis":"diss",steps:{}},rad=(n,o,v)=>`<div class="chips srad">${o.map(([k,l])=>`<label class="chip"><input type="radio" name="${n}" value="${k}" ${v===k?"checked":""}> ${l}</label>`).join("")}</div>`;
+ const N0=surNoReg(W)?0:1;
+ const ls=(k,l,no)=>{const x=s[k]||{};return`<fieldset class="pfsec"><legend>${no} · ${l}</legend><div class="f"><span class="req">Have you done ${l}?</span>${rad(k+"_st",SUR_LS,x.st)}</div>
+  <div data-if="${k}_st=valid|expired" style="display:grid;gap:10px"><div class="f"><span class="req">Is your ${l} AHA certified?</span>${rad(k+"_by",[["AHA","Yes, AHA certified"],["Local","No, local / non-AHA"]],x.by)}</div>
+   <div class="f"><span class="req">Is the certificate available with you?</span>${rad(k+"_av",[["yes","Yes"],["no","No"]],x.avail)}</div>
+   <label class="f"><span>Month of the course <span class="h">optional</span></span><input type="month" name="${k}_date" value="${esc(x.date||"")}"></label>
+   <label class="f" data-if="${k}_av=yes"><span>Upload the certificate / card <span class="h">optional: photo or PDF</span></span><input type="file" name="${k}_file" accept="image/jpeg,image/png,image/webp,application/pdf"></label></div></fieldset>`};
+ surShell(`<form class="panel fbform" id="surform" novalidate>${head}
+  <div class="flag" style="display:flex;gap:10px;justify-content:space-between;align-items:center;flex-wrap:wrap"><span><b>Dr. ${esc(W.name)}</b><br><span class="subt">${esc(W.code||"")} · ${esc(W.spec||"")} · ${esc(W.program||"")}</span></span><button type="button" class="btn small" data-act="sur-notme">Not you?</button></div>
+  ${s.at?`<p class="subt" style="margin:0">You sent this form on ${fdt(s.at)}. Your answers are filled in; change anything that has moved on.</p>`:""}
+  ${surNoReg(W)?"":`<fieldset class="pfsec"><legend>1 · RTMC registration certificate</legend><div class="f"><span class="req">Do you have your ${surRegLabel(W)}?</span>${rad("reg_have",[["yes","Yes"],["no","No, not available"]],R.have)}</div>
+   <label class="f" data-if="reg_have=yes"><span class="${R.have==="yes"&&R.file?"":"req"}">Upload it${R.have==="yes"&&R.file?' <span class="h">already uploaded; upload again only to replace it</span>':""}</span><input type="file" name="reg_file" accept="image/jpeg,image/png,image/webp,application/pdf"></label>
+   <div data-if="reg_have=no" style="display:grid;gap:10px"><label class="f"><span class="req">Why is it not available?</span><select name="reg_reason">${opt(["",...SUR_REASONS],R.reason||"")}</select></label>
+    <label class="f"><span>Details <span class="h">required for "Other"; e.g. date you applied</span></span><input name="reg_note" value="${esc(R.note||"")}"></label></div></fieldset>`}
+  ${ls("acls","ACLS",N0+1)}${ls("bls","BLS",N0+2)}
+  <fieldset class="pfsec"><legend>${N0+3} · Research</legend><label class="f"><span class="req">Research requirement</span><select name="res_kind" id="sur-kind">${opt(RES_KIND.filter(([k])=>surUHS(W)?k==="thesis":k!=="thesis"),res.kind)}</select></label>
+   <label class="f"><span>Topic <span class="h">if selected</span></span><input name="res_topic" value="${esc(res.topic||"")}" placeholder="Title of your synopsis / research"></label>
+   <div class="f"><span class="req">Tick every step you have completed</span><div id="sur-steps">${surStepsHtml(res.kind,res.steps||{})}</div></div>
+   <label class="f"><span>Anything holding up your research? <span class="h">optional</span></span><textarea name="res_note" rows="2">${esc(res.note||"")}</textarea></label></fieldset>
+  <p class="qd" style="margin:0">Photos or PDFs, up to 5 MB each.</p>
+  <div class="err" id="surerr" role="alert">${err?esc(err):""}</div><button class="btn primary" type="button" data-act="sur-go" style="justify-self:start;font-size:17px;padding:11px 22px">Submit</button></form>`);
+ surIf()}
+/* searchable list of names, so a PGT finds themselves in two taps */
+async function surLoadList(){if(SURPUB.list)return;try{const r=LIVE?(await SYNC.sb.rpc("dme_sur_list")).data:{list:surPop().filter(p=>p.code).map(p=>({n:p.name,s:p.spec,c:p.code}))};if(r&&r.list){SURPUB.list=r.list;if(document.getElementById("surid")&&!SURPUB.who)surRender()}}catch(e){}}
+const surNorm=t=>String(t||"").toLowerCase().replace(/^dr\.?\s*/,"").replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim();
+function surHits(q){const w=surNorm(q).split(" ").filter(Boolean);if(!w.length||!SURPUB.list)return[];
+ return SURPUB.list.filter(x=>{const h=surNorm(x.n+" "+x.s+" "+x.c);const W=h.split(" ");return w.every(t=>W.some(z=>z.startsWith(t)))}).slice(0,8)}
+function surHitsHtml(q){const H=surHits(q);if(!surNorm(q))return`<p class="qd" style="margin:4px 0 0">Type the first few letters of your name.</p>`;
+ return H.length?H.map(x=>`<button type="button" class="surhit" data-surpick="${esc(x.c)}"><b>Dr. ${esc(x.n)}</b><span>${esc(x.s)} · ${esc(x.c)}</span></button>`).join(""):`<p class="qd" style="margin:4px 0 0">No match. Try another spelling, or <button type="button" class="btn link" data-act="sur-byid" style="padding:0">use your PGT ID</button>.</p>`}
+function surPickHtml(){const S=SURPUB.sel;
+ if(S)return`<div class="f"><span class="req">Your name</span><div class="flag" style="display:flex;gap:10px;justify-content:space-between;align-items:center"><span><b>Dr. ${esc(S.n)}</b><br><span class="subt">${esc(S.s)} · ${esc(S.c)}</span></span><button type="button" class="btn small" data-act="sur-unpick">Change</button></div></div>`;
+ if(SURPUB.byId||!SURPUB.list)return`<label class="f"><span class="req">PGT ID or exam roll number</span><input name="code" inputmode="numeric" placeholder="e.g. PGT/24/1/06 or 24106" value="${esc(SURPUB.code)}" style="font-size:18px"></label>${SURPUB.list?`<button type="button" class="btn link" data-act="sur-byname" style="justify-self:start;padding:0">Search by name instead</button>`:""}`;
+ return`<div class="f"><span class="req">Your name</span><input id="sur-q" type="search" autocomplete="off" placeholder="Search your name…" value="${esc(SURPUB.q||"")}" style="font-size:18px" aria-controls="sur-hits"><div id="sur-hits" class="surhits" role="listbox">${surHitsHtml(SURPUB.q||"")}</div></div>`}
+document.addEventListener("input",e=>{if(e.target.id!=="sur-q")return;SURPUB.q=e.target.value;const h=document.getElementById("sur-hits");if(h)h.innerHTML=surHitsHtml(SURPUB.q)});
+document.addEventListener("click",e=>{const p=e.target.closest("[data-surpick]");const a=e.target.closest('[data-act="sur-unpick"],[data-act="sur-byid"],[data-act="sur-byname"]');if(!p&&!a)return;
+ const keep=document.querySelector('#surid [name="key"]');if(keep)SURPUB.key=keep.value;
+ if(p){SURPUB.sel=(SURPUB.list||[]).find(x=>x.c===p.dataset.surpick)||null;surRender();setTimeout(()=>document.querySelector('#surid [name="key"]')?.focus(),50);return}
+ const k=a.dataset.act;if(k==="sur-unpick"){SURPUB.sel=null;SURPUB.q=""}if(k==="sur-byid"){SURPUB.byId=true;SURPUB.sel=null}if(k==="sur-byname")SURPUB.byId=false;surRender();if(k!=="sur-byid")setTimeout(()=>document.getElementById("sur-q")?.focus(),50)});
+function surStepsHtml(kind,st){return`<div class="surst">${(RES_STEPS[kind]||RES_STEPS.diss).map(([k,l],i)=>`<label class="check2"><input type="checkbox" name="st_${k}" ${st[k]?"checked":""}> <span><span class="subt">${i+1}.</span> ${l}</span><input type="month" name="sd_${k}" value="${esc(typeof st[k]==="string"?st[k]:"")}" aria-label="Month: ${l}" title="Month (optional)" ${st[k]?"":"hidden"}></label>`).join("")}</div>`}
+function surIf(){const fm=document.getElementById("surform");if(!fm)return;const val=n=>{const r=fm.querySelector(`[name="${n}"]:checked`);return r?r.value:""};
+ fm.querySelectorAll("[data-if]").forEach(el=>{const[n,v]=el.dataset.if.split("=");el.hidden=!v.split("|").includes(val(n))});
+ fm.querySelectorAll('#sur-steps input[type=checkbox]').forEach(c=>{const m=c.parentElement.querySelector('input[type=month]');if(m)m.hidden=!c.checked})}
+document.addEventListener("change",e=>{if(!e.target.closest("#surform"))return;if(e.target.id==="sur-kind"){const fm=document.getElementById("surform"),st={};fm.querySelectorAll('#sur-steps input[type=checkbox]').forEach(c=>{if(c.checked)st[c.name.slice(3)]=true});document.getElementById("sur-steps").innerHTML=surStepsHtml(e.target.value,st)}surIf()});
+document.addEventListener("click",async e=>{const b=e.target.closest('[data-act="sur-who"],[data-act="sur-go"],[data-act="sur-notme"]');if(!b||!document.getElementById(b.dataset.act==="sur-who"?"surid":"surform"))return;
+ if(b.dataset.act==="sur-notme"){SURPUB.who=null;SURPUB.key="";SURPUB.sel=null;SURPUB.q="";return surRender()}
+ const er=t=>{document.getElementById("surerr").textContent=t};
+ if(b.dataset.act==="sur-who"){const fm=document.getElementById("surid"),code=SURPUB.sel?SURPUB.sel.c:(fm.code?fm.code.value.trim():""),key=fm.key.value.trim();
+  if(code.replace(/\D/g,"").length<4)return er(SURPUB.byId||!SURPUB.list?"Enter your PGT ID (e.g. PGT/24/1/06) or exam roll number.":"Search for your name and tap it.");if(key.replace(/\D/g,"").length<10)return er("Enter your 11-digit mobile number or 13-digit CNIC.");
+  b.disabled=true;b.textContent="Checking…";let r=null;try{r=await surApi("dme_sur_who",{p_code:code,p_key:key})}catch(x){}
+  SURPUB.code=code;SURPUB.key=key;if(r&&r.ok){SURPUB.who=r;return surRender()}
+  return surRender(null,!r?"Could not connect. Check the internet and try again.":r.error==="closed"?"The form has just closed.":(SURPUB.sel?"This mobile number or CNIC does not match our record for Dr. "+SURPUB.sel.n+". Use the mobile number":"We could not match these details. Check your PGT ID and use the mobile number")+" you gave the DME office, or try your CNIC. If it still does not work, see the DME desk.")}
+ const fm=document.getElementById("surform"),g=n=>(fm.querySelector(`[name="${n}"]`)?.value||"").trim(),rv=n=>fm.querySelector(`[name="${n}"]:checked`)?.value||"",fl=n=>fm.querySelector(`[name="${n}"]`)?.files?.[0]||null;
+ const prev=SURPUB.who.survey||{},files={};
+ let reg=null;if(!surNoReg(SURPUB.who)){reg={have:rv("reg_have")};if(!reg.have)return er("Answer question 1: do you have your RTMC registration certificate?");
+ if(reg.have==="yes"){if(fl("reg_file"))files.rtmc=fl("reg_file");else if(!(prev.reg&&prev.reg.have==="yes"&&prev.reg.file))return er("Upload your registration certificate, or choose “No, not available”.");else reg.file=prev.reg.file}
+ else{reg.reason=g("reg_reason");reg.note=g("reg_note");if(!reg.reason)return er("Tell us why the registration certificate is not available.");if(reg.reason==="Other"&&reg.note.length<3)return er("Write the reason in “Details”.")}}
+ const L={};for(const[k,l]of[["acls","ACLS"],["bls","BLS"]]){const x={st:rv(k+"_st")};if(!x.st)return er(`Answer the ${l} question.`);
+  if(x.st!=="no"){x.by=rv(k+"_by");x.avail=rv(k+"_av");x.date=g(k+"_date");if(!x.by)return er(`Is your ${l} AHA certified?`);if(!x.avail)return er(`Is your ${l} certificate available with you?`);
+   if(x.avail==="yes"&&fl(k+"_file"))files[k]=fl(k+"_file");else if(prev[k]&&prev[k].file&&x.avail==="yes")x.file=prev[k].file}L[k]=x}
+ const kind=g("res_kind"),steps={};(RES_STEPS[kind]||[]).forEach(([k])=>{if(fm.querySelector(`[name="st_${k}"]`)?.checked)steps[k]=g("sd_"+k)||true});
+ const res={kind,topic:g("res_topic"),steps,note:g("res_note")};if((steps.syn||steps.erbSub||steps.data)&&!res.topic)return er("Enter your research topic.");
+ for(const f of Object.values(files))if(f.size>5*1024*1024)return er(`“${f.name}” is larger than 5 MB. Take a smaller photo.`);
+ b.disabled=true;b.textContent="Sending…";
+ try{const paths={};if(LIVE){const base=`pgt/sur-${Date.now()}-${Math.random().toString(36).slice(2,7)}/`;
+   for(const[k,f]of Object.entries(files)){const p=base+k+"."+((f.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")||"jpg");const{error}=await SYNC.sb.storage.from("dme-uploads").upload(p,f,{contentType:f.type||undefined});if(error)throw new Error("upload");paths[k]=p}}
+  else Object.keys(files).forEach(k=>paths[k]="(prototype) "+files[k].name);
+  if(paths.rtmc&&reg)reg.file=paths.rtmc;if(paths.acls)L.acls.file=paths.acls;if(paths.bls)L.bls.file=paths.bls;
+  const r=await surApi("dme_submit_sur",{p_code:SURPUB.code,p_key:SURPUB.key,p:{reg,acls:L.acls,bls:L.bls,res,files:LIVE?paths:{}}});
+  if(r&&r.ok){SURPUB.who=null;SURPUB.key="";SURPUB.sel=null;SURPUB.q="";if(!LIVE)persist();return surRender(r)}
+  b.disabled=false;b.textContent="Submit";er(r&&r.error==="closed"?"The form has just closed.":"Could not save. Try again.")}
+ catch(x){b.disabled=false;b.textContent="Submit";er(x.message==="upload"?"A file could not be uploaded. Try again, or submit without it.":"Could not send. Check the connection and try again.")}});
+
+/* ---------- office view: who has answered, and what ---------- */
+UI.surSp="";UI.surMiss=false;
+const surPop=()=>verified().filter(p=>CUR.get(p.id).active).sort((a,b)=>specIdx(a.spec)-specIdx(b.spec)||a.name.localeCompare(b.name));
+function vStatus(){const A=surPop(),done=A.filter(p=>p.survey),sp=UI.surSp;let L=A.filter(p=>(!sp||p.spec===sp)&&(!UI.surMiss||!p.survey));
+ const cnt=(f)=>done.filter(f).length,pc=n=>done.length?Math.round(n/done.length*100)+"%":"—";
+ const tile=(n,l,s)=>`<div><b>${n}</b><span>${l}</span>${s?`<small class="subt">${s}</small>`:""}</div>`;
+ const stages={};done.forEach(p=>{const st=surStage(p.survey);const k=st?st.l:"—";stages[k]=(stages[k]||0)+1});
+ const yr=p=>CUR.get(p.id).year;
+ return`<div class="head"><div><h2>Training status</h2><p>Registration certificate, ACLS / BLS and research stage, as reported by each PGT through the training status form. Show the QR code at the internal exam so everyone fills it in at once.</p></div><div class="actions">${xbtn("status")}${!LIVE?`<a class="btn" href="#surform">Try the form</a>`:""}</div></div>
+ ${regLinkPanel("sur")}
+ <div class="panel"><div class="surstat">
+  ${tile(`${done.length} / ${A.length}`,"PGTs have answered",A.length?Math.round(done.length/A.length*100)+"% of active PGTs":"")}
+  ${tile(cnt(p=>p.survey.reg&&p.survey.reg.have==="yes"),"RTMC certificate uploaded",cnt(p=>p.survey.reg&&p.survey.reg.have==="no")+" CPSP trainees without")}
+  ${tile(cnt(p=>p.survey.acls&&p.survey.acls.st==="valid"),"ACLS valid",`${cnt(p=>p.survey.acls&&p.survey.acls.st==="valid"&&p.survey.acls.by==="AHA")} AHA certified · ${cnt(p=>p.survey.acls&&p.survey.acls.st==="no")} not done`)}
+  ${tile(cnt(p=>p.survey.bls&&p.survey.bls.st==="valid"),"BLS valid",`${cnt(p=>p.survey.bls&&p.survey.bls.st==="valid"&&p.survey.bls.by==="AHA")} AHA certified · ${cnt(p=>p.survey.bls&&p.survey.bls.st==="no")} not done`)}
+  ${tile(cnt(p=>(surStage(p.survey)||{}).i>=surSteps(p.survey).findIndex(x=>x[0]==="data")),"Research: data collection started or beyond",pc(cnt(p=>(surStage(p.survey)||{}).i>=surSteps(p.survey).findIndex(x=>x[0]==="data"))))}
+ </div>${done.length?`<div class="chips" style="margin-top:12px">${Object.entries(stages).map(([k,v])=>`<span class="chip" aria-pressed="false">${esc(k)}<span class="c">${v}</span></span>`).join("")}</div><p class="subt" style="margin:6px 0 0">Research stage: the furthest step each PGT has ticked.</p>`:""}</div>
+ <div class="panel flush"><div class="toolbar" style="padding:12px 16px"><select id="sur-sp" aria-label="Specialty">${opt([["","All specialties"],...[...new Set(A.map(p=>p.spec))].map(s=>[s,s])],sp)}</select><label class="subt" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="sur-miss" ${UI.surMiss?"checked":""}> Not answered yet only</label><span class="subt">${L.length} PGTs</span></div>
+ <div class="tblwrap"><table><thead><tr><th>PGT</th><th>Specialty</th><th class="num">Year</th><th>Answered</th><th>RTMC certificate</th><th>ACLS</th><th>BLS</th><th>Research stage</th></tr></thead><tbody>
+ ${L.map(p=>{const s=p.survey,st=surStage(s);return`<tr class="click" data-href="pgt-${p.id}"><td>${pgtName(p)}<div class="code">${esc(p.code||"")}</div></td><td>${esc(p.spec)}<div class="subt">${esc(p.program)}</div></td><td class="num">${yr(p)??"—"}</td>
+  <td>${s?fd(s.at.slice(0,10)):'<span class="pill p-pause">Not yet</span>'}</td><td class="wrapcell">${surNoReg(p)?'<span class="subt">Not applicable (UHS)</span>':s?(s.reg&&s.reg.have==="yes"?'<span class="pill p-ric">Uploaded</span>':`<span class="pill p-bad">No</span> <span class="subt">${esc(surReg(s))}</span>`):"—"}</td>
+  <td>${s?esc(surLS(s.acls)):"—"}</td><td>${s?esc(surLS(s.bls)):"—"}</td><td class="wrapcell">${st?`${st.i+1>0?`<b>${st.i+1}/${st.n}</b> `:""}${esc(st.l)}${s.res.topic?`<div class="subt">${esc(s.res.topic.slice(0,80))}</div>`:""}`:"—"}</td></tr>`}).join("")||`<tr><td colspan="8" class="empty">No PGTs.</td></tr>`}
+ </tbody></table></div></div>`}
+document.addEventListener("change",e=>{if(e.target.id==="sur-sp"){UI.surSp=e.target.value;render()}if(e.target.id==="sur-miss"){UI.surMiss=e.target.checked;render()}});
+EXPORTS.status=()=>({file:"RIC PGT training status",sheets:[sheetFrom("Training status",surPop().map(p=>{const s=p.survey||{},st=surStage(p.survey),R=s.res||{};const row={"PGT ID":p.code||"","Name":"Dr. "+p.name,"Specialty":p.spec,"Programme":p.program,"Year":CUR.get(p.id).year??"","Answered on":s.at?s.at.slice(0,10):"",
+  "RTMC certificate":surNoReg(p)?"Not applicable (UHS)":s.reg?(s.reg.have==="yes"?"Uploaded":"Not available"):"","Reason not available":s.reg&&s.reg.have==="no"?[s.reg.reason,s.reg.note].filter(Boolean).join(": "):"",
+  "ACLS":s.acls?SUR_LS.find(x=>x[0]===s.acls.st)?.[1]||"":"","ACLS AHA certified":s.acls&&s.acls.by?(s.acls.by==="AHA"?"Yes":"No (local)"):"","ACLS certificate with them":s.acls&&s.acls.avail||"","ACLS month":s.acls&&s.acls.date||"",
+  "BLS":s.bls?SUR_LS.find(x=>x[0]===s.bls.st)?.[1]||"":"","BLS AHA certified":s.bls&&s.bls.by?(s.bls.by==="AHA"?"Yes":"No (local)"):"","BLS certificate with them":s.bls&&s.bls.avail||"","BLS month":s.bls&&s.bls.date||"",
+  "Research":R.kind?RES_KIND.find(x=>x[0]===R.kind)?.[1]||"":"","Topic":R.topic||"","Research stage":st?st.l:""};
+  (RES_STEPS.diss.concat(RES_STEPS.art.filter(x=>!RES_STEPS.diss.some(y=>y[0]===x[0])))).forEach(([k,l])=>{const v=R.steps&&R.steps[k];row[l.replace(/ \(.*\)/,"").replace(/CPSP|UHS/,"college")]=v?(v===true?"Yes":v):""});row["Research notes"]=R.note||"";return row}))]});
+
+/* ---------- on the PGT's profile ---------- */
+function surProfile(p){const s=p.survey;if(!s||!canSee("pgts"))return"";const st=surStage(s),R=s.res||{},S=surSteps(s);
+ return`<div class="panel" style="display:grid;gap:10px"><div class="head"><h3 style="margin:0">Training status</h3><span class="subt">From the training status form, ${fdt(s.at)}</span></div>
+ <div class="cols two"><dl class="kv">${surNoReg(p)?"":`<dt>RTMC certificate</dt><dd>${s.reg&&s.reg.have==="yes"?'<span class="pill p-ric">Uploaded</span> <span class="subt">see Documents</span>':`<span class="pill p-bad">Not available</span><div class="subt">${esc(surReg(s))}</div>`}</dd>`}
+  <dt>ACLS</dt><dd>${esc(surLS(s.acls))}${s.acls&&s.acls.date?` <span class="subt">· ${mLabel(s.acls.date)}</span>`:""}</dd><dt>BLS</dt><dd>${esc(surLS(s.bls))}${s.bls&&s.bls.date?` <span class="subt">· ${mLabel(s.bls.date)}</span>`:""}</dd>
+  <dt>Research</dt><dd>${esc(RES_KIND.find(x=>x[0]===R.kind)?.[1]||"—")}${R.topic?`<div><i>${esc(R.topic)}</i></div>`:""}</dd>${R.note?`<dt>Holding it up</dt><dd>${esc(R.note)}</dd>`:""}</dl>
+  <ol class="surtrack">${S.map(([k,l],i)=>{const v=R.steps&&R.steps[k];return`<li class="${v?"done":i===st.i+1?"next":""}">${l}${typeof v==="string"?` <span class="subt">${mLabel(v)}</span>`:""}</li>`}).join("")}</ol></div></div>`}
+{const _x=pgtExamPanel;pgtExamPanel=function(p){return surProfile(p)+_x(p)}}
+DOC_L.push(["rtmc","RTMC registration certificate"],["acls","ACLS certificate"],["bls","BLS certificate"]);
+if(typeof NAV_ICON==="object"&&typeof _ic==="function")NAV_ICON.status=_ic('<rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M9 3.5h6v3H9z"/><path d="m8.5 13 2.2 2.2 4.8-4.8"/>');
 
 /* ---------- events ---------- */
 document.addEventListener("click",e=>{
