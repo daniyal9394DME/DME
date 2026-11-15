@@ -633,6 +633,33 @@ table.prop .sbw[data-sbw=sched] .sbrow,table.prop .sbw[data-sbw=sched] .sbrow.br
 @media (max-width:560px){.surst .check2{grid-template-columns:auto 1fr}.surst input[type=month]{grid-column:2}}
 #surform [hidden],#surid [hidden]{display:none!important}
 .surhits{display:grid;gap:4px;margin-top:6px}.surhit{display:grid;gap:1px;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer;font:inherit;color:var(--ink)}.surhit:hover,.surhit:focus{border-color:var(--brand);outline:none;box-shadow:inset 0 0 0 1px var(--brand)}.surhit b{font-size:15.5px}.surhit span{font-size:12.5px;color:var(--muted)}
+.omrk{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:3px 14px;max-height:46vh;overflow:auto;padding:4px;border:1px solid var(--line);border-radius:10px}
+.omrk-h{grid-column:1/-1;font-weight:700;font-size:12px;color:var(--brand);padding:6px 2px 2px;text-transform:uppercase;letter-spacing:.04em}
+.omrk-r{display:flex;align-items:center;gap:4px}.omrk-r b{width:30px;text-align:right;font-size:13px;margin-right:4px}.omrk-r.miss b{color:var(--bad)}
+.omrk-r button{width:28px;height:28px;border-radius:50%;border:1px solid var(--line2);background:var(--surface);font:inherit;font-size:12px;cursor:pointer;color:var(--ink);padding:0}
+.omrk-r button.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:700}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden}.bar i{display:block;height:100%;background:var(--brand);transition:width .2s}
+.omrstats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}.omrstats>div{border:1px solid var(--line);border-radius:10px;padding:8px 12px;display:grid}.omrstats b{font-size:22px}.omrstats span{font-size:12.5px;color:var(--muted)}
+.omrcard{border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;gap:10px}
+.omrq{display:grid;grid-template-columns:minmax(150px,auto) auto 1fr;gap:12px;align-items:center;border-top:1px dashed var(--line);padding-top:8px}
+.omrcrop{background-color:#fff;background-repeat:no-repeat;border:1px solid var(--line);border-radius:6px;max-width:100%}
+.omrpick{display:flex;gap:6px;flex-wrap:wrap}.omrpick .btn{min-width:38px}
+@media (max-width:700px){.omrq{grid-template-columns:1fr}}
+.btn:disabled,.btn[disabled]{opacity:.45;cursor:not-allowed;filter:grayscale(.4)}
+.omrpick .btn.read{box-shadow:inset 0 0 0 2px var(--gold)}
+.iahist{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;height:120px;align-items:end}.iahist>div{display:grid;grid-template-rows:1fr auto;height:100%;text-align:center}.iahist i{display:block;align-self:end;border-radius:3px 3px 0 0;min-height:2px}.iahist span{font-size:11px;color:var(--muted)}
+.iarow{display:flex;justify-content:space-between;gap:10px;padding:3px 0;border-bottom:1px solid var(--line)}
+.iatbl td.iakey{font-weight:700;color:var(--ok)}
+.extabs{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none;margin-bottom:-4px}.extabs::-webkit-scrollbar{display:none}
+.extabs button{border:0;background:none;font:inherit;font-weight:600;color:var(--muted);padding:10px 14px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+.extabs button.on{color:var(--brand);border-bottom-color:var(--brand)}
+.exnext{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;background:var(--surface2,#faf7f2);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.extbl .exgh td{background:var(--surface2,#faf7f2);padding-top:10px}.rollin{width:86px;font-family:var(--f-mono)}
+.exp{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;gap:8px}.exp-h{display:flex;gap:10px;align-items:baseline}
+.exp-g{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media (max-width:820px){.exp-g{grid-template-columns:1fr}}
+.exck-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}.exck{display:inline-flex;gap:5px;align-items:center;border:1px solid var(--line2);border-radius:99px;padding:4px 10px;font-size:13px;cursor:pointer}
+.exck.on{background:var(--ok-bg,#e8f3ec);border-color:var(--ok)}.exck input{margin:0;accent-color:var(--ok)}
+.exres{border:1px solid var(--line);border-radius:10px;padding:8px 12px}.exres summary{cursor:pointer;padding:4px 0}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:sl .18s ease-out}@keyframes sl{from{transform:translateX(24px)}to{transform:none}}}
 </style>
 
@@ -1825,7 +1852,7 @@ function vOverview(){
  const ret=A.filter(p=>C(p).pk==="rot"&&C(p).toRet!=null&&C(p).toRet<=60).sort((a,b)=>C(a).toRet-C(b).toRet);
  const comp=A.filter(p=>C(p).toComp>0&&C(p).toComp<=180).sort((a,b)=>C(a).toComp-C(b).toComp);
  const nextW=W.filter(w=>w.stage<5).sort((a,b)=>a.month<b.month?-1:1).slice(0,4);
- const ex=DB.exams.filter(x=>x.stage<3).sort((a,b)=>a.month<b.month?-1:1)[0]||DB.exams.filter(x=>x.stage<5).sort((a,b)=>a.month<b.month?1:-1)[0];
+ const ex=DB.exams.filter(x=>x.stage<3&&!x.practice).sort((a,b)=>a.month<b.month?-1:1)[0]||DB.exams.filter(x=>x.stage<5&&!x.practice).sort((a,b)=>a.month<b.month?1:-1)[0];
  const nx=sessNext(curSess(),1),orient=DB.orients.find(o=>o.cycle===nx),joining=arrivalsIn(nx).length;
  const bySpec=DB.specs.map(s=>s.name).filter(s=>A.some(p=>p.spec===s)).map(s=>{const g=A.filter(p=>p.spec===s);return[s,g.filter(p=>p.program==="FCPS").length,g.filter(p=>p.program!=="FCPS").length]});
  const mx=Math.max(1,...bySpec.map(r=>r[1]+r[2]));
@@ -3972,7 +3999,7 @@ function calItems(){const out=[],mon=d=>d.slice(0,7);
   evExpand(e).forEach(o=>out.push({key:"e:"+e.id+(o.occ?":"+o.occ:""),date:o.date,end:o.end,month:mon(o.date),type:e.type,title:e.title,time:e.time||"",venue:e.venue||"",sub,status:o.status,ev:e,occ:o.occ}))});
  if(canSee("workshops"))DB.workshops.filter(w=>!w.example).forEach(w=>out.push({key:"w:"+w.id,date:w.date||"",month:w.date?mon(w.date):w.month,type:/research boot ?camp/i.test(w.title)?"research":"workshop",title:w.title,venue:w.venue||"",sub:[w.focal?"Focal: "+w.focal:"",w.dept].filter(Boolean).join(" · "),status:w.stage>=5?"Held":w.stage>=3?"Confirmed":"Planned",href:"ws-"+w.id}));
  const exM=new Set(),orM=new Set();
- if(canSee("exams"))DB.exams.forEach(x=>{exM.add(x.month);exM.add(mAdd(x.month,-1));exM.add(mAdd(x.month,1));out.push({key:"x:"+x.id,date:x.date||"",month:x.date?mon(x.date):x.month,type:"exam",title:`${x.title} · ${x.session}`,venue:x.venue||"",sub:`${exCands(x).length} candidates`,status:x.stage>=3?"Held":"Planned",href:"exam-"+x.id})});
+ if(canSee("exams"))DB.exams.filter(x=>!x.practice).forEach(x=>{exM.add(x.month);exM.add(mAdd(x.month,-1));exM.add(mAdd(x.month,1));out.push({key:"x:"+x.id,date:x.date||"",month:x.date?mon(x.date):x.month,type:"exam",title:`${x.title} · ${x.session}`,venue:x.venue||"",sub:`${exCands(x).length} candidates`,status:x.stage>=3?"Held":"Planned",href:"exam-"+x.id})});
  if(canSee("orientation"))DB.orients.forEach(o=>{const m=o.date?mon(o.date):(o.month||orientMonth(o.cycle));orM.add(m);out.push({key:"o:"+o.id,date:o.date||"",month:m,type:"orient",title:`PGT orientation · ${sessLong(o.cycle)} cycle`,sub:"First week",status:o.stage>=3?"Held":"Planned",href:"orient-"+o.id})});
  FIXTURES().forEach(f=>{const isEx=/exam/i.test(f.t);if(isEx?exM.has(f.month):orM.has(f.month))return;
   out.push({key:"f:"+f.month+f.t,date:"",month:f.month,type:isEx?"exam":"orient",title:isEx?"Six-monthly internal examination ("+(f.month.endsWith("06")?"Jun–Jul":"Nov–Dec")+")":"PGT orientation (first week)",sub:"From the annual calendar",status:"Planned",href:isEx?"exams":"orientation"})});
@@ -4752,6 +4779,609 @@ function surProfile(p){const s=p.survey;if(!s||!canSee("pgts"))return"";const st
 {const _x=pgtExamPanel;pgtExamPanel=function(p){return surProfile(p)+_x(p)}}
 DOC_L.push(["rtmc","RTMC certificate"],["acls","ACLS certificate"],["bls","BLS certificate"]);
 if(typeof NAV_ICON==="object"&&typeof _ic==="function")NAV_ICON.status=_ic('<rect x="5" y="3.5" width="14" height="17" rx="2"/><path d="M9 3.5h6v3H9z"/><path d="m8.5 13 2.2 2.2 4.8-4.8"/>');
+/* RIC DME OMR answer sheet (A4, mm). Same code will run in the app.
+   cfg: {exam, session, date, spec, n, opts, sections:[{name,from,to}], cand:{name,code,year,program}|null, qr, logo} */
+function omrSheet(doc, cfg, qrcode){
+  const W=210,H=297,OPT="ABCDE".slice(0,cfg.opts||5).split("");
+  const ink=[20,20,20],mid=[110,110,110],light=[200,200,200],brand=[109,31,43];
+  const T=(t,x,y,o={})=>{doc.setFont("helvetica",o.b?"bold":"normal");doc.setFontSize(o.s||9);doc.setTextColor(...(o.c||ink));doc.text(String(t),x,y,{align:o.a||"left",baseline:o.bl||"alphabetic"})};
+  /* 1. corner markers: the scanner finds these to straighten the page */
+  doc.setFillColor(0,0,0);[[8,8],[195,8],[8,264],[195,264]].forEach(([x,y])=>doc.rect(x,y,7,7,"F"));
+  /* side markers (smaller than the corners): let the reader correct each band of the page separately when the paper curls */
+  [44,79,112,149,186,223].forEach(y=>{doc.rect(9.25,y-2.25,4.5,4.5,"F");doc.rect(196.25,y-2.25,4.5,4.5,"F")});
+  /* 2. header */
+  if(cfg.logo)doc.addImage(cfg.logo,"JPEG",18,10,22,22);
+  T("RAWALPINDI INSTITUTE OF CARDIOLOGY",105,15.5,{a:"center",b:1,s:13.5,c:brand});
+  T("Department of Medical Education & Training",105,21,{a:"center",s:9.5,c:mid});
+  T(`${cfg.exam}  |  ${cfg.session}`,105,28,{a:"center",b:1,s:11.5});
+  T(["MCQ answer sheet",cfg.spec,cfg.n+" questions",cfg.date].filter(Boolean).join("  |  "),105,33.5,{a:"center",s:9});
+  /* QR: exam + paper (+ candidate on personalised sheets) */
+  const q=qrcode(0,"M");q.addData(cfg.qr);q.make();const m=q.getModuleCount(),sz=22,c=sz/m,qx=170,qy=10;
+  doc.setFillColor(0,0,0);for(let r=0;r<m;r++)for(let k=0;k<m;k++)if(q.isDark(r,k))doc.rect(qx+k*c,qy+r*c,c+.02,c+.02,"F");
+  doc.setDrawColor(...brand);doc.setLineWidth(.6);doc.line(15,37.5,195,37.5);
+  /* 3. candidate block */
+  const P=cfg.cand,by=41;doc.setDrawColor(...light);doc.setLineWidth(.25);doc.roundedRect(15,by,112,56,2,2);
+  T("CANDIDATE",19,by+6,{b:1,s:7.5,c:brand});
+  const row=(l,v,y)=>{T(l,19,y,{s:8.5,c:mid});if(v)T(v,46,y,{b:1,s:10.5});else{doc.setDrawColor(...light);doc.line(46,y+.8,123,y+.8)}};
+  row("Name",P?`Dr. ${P.name}`:"",by+15);row("PGT ID",P?P.code:"",by+24);row("Specialty",P?cfg.spec:"",by+33);row("Programme / year",P?[P.program,P.year?`Year ${P.year}`:""].filter(Boolean).join("  |  ")||" ":"",by+42);
+  T("Candidate's signature",19,by+51.5,{s:8.5,c:mid});doc.setDrawColor(...light);doc.line(56,by+52.3,123,by+52.3);
+  /* roll number: write boxes + bubbles (pre-filled on personalised sheets) */
+  const rx=136,rw=59;doc.setDrawColor(...light);doc.roundedRect(rx-4,by,rw+4,56,2,2);
+  T("ROLL NUMBER",rx+rw/2-2,by+6,{a:"center",b:1,s:7.5,c:brand});
+  let roll=P?String(P.roll||P.code||"").replace(/\D/g,""):"";if(roll.length!==5)roll="";const cw=9.4,x0=rx+3.5;
+  for(let d=0;d<5;d++){const x=x0+d*cw;doc.setDrawColor(...mid);doc.setLineWidth(.3);doc.rect(x-3.2,by+8,6.4,6.4);if(roll)T(roll[d],x,by+12.9,{a:"center",b:1,s:11});
+   for(let v=0;v<10;v++){const y=by+19+v*3.85;if(roll&&+roll[d]===v){doc.setFillColor(0,0,0);doc.circle(x,y,1.7,"F")}else{doc.setDrawColor(...mid);doc.setLineWidth(.22);doc.circle(x,y,1.7);T(v,x,y+.05,{a:"center",bl:"middle",s:6,c:mid})}}}
+  /* 4. instructions with mark examples */
+  const iy=102;T("Use a dark (2B) pencil or a black / blue ball-point. Fill the circle completely. To change a pencil answer, erase it fully.",105,iy,{a:"center",s:8});
+  const ex=(x,l,draw)=>{doc.setDrawColor(...mid);doc.setLineWidth(.25);doc.circle(x,iy+5.2,1.9);draw(x,iy+5.2);T(l,x+3.3,iy+6.1,{s:7.5,c:mid})};
+  T("Correct:",58,iy+6.1,{s:7.5,b:1});ex(73,"",(x,y)=>{doc.setFillColor(0,0,0);doc.circle(x,y,1.9,"F")});
+  T("Wrong:",88,iy+6.1,{s:7.5,b:1});
+  ex(101,"tick",(x,y)=>{doc.setDrawColor(0,0,0);doc.setLineWidth(.45);doc.line(x-1.1,y,x-.2,y+1);doc.line(x-.2,y+1,x+1.3,y-1.2)});
+  ex(116,"cross",(x,y)=>{doc.setDrawColor(0,0,0);doc.setLineWidth(.45);doc.line(x-1,y-1,x+1,y+1);doc.line(x-1,y+1,x+1,y-1)});
+  ex(133,"half",(x,y)=>{doc.setFillColor(0,0,0);doc.rect(x-1.9,y-1.9,1.9,3.8,"F");doc.setDrawColor(...mid);doc.circle(x,y,1.9)});
+  ex(148,"dot",(x,y)=>{doc.setFillColor(0,0,0);doc.circle(x,y,.6,"F")});
+  /* 5. answer grid: flows into columns; each section starts with a heading row */
+  const top=113,bottom=259;
+  const items=[];(cfg.sections&&cfg.sections.length?cfg.sections:[{name:"",from:1,to:cfg.n}]).forEach((s,i)=>{if(s.name)items.push({h:`SECTION ${String.fromCharCode(65+i)}  |  ${s.name}  (Q${s.from}-${s.to})`});for(let k=s.from;k<=s.to;k++)items.push({q:k})});
+  const cols=Math.min(4,Math.max(2,Math.ceil(items.length/26))),per=Math.ceil(items.length/cols),pitch=Math.min(6.4,(bottom-top)/per);
+  const bw=6.6,qw=8,colW=qw+OPT.length*bw,gap=(180-cols*colW)/(cols+1);
+  for(let ci=0;ci<cols;ci++){const x=15+gap+ci*(colW+gap),its=items.slice(ci*per,(ci+1)*per);
+   its.forEach((it,ri)=>{const y=top+ri*pitch+pitch/2;
+    if(it.h){doc.setFillColor(243,236,226);doc.rect(x-1,y-2.6,colW+1,5.2,"F");T(it.h,x,y+.1,{s:it.h.length>34?5.4:6,b:1,bl:"middle",c:brand});return}
+    T(it.q,x+qw-2.2,y+.1,{a:"right",b:1,s:8.5,bl:"middle"});
+    OPT.forEach((o,k)=>{const cx=x+qw+bw/2+k*bw;doc.setDrawColor(...mid);doc.setLineWidth(.25);doc.circle(cx,y,2.3);T(o,cx,y+.1,{a:"center",bl:"middle",s:6.3,c:mid})});
+    if(it.q%5===0&&ri<its.length-1){doc.setDrawColor(...light);doc.setLineWidth(.15);doc.line(x,y+pitch/2,x+colW,y+pitch/2)}})}
+  /* 6. footer */
+  T("Invigilator's signature ______________________",19,268.8,{s:8,c:mid});
+  T(`Sheet ${cfg.qr.split("|").slice(1).join("-")}`,191,268.8,{a:"right",s:7,c:mid});
+  doc.setDrawColor(...light);doc.setLineWidth(.25);doc.setLineDashPattern([1,1],0);doc.line(15,276,195,276);doc.setLineDashPattern([],0);
+  T("One answer per question. Do not fold the sheet or write near the black squares. Leave this strip blank.",105,280,{a:"center",s:6.5,c:mid});
+}
+if(typeof module!=="undefined")module.exports={omrSheet};
+/* RIC DME OMR reader. Pure JS on a grayscale image {w,h,d:Uint8Array}; runs in the browser and in node.
+   1. find the black squares (4 corners + 6 per side), 2. map sheet millimetres to pixels band by band,
+   3. measure each bubble, 4. decide answers and flag anything doubtful. */
+const OMR_MK={corner:[[11.5,11.5],[198.5,11.5],[11.5,267.5],[198.5,267.5]],side:[44,79,112,149,186,223],lx:11.5,rx:198.5};
+
+/* bubble positions, taken from the drawing code itself so print and reader can never disagree */
+function omrLayout(cfg){const Q=[],R=[],BX=[];
+ const fake=new Proxy({},{get:(t,k)=>k==="circle"?(x,y,r,st)=>{if(Math.abs(r-2.3)<.01)Q.push([x,y]);else if(Math.abs(r-1.7)<.01)R.push([x,y])}:k==="rect"?(x,y,w,h)=>{if(Math.abs(w-6.4)<.01&&Math.abs(h-6.4)<.01)BX.push([x+3.2,y+3.2])}:()=>fake});
+ omrSheet(fake,{...cfg,logo:null,cand:cfg.cand||null,qr:cfg.qr||"X|X|X|X"},()=>({addData(){},make(){},getModuleCount:()=>1,isDark:()=>false}));
+ const o=cfg.opts||5,q=[];for(let i=0;i<Q.length/o;i++)q.push(Q.slice(i*o,i*o+o));
+ const roll5=[];for(let d=0;d<5;d++)roll5.push(R.slice(d*10,d*10+10));return{q,roll:roll5,boxes:BX}}
+
+/* ---------- geometry ---------- */
+function solve(A,b){const n=b.length;for(let i=0;i<n;i++){let m=i;for(let k=i+1;k<n;k++)if(Math.abs(A[k][i])>Math.abs(A[m][i]))m=k;[A[i],A[m]]=[A[m],A[i]];[b[i],b[m]]=[b[m],b[i]];
+  for(let k=i+1;k<n;k++){const f=A[k][i]/A[i][i];for(let j=i;j<n;j++)A[k][j]-=f*A[i][j];b[k]-=f*b[i]}}const x=new Array(n);for(let i=n-1;i>=0;i--){let s=b[i];for(let j=i+1;j<n;j++)s-=A[i][j]*x[j];x[i]=s/A[i][i]}return x}
+/* least-squares homography mm -> px from >=4 point pairs */
+function homog(P){const A=[],b=[];P.forEach(([X,Y,x,y])=>{A.push([X,Y,1,0,0,0,-x*X,-x*Y]);b.push(x);A.push([0,0,0,X,Y,1,-y*X,-y*Y]);b.push(y)});
+ const At=A[0].map((_,j)=>A.map(r=>r[j])),AtA=At.map(r=>At.map(c=>r.reduce((s,v,k)=>s+v*c[k],0))),Atb=At.map(r=>r.reduce((s,v,k)=>s+v*b[k],0));const h=solve(AtA,Atb);
+ return(X,Y)=>{const w=h[6]*X+h[7]*Y+1;return[(h[0]*X+h[1]*Y+h[2])/w,(h[3]*X+h[4]*Y+h[5])/w]}}
+function affine(P){const A=[],b=[];P.forEach(([X,Y,x,y])=>{A.push([X,Y,1,0,0,0]);b.push(x);A.push([0,0,0,X,Y,1]);b.push(y)});
+ const At=A[0].map((_,j)=>A.map(r=>r[j])),AtA=At.map(r=>At.map(c=>r.reduce((s,v,k)=>s+v*c[k],0))),Atb=At.map(r=>r.reduce((s,v,k)=>s+v*b[k],0));const h=solve(AtA,Atb);
+ return(X,Y)=>[h[0]*X+h[1]*Y+h[2],h[3]*X+h[4]*Y+h[5]]}
+
+/* ---------- 1. black squares ---------- */
+function omrBlobs(img,thr){const{w,h,d}=img,lab=new Int32Array(w*h),out=[];let id=0;const st=[];
+ for(let p=0;p<w*h;p++){if(lab[p]||d[p]>=thr)continue;id++;let n=0,x0=1e9,x1=-1,y0=1e9,y1=-1,sx=0,sy=0;st.push(p);lab[p]=id;
+  while(st.length){const q=st.pop(),x=q%w,y=(q-x)/w;n++;sx+=x;sy+=y;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;
+   if(n>60000)continue;const nb=[q-1,q+1,q-w,q+w];for(let k=0;k<4;k++){const r=nb[k];if(r<0||r>=w*h)continue;if((k===0&&x===0)||(k===1&&x===w-1))continue;if(!lab[r]&&d[r]<thr){lab[r]=id;st.push(r)}}}
+  const bw=x1-x0+1,bh=y1-y0+1;if(n>20)out.push({x:sx/n,y:sy/n,bw,bh,n,fill:n/(bw*bh)})}
+ return out}
+function omrFindMarks(img){const mm0=img.w/210,k=Math.max(1,Math.round(mm0*.5)),W=Math.floor(img.w/k),H=Math.floor(img.h/k),sd=new Uint8Array(W*H);
+ /* averaged copy (cells of about 0.5 mm): grainy or grey-printed squares become solid */
+ for(let y=0;y<H;y++)for(let x=0;x<W;x++){let s=0;for(let j=0;j<k;j++){const o=(y*k+j)*img.w+x*k;for(let i=0;i<k;i++)s+=img.d[o+i]}sd[y*W+x]=s/(k*k)}
+ const hist=new Array(256).fill(0);for(let i=0;i<sd.length;i++)hist[sd[i]]++;let acc=0,p1=0,p50=0;
+ for(let v=0;v<256;v++){acc+=hist[v];if(!p1&&acc>sd.length*.003)p1=v;if(!p50&&acc>sd.length*.5)p50=v}
+ const thr=Math.round(p1+(p50-p1)*.6),mmS=mm0/k;
+ /* squares: square outline, mostly dark (printed squares can be grainy and lighter in the middle) */
+ const B=omrBlobs({w:W,h:H,d:sd},thr).filter(b=>b.fill>.4&&b.bw/b.bh>.7&&b.bw/b.bh<1.43).map(b=>({...b,x:(b.x+.5)*k,y:(b.y+.5)*k,mm:(b.bw+b.bh)/2/mmS}));
+ const corners=B.filter(b=>b.mm>5.4&&b.mm<9.5),sides=B.filter(b=>b.mm>3.3&&b.mm<6.2&&b.fill>.55);
+ return{thr,corners,sides,mm0}}
+/* ---------- 2. mm -> px mapping ---------- */
+function omrFrame(img){const M=omrFindMarks(img),{w,h}=img,mm0=M.mm0;
+ /* corners: nearest candidate to each image corner region */
+ /* up to 3 candidates per corner (or none); keep the combination that the side squares agree with best */
+ const cand=[[0,0],[1,0],[0,1],[1,1]].map(([fx,fy])=>[...M.corners.map(b=>({b,d:Math.hypot((b.x-fx*w)/w,(b.y-fy*h)/h),dx:Math.abs(b.x-fx*w)/w,dy:Math.abs(b.y-fy*h)/h})).filter(c=>c.dx<.18&&c.dy<.18).sort((a,c)=>a.d-c.d).slice(0,3).map(c=>c.b),null]);
+ let best=null;
+ for(const a of cand[0])for(const b of cand[1])for(const c of cand[2])for(const d of cand[3]){const C=[a,b,c,d],P=[];C.forEach((m,i)=>{if(m)P.push([...OMR_MK.corner[i],m.x,m.y])});if(P.length<3)continue;
+  const T=P.length===4?homog(P):affine(P);const[x0,y0]=T(0,0),[x1]=T(210,0),[,y2]=T(0,297);const sx=(x1-x0)/w,sy=(y2-y0)/h;if(sx<.6||sx>1.3||sy<.6||sy>1.3)continue;
+  let sc=P.length*2;OMR_MK.side.forEach(Y=>[OMR_MK.lx,OMR_MK.rx].forEach(X=>{const[px,py]=T(X,Y);if(M.sides.some(m=>Math.hypot(m.x-px,m.y-py)<2.5*mm0))sc+=1}));
+  if(P.length===4){const e=P.map(([X,Y,x,y])=>{const[px,py]=T(X,Y);return Math.hypot(px-x,py-y)});if(Math.max(...e)>3*mm0)sc-=4}
+  if(!best||sc>best.sc)best={sc,P,T}}
+ if(!best)return{error:"The corner squares could not be found. Rescan the sheet with all four corners visible."};
+ const P=best.P;let T=best.T;
+ /* snap side markers near their predicted places, then refit */
+ const all=P.slice(),miss=[];const snap=(X,Y)=>{const[px,py]=T(X,Y);let best=null,bd=(3.5*mm0)**2;M.sides.forEach(b=>{const dd=(b.x-px)**2+(b.y-py)**2;if(dd<bd){bd=dd;best=b}});return best};
+ OMR_MK.side.forEach(Y=>[OMR_MK.lx,OMR_MK.rx].forEach(X=>{const b=snap(X,Y);if(b)all.push([X,Y,b.x,b.y]);else miss.push([X,Y])}));
+ const G=homog(all);
+ /* bands: rows of markers top to bottom; each band gets its own mapping from its four squares */
+ const levels=[11.5,...OMR_MK.side,267.5],pt=(X,Y)=>{const f=all.find(a=>a[0]===X&&a[1]===Y);return f?[f[2],f[3]]:G(X,Y)};
+ const bands=[];for(let i=0;i<levels.length-1;i++){const y0=levels[i],y1=levels[i+1];bands.push({y0,y1,T:homog([[OMR_MK.lx,y0,...pt(OMR_MK.lx,y0)],[OMR_MK.rx,y0,...pt(OMR_MK.rx,y0)],[OMR_MK.lx,y1,...pt(OMR_MK.lx,y1)],[OMR_MK.rx,y1,...pt(OMR_MK.rx,y1)]])})}
+ const map=(X,Y)=>{const b=bands.find(b=>Y>=b.y0&&Y<=b.y1)||(Y<11.5?bands[0]:bands[bands.length-1]);return b.T(X,Y)};
+ const[ax,ay]=map(0,0),[bx,by]=map(100,0);const pxmm=Math.hypot(bx-ax,by-ay)/100;
+ return{map,pxmm,found:all.length,of:4+OMR_MK.side.length*2,missing:miss.length+(4-P.length),thr:M.thr}}
+
+/* ---------- 3. bubbles ---------- */
+function omrDark(img,F,X,Y,rmm){const[cx,cy]=F.map(X,Y),r=rmm*F.pxmm,r2=r*r;let s=0,n=0;const{w,h,d}=img;
+ for(let y=Math.floor(cy-r);y<=Math.ceil(cy+r);y++){if(y<0||y>=h)continue;for(let x=Math.floor(cx-r);x<=Math.ceil(cx+r);x++){if(x<0||x>=w)continue;if((x-cx)**2+(y-cy)**2>r2)continue;s+=255-d[y*w+x];n++}}
+ return n?s/n:0}
+/* fine alignment: every bubble has a printed ring, so slide a group of bubbles until the rings sit on the
+   printed rings (ring darker than the paper just outside it). Corrects curl and print drift of 1-2 mm. */
+const OMR_RING=(()=>{const a=[];for(let k=0;k<20;k++){const t=k/20*2*Math.PI;a.push([Math.cos(t),Math.sin(t)])}return a})();
+function omrRingScore(img,F,pts,r,dx,dy){const{w,h,d}=img;let s=0;
+ const ri=Math.max(.9,r-.75);
+ for(const[X,Y]of pts){const[cx,cy]=F.map(X+dx,Y+dy),R1=r*F.pxmm,R2=(r+.7)*F.pxmm,R0=ri*F.pxmm;
+  for(const[c,sn]of OMR_RING){const x1=Math.round(cx+c*R1),y1=Math.round(cy+sn*R1),x2=Math.round(cx+c*R2),y2=Math.round(cy+sn*R2),x0=Math.round(cx+c*R0),y0=Math.round(cy+sn*R0);
+   if(x1<0||y1<0||x2<0||y2<0||x0<0||y0<0||x1>=w||x2>=w||y1>=h||y2>=h||x0>=w||y0>=h)continue;const o=d[y2*w+x2],i=d[y0*w+x0],g=d[y1*w+x1],cl=v=>v<-30?-30:v>80?80:v;s+=cl(Math.min(o,i)-g)+cl(o-g)}}return s}
+const OMR_SQ=(()=>{const a=[];for(let k=0;k<8;k++){const t=k/8*2-1;a.push([t,-1],[t,1],[-1,t],[1,t])}return a})();
+function omrBoxScore(img,F,ctr,dx,dy){const{w,h,d}=img;let s=0;for(const[X,Y]of ctr)for(const[u,v]of OMR_SQ){const[x1,y1]=F.map(X+dx+u*3.2,Y+dy+v*3.2),[x2,y2]=F.map(X+dx+u*4,Y+dy+v*4),[x0,y0]=F.map(X+dx+u*2.4,Y+dy+v*2.4);
+ const g=(x,y)=>{x=Math.round(x);y=Math.round(y);return x>=0&&y>=0&&x<w&&y<h?d[y*w+x]:255};const o=g(x2,y2),i=g(x0,y0),r=g(x1,y1),cl=v=>v<-30?-30:v>80?80:v;s+=cl(Math.min(o,i)-r)+cl(o-r)}return s}
+function omrAlign(img,F,pts,r,range,step,dx0,dy0,ry){let best=[dx0||0,dy0||0],bs=-1e18;ry=ry==null?range:ry;
+ for(let dy=-ry;dy<=ry+1e-9;dy+=step)for(let dx=-range;dx<=range+1e-9;dx+=step){const v=omrRingScore(img,F,pts,r,(dx0||0)+dx,(dy0||0)+dy);if(v>bs){bs=v;best=[(dx0||0)+dx,(dy0||0)+dy]}}return best}
+/* each question row is aligned on its own (paper can fold or curl abruptly), then a row that disagrees
+   with both neighbours by more than 1 mm takes their average (protects rows that are mostly filled) */
+function omrAlignAll(img,F,L){const raw=L.q.map(row=>{const c=omrAlign(img,F,row,2.3,2.6,.4);return omrAlign(img,F,row,2.3,.3,.1,c[0],c[1])});
+ const cols={};L.q.forEach((row,i)=>{const k=Math.round(row[0][0]);(cols[k]=cols[k]||[]).push(i)});const off=raw.map(v=>v.slice());
+ Object.values(cols).forEach(ix=>ix.forEach((i,k)=>{const a=raw[ix[k-1]],b=raw[ix[k+1]],v=raw[i];const far=p=>p&&Math.hypot(p[0]-v[0],p[1]-v[1])>1;
+  if(a&&b&&far(a)&&far(b)&&Math.hypot(a[0]-b[0],a[1]-b[1])<1)off[i]=[(a[0]+b[0])/2,(a[1]+b[1])/2]}));
+ /* roll block: the five write-in boxes above the digits are not repeated, so they pin the block; then each digit column is refined a little */
+ let rb=[0,0],rs=-1e18;const allR=L.roll.flat();for(let dy=-3;dy<=3.01;dy+=.25)for(let dx=-3;dx<=3.01;dx+=.25){const v=omrBoxScore(img,F,L.boxes,dx,dy)*1.5+omrRingScore(img,F,allR,1.7,dx,dy);if(v>rs){rs=v;rb=[dx,dy]}}
+ const roff=L.roll.map(col=>{const c=omrAlign(img,F,col,1.7,2.8,.2,rb[0],rb[1],.6);return omrAlign(img,F,col,1.7,.2,.1,c[0],c[1])});
+ return{off,roff}}
+/* paper level around the sheet, for scaling darkness: the 90th percentile brightness */
+function omrPaper(img){const h=new Array(256).fill(0);for(let i=0;i<img.d.length;i+=5)h[img.d[i]]++;let t=0;h.forEach(v=>t+=v);let a=0;for(let v=255;v>=0;v--){a+=h[v];if(a>t*.25)return v}return 230}
+
+/* ---------- 4. decisions ---------- */
+const OMR_T={mark:.42,clear:.24,ratio:.62,faint:.1};
+function omrDecide(vals,base,full,letters){const s=vals.map(v=>Math.max(0,(v-base)/Math.max(30,full-base)));const o=s.map((v,i)=>[v,i]).sort((a,b)=>b[0]-a[0]);const[s1,i1]=o[0],[s2]=o[1]||[0];
+ const r={s:s.map(v=>Math.round(v*100)/100)};
+ /* nothing marked; a faint mark that stands out from the rest of the row is shown for review */
+ if(s1<OMR_T.clear){r.a="";if(s1>=OMR_T.faint&&s1-s2>=.08){r.flag="faint";r.m=letters[i1]}return r}
+ /* two or more marks of similar darkness */
+ if(s2>=OMR_T.clear&&s2>=s1*OMR_T.ratio){r.a="";r.flag="multiple";r.m=o.filter(x=>x[0]>=OMR_T.clear&&x[0]>=s1*OMR_T.ratio).map(x=>letters[x[1]]).join("");return r}
+ r.a=letters[i1];
+ /* clear single answer; a light mark (tick, cross, light pencil) is kept but shown for review */
+ if(s1>=OMR_T.mark&&s2<OMR_T.clear*.85)return r;
+ r.flag=s2>=OMR_T.clear*.6?"smudge":"light";return r}
+
+/* read one page. cfg = sheet layout for that paper (n, opts, sections) */
+function omrRead(img,cfg,F){F=F||omrFrame(img);if(F.error)return F;const L=omrLayout(cfg),letters="ABCDE".slice(0,cfg.opts||5);
+ const A=omrAlignAll(img,F,L);
+ const qv=L.q.map((row,i)=>row.map(([X,Y])=>omrDark(img,F,X+A.off[i][0],Y+A.off[i][1],1.55))),rv=L.roll.map((col,j)=>col.map(([X,Y])=>omrDark(img,F,X+A.roff[j][0],Y+A.roff[j][1],1.1)));
+ /* blank level = typical empty bubble (printed letter + paper); full level = typical filled bubble on this page */
+ const flat=qv.flat().sort((a,b)=>a-b),base=flat[Math.floor(flat.length*.3)];
+ const maxes=qv.map(r=>Math.max(...r)).sort((a,b)=>a-b),filled=maxes.filter(v=>v>base+40);const full=filled.length?filled[Math.floor(filled.length*.7)]:base+120;
+ const ans=qv.map(r=>omrDecide(r,base,full,letters));
+ const rflat=rv.flat().sort((a,b)=>a-b),rbase=rflat[Math.floor(rflat.length*.4)],rmax=rv.map(c=>Math.max(...c)).sort((a,b)=>b-a)[1]||rbase+120;
+ const roll=rv.map(c=>omrDecide(c,rbase,Math.max(rmax,full*.9),"0123456789"));
+ return{frame:{found:F.found,of:F.of},base:Math.round(base),full:Math.round(full),ans,roll,rollText:roll.map(r=>r.a||"?").join(""),rollFlag:roll.some(r=>r.flag||!r.a)}}
+
+/* warp the QR corner of the sheet into a small upright image for the QR decoder */
+function omrQrCrop(img,F,size){size=size||260;const out=new Uint8ClampedArray(size*size*4),X0=166,Y0=6,S=30;
+ for(let j=0;j<size;j++)for(let i=0;i<size;i++){const[x,y]=F.map(X0+S*i/size,Y0+S*j/size);const xi=Math.round(x),yi=Math.round(y);const v=xi>=0&&yi>=0&&xi<img.w&&yi<img.h?img.d[yi*img.w+xi]:255;const k=(j*size+i)*4;out[k]=out[k+1]=out[k+2]=v;out[k+3]=255}
+ return{data:out,width:size,height:size}}
+if(typeof module!=="undefined")module.exports={omrAlignAll,omrLayout,omrFrame,omrRead,omrQrCrop,omrDark,OMR_T};
+
+/* =====================================================================
+   V28 · OMR ANSWER SHEETS (phase 1): per-specialty sheet setup
+   (questions, options, sections), answer keys, and printing of
+   personalised and blank sheets. Scanning comes in phase 2.
+   ===================================================================== */
+const OMR_OPTS=[[4,"4 options (A-D)"],[5,"5 options (A-E)"]];
+function omrOf(x){x.omr=x.omr||{specs:{},n:0};x.omr.specs=x.omr.specs||{};return x.omr}
+function omrSpec(x,spec,create){const O=omrOf(x);let s=O.specs[spec];
+ if(!s&&create){O.n=(O.n||0)+1;s=O.specs[spec]={sid:"S"+O.n,n:/^General Cardiology/.test(spec)?100:50,opts:5,sections:[],key:"",drop:[],alt:{}}}return s}
+const omrKeyArr=s=>{const a=(s.key||"").split("");a.length=s.n;return Array.from(a,v=>v&&v!=="-"?v:"")};
+const omrKeyDone=s=>omrKeyArr(s).filter(Boolean).length;
+const omrRoll=(x,p)=>(x.roll&&x.roll[p.id])||rollOf(p)||"";
+const omrSecText=s=>s.sections&&s.sections.length?s.sections.map(t=>`${t.name} ${t.from}-${t.to}`).join(" · "):"None";
+
+function omrPanel(x){if(isViewer())return"";ensureRolls(x);const specs=exPaperKeys(x),O=omrOf(x);
+ const rows=specs.map(sp=>{const s=omrSpec(x,sp),n=exCands(x).filter(p=>exPaperOf(x,p)===sp).length,k=s?omrKeyDone(s):0;
+  return`<tr><td><b>${esc(sp)}</b></td><td class="num">${n}</td><td class="num">${s?s.n:"—"}</td><td>${s?s.opts===4?"A-D":"A-E":"—"}</td><td class="wrapcell subt">${s?esc(omrSecText(s)):"—"}</td>
+   <td>${!s?'<span class="subt">Not set up</span>':k===s.n?'<span class="pill p-ric">Complete</span>':`<span class="pill p-pause">${k} / ${s.n}</span>`}</td>
+   <td>${s&&s.printed?`<span class="subt">${fd(s.printed.at.slice(0,10))}</span>`:""}</td>
+   <td style="white-space:nowrap"><button class="btn small ${s?"":"primary"}" data-act="omr-setup" data-sp="${esc(sp)}">${s?"Setup":"Set up"}</button>${s?`<button class="btn small" data-act="omr-key" data-sp="${esc(sp)}">Answer key</button><button class="btn small" data-act="omr-print" data-sp="${esc(sp)}">Print</button>`:""}</td></tr>`}).join("");
+ const ready=specs.filter(sp=>omrSpec(x,sp)).length;
+ return`<div class="panel flush" id="omr"><div class="head" style="padding:14px 16px 0"><h3 style="margin:0">OMR answer sheets</h3>${ready?`<button class="btn small" data-act="omr-printall">Print all personalised sheets</button>`:""}</div>
+ <p class="subt" style="margin:6px 16px 0">Set the number of questions, options and sections for each specialty paper, enter the answer key, then print sheets. Personalised sheets carry the candidate's name, PGT ID and pre-filled roll number; blank sheets are for anyone not on the list. The answer key can be entered any time before scanning.</p>
+ <div class="tblwrap" style="margin-top:8px"><table><thead><tr><th>Specialty</th><th class="num">Candidates</th><th class="num">Questions</th><th>Options</th><th>Sections</th><th>Answer key</th><th>Printed</th><th></th></tr></thead><tbody>${rows||`<tr><td colspan="8" class="empty">No candidates yet.</td></tr>`}</tbody></table></div></div>`}
+var IMPORT_ORIG=importPanel;{const _i=importPanel;importPanel=function(x){return omrPanel(x)+_i(x)}}
+
+/* ---------- setup: questions, options, sections ---------- */
+function sheetOmrSetup(x,sp){const s0=omrSpec(x,sp),s=s0||{n:/^General Cardiology/.test(sp)?100:50,opts:5,sections:[]};const S=[...(s.sections||[])];while(S.length<6)S.push({name:"",from:"",to:""});
+ openSheet(`OMR sheet · ${sp}`,`<div class="grid2"><label class="f">Number of questions<input type="number" name="n" min="5" max="200" value="${s.n}"></label><label class="f">Options per question<select name="opts">${opt(OMR_OPTS.map(([v,l])=>[String(v),l]),String(s.opts||5))}</select></label></div>
+ <div class="f"><span>Sections <span class="h">optional: leave empty for none. Sections must follow each other, e.g. 1-40 then 41-100.</span></span>
+  <div style="display:grid;gap:6px">${S.map((t,i)=>`<div style="display:grid;grid-template-columns:1fr 70px 70px;gap:6px"><input name="sn${i}" value="${esc(t.name)}" placeholder="${i===0?"e.g. Basic sciences":i===1?"e.g. Clinical":""}" aria-label="Section ${i+1} name"><input name="sf${i}" type="number" min="1" value="${t.from}" placeholder="from" aria-label="Section ${i+1} first question"><input name="st${i}" type="number" min="1" value="${t.to}" placeholder="to" aria-label="Section ${i+1} last question"></div>`).join("")}</div></div>
+ ${s0&&omrKeyDone(s0)?`<p class="subt" style="margin:0">Changing the number of questions keeps the answer key for the questions that remain.</p>`:""}`,()=>{
+  const n=+fv("n"),opts=+fv("opts");if(!(n>=5&&n<=200))return fail("Questions must be between 5 and 200.");
+  const L=[];for(let i=0;i<6;i++){const nm=fv("sn"+i),f=+fv("sf"+i),t=+fv("st"+i);if(!nm&&!f&&!t)continue;if(!nm||!f||!t)return fail(`Section ${i+1}: enter the name, first and last question.`);L.push({name:nm,from:f,to:t})}
+  L.sort((a,b)=>a.from-b.from);if(L.length){if(L[0].from!==1)return fail("The first section must start at question 1.");for(let i=0;i<L.length;i++){if(L[i].to<L[i].from)return fail(`${L[i].name}: the last question is before the first.`);if(i&&L[i].from!==L[i-1].to+1)return fail(`${L[i].name} must start at question ${L[i-1].to+1}.`)}if(L[L.length-1].to!==n)return fail(`The last section must end at question ${n}.`)}
+  if(L.some(t=>t.name.length>28))return fail("Keep section names under 28 characters so they fit on the sheet.");
+  const s=omrSpec(x,sp,true),was=s.n;Object.assign(s,{n,opts,sections:L});if(s.key)s.key=s.key.slice(0,n);
+  if(opts===4&&/E/.test(s.key||""))s.key=s.key.replace(/E/g,"-");
+  xlog(x,`OMR sheet set up for ${sp}: ${n} questions, ${opts} options${L.length?`, sections ${omrSecText(s)}`:""}${was&&was!==n?` (was ${was} questions)`:""}`);toast("Saved");return true})}
+
+/* ---------- answer key ---------- */
+UI.omrK=null;
+function sheetOmrKey(x,sp){const s=omrSpec(x,sp);if(!s)return;UI.omrK={x,sp,a:omrKeyArr(s)};const L="ABCDE".slice(0,s.opts).split("");
+ openSheet(`Answer key · ${sp}`,`<label class="f">Type or paste the key <span class="h">letters in order, e.g. ABDCE BDACE ... (spaces and numbers are ignored)</span><textarea id="omrk-paste" rows="3" style="font-family:var(--f-mono);letter-spacing:.06em" placeholder="ABDCEBDACE..."></textarea></label>
+  <div id="omrk-cnt" class="subt"></div><div id="omrk-grid" class="omrk">${omrKeyGrid(s,L)}</div>
+  <div class="grid2"><label class="f">Questions to drop <span class="h">after the exam, e.g. 12, 45 · nobody loses marks</span><input name="drop" value="${esc((s.drop||[]).join(", "))}"></label>
+  <label class="f">Also accept <span class="h">a second correct answer, e.g. 12B, 30D</span><input name="alt" value="${esc(Object.entries(s.alt||{}).map(([q,v])=>q+v).join(", "))}"></label></div>`,()=>{
+  const a=UI.omrK.a,drop=[...new Set(fv("drop").split(/[^0-9]+/).filter(Boolean).map(Number))].filter(q=>q>=1&&q<=s.n).sort((p,q)=>p-q);
+  const alt={};for(const m of fv("alt").toUpperCase().matchAll(/(\d+)\s*([A-E])/g)){const q=+m[1];if(q>=1&&q<=s.n&&L.includes(m[2]))alt[q]=m[2]}
+  const before=s.key,miss=a.filter(v=>!v).length;s.key=a.map(v=>v||"-").join("");s.drop=drop;s.alt=alt;
+  if(before!==s.key||drop.length||Object.keys(alt).length)xlog(x,`Answer key for ${sp}: ${s.n-miss} of ${s.n} entered${drop.length?`, dropped ${drop.join(", ")}`:""}${Object.keys(alt).length?`, also accepting ${Object.entries(alt).map(([q,v])=>q+v).join(", ")}`:""}`);
+  UI.omrK=null;toast(miss?`Saved. ${miss} questions still have no answer.`:"Answer key saved");return true});omrKCount()}
+function omrKeyGrid(s,L){const a=UI.omrK.a,sec=q=>(s.sections||[]).find(t=>t.from===q);
+ return Array.from({length:s.n},(_,i)=>{const q=i+1,h=sec(q);return`${h?`<div class="omrk-h">${esc(h.name)} (${h.from}-${h.to})</div>`:""}<div class="omrk-r ${a[i]?"":"miss"}"><b>${q}</b>${L.map(l=>`<button type="button" class="${a[i]===l?"on":""}" data-omrk="${i}|${l}" aria-label="Question ${q}: ${l}" aria-pressed="${a[i]===l}">${l}</button>`).join("")}</div>`}).join("")}
+function omrKCount(){const K=UI.omrK;if(!K)return;const a=K.a,c={};a.forEach(v=>{if(v)c[v]=(c[v]||0)+1});const el=document.getElementById("omrk-cnt");if(!el)return;const n=a.filter(Boolean).length;
+ el.innerHTML=`<b>${n} of ${a.length}</b> entered${n?` · ${Object.keys(c).sort().map(k=>`${k}: ${c[k]}`).join(" · ")}`:""}${n&&n<a.length?` · first missing: Q${a.findIndex(v=>!v)+1}`:""}`}
+document.addEventListener("click",e=>{const b=e.target.closest("[data-omrk]");if(!b||!UI.omrK)return;const[i,l]=b.dataset.omrk.split("|");const a=UI.omrK.a;a[+i]=a[+i]===l?"":l;
+ const row=b.parentElement;row.querySelectorAll("button").forEach(x=>{const on=x.dataset.omrk===`${i}|${a[+i]}`;x.classList.toggle("on",on);x.setAttribute("aria-pressed",on)});row.classList.toggle("miss",!a[+i]);omrKCount()});
+document.addEventListener("input",e=>{if(e.target.id!=="omrk-paste"||!UI.omrK)return;const K=UI.omrK,s=omrSpec(K.x,K.sp),L="ABCDE".slice(0,s.opts);
+ const letters=e.target.value.toUpperCase().replace(/[^A-E]/g,"").split("").filter(c=>L.includes(c)).slice(0,s.n);if(!letters.length)return;
+ letters.forEach((v,i)=>K.a[i]=v);document.getElementById("omrk-grid").innerHTML=omrKeyGrid(s,L.split(""));omrKCount()});
+
+/* ---------- printing ---------- */
+function sheetOmrPrint(x,sp){const s=omrSpec(x,sp),C=exCands(x).filter(p=>exPaperOf(x,p)===sp);
+ openSheet(`Print sheets · ${sp}`,`<label class="f">What to print<select name="mode"><option value="p">Personalised sheets for the ${C.length} candidates</option><option value="b">Blank sheets</option><option value="pb">Both: personalised, then blank</option></select></label>
+ <label class="f">Number of blank sheets<input type="number" name="nb" min="1" max="300" value="${Math.max(5,Math.ceil(C.length*.1))}"></label>
+ <p class="subt" style="margin:0">${s.n} questions, ${s.opts} options${s.sections.length?`, sections ${esc(omrSecText(s))}`:""}. Print on A4 at 100% (not "fit to page"), one side only.</p>`,()=>{
+  const m=fv("mode"),nb=+fv("nb")||0;if(m!=="p"&&!(nb>=1))return fail("Enter how many blank sheets.");if(m!=="b"&&!C.length)return fail("No candidates in this specialty.");
+  omrMakePdf(x,[{sp,cand:m!=="b"?C:[],blank:m!=="p"?nb:0}],`OMR ${sp} ${x.session}`);return true},"Make PDF")}
+async function omrMakePdf(x,jobs,file){try{await bioLoadPdf()}catch(e){toast(e.message);return}if(typeof qrcode!=="function"){toast("The QR tool did not load. Check the connection and try again.");return}
+ const{jsPDF}=window.jspdf,doc=new jsPDF({unit:"mm",format:"a4"});const logo=document.querySelector('img[alt="RIC logo"]')?.src;let pages=0;
+ const dt=x.date?P(x.date).toLocaleDateString("en-GB",{day:"numeric",month:"short",year:"numeric"}):"";
+ toast("Making the PDF…");await new Promise(r=>setTimeout(r,30));
+ for(const j of jobs){const s=omrSpec(x,j.sp);if(!s)continue;const base={exam:x.title,session:x.session,date:dt,spec:j.sp,n:s.n,opts:s.opts,sections:s.sections,logo:logo&&logo.startsWith("data:")?logo:null};
+  const C=j.cand.slice().sort((a,b)=>omrRoll(x,a).localeCompare(omrRoll(x,b))||a.name.localeCompare(b.name));
+  for(const p of C){if(pages++)doc.addPage();const roll=omrRoll(x,p);omrSheet(doc,{...base,cand:{name:p.name,code:p.code||"",roll,year:examYear(x,p)||"",program:p.program||""},qr:`RICDME|${x.id}|${s.sid}|${p.id}`},qrcode)}
+  for(let i=0;i<j.blank;i++){if(pages++)doc.addPage();omrSheet(doc,{...base,cand:null,qr:`RICDME|${x.id}|${s.sid}|B`},qrcode)}
+  s.printed={at:new Date().toISOString(),p:C.length,b:j.blank};xlog(x,`OMR sheets printed for ${j.sp}: ${C.length} personalised${j.blank?`, ${j.blank} blank`:""}`)}
+ if(!pages){toast("Nothing to print");return}doc.save(file.replace(/[\\/:*?"<>|]+/g," ")+".pdf");persist();render();toast(`PDF ready: ${pages} sheets`)}
+document.addEventListener("click",e=>{const b=e.target.closest('[data-act^="omr-"]');if(!b)return;const x=DB.exams.find(v=>v.id===route.id);if(!x)return;const sp=b.dataset.sp;
+ if(b.dataset.act==="omr-setup")return sheetOmrSetup(x,sp);if(b.dataset.act==="omr-key")return sheetOmrKey(x,sp);if(b.dataset.act==="omr-print")return sheetOmrPrint(x,sp);
+ if(b.dataset.act==="omr-printall"){const specs=exPaperKeys(x).filter(s=>omrSpec(x,s));omrMakePdf(x,specs.map(sp=>({sp,cand:exCands(x).filter(p=>exPaperOf(x,p)===sp),blank:0})),`OMR all specialties ${x.session}`)}});
+
+/* =====================================================================
+   V29 · OMR SCANNING: upload the scanned PDF (or photos), read every
+   sheet in the browser, review only what is doubtful, then put the
+   marks into the exam. Images are kept on the live app for appeals.
+   ===================================================================== */
+const OMR_PDFJS="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js",OMR_PDFW="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js",OMR_JSQR="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js";
+const omrLoad=src=>new Promise((ok,no)=>{if([...document.scripts].some(s=>s.src===src&&s.dataset.ok))return ok();const s=document.createElement("script");s.src=src;s.onload=()=>{s.dataset.ok=1;ok()};s.onerror=()=>no(new Error("Could not load the scanning tools. Check the internet connection."));document.head.append(s)});
+UI.omrImg=UI.omrImg||{};UI.omrRun=null;UI.omrTab="review";
+const omrScans=x=>(omrOf(x).scans=omrOf(x).scans||[]);
+const omrSpecBySid=(x,sid)=>Object.entries(omrOf(x).specs).find(([,s])=>s.sid===sid)?.[0]||"";
+const omrCfgOf=(x,sp)=>{const s=omrSpec(x,sp);return s?{n:s.n,opts:s.opts,sections:s.sections,spec:sp,exam:x.title,session:x.session}:null};
+
+/* ---------- reading ---------- */
+function omrGray(canvas){const g=canvas.getContext("2d").getImageData(0,0,canvas.width,canvas.height).data,d=new Uint8Array(canvas.width*canvas.height);for(let i=0,j=0;j<d.length;i+=4,j++)d[j]=(g[i]*299+g[i+1]*587+g[i+2]*114)/1000;return{w:canvas.width,h:canvas.height,d}}
+async function omrPages(files,onPage){let n=0;
+ for(const f of files){if(/pdf$/i.test(f.type)||/\.pdf$/i.test(f.name)){await omrLoad(OMR_PDFJS);pdfjsLib.GlobalWorkerOptions.workerSrc=OMR_PDFW;const pdf=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;
+   for(let p=1;p<=pdf.numPages;p++){const pg=await pdf.getPage(p),v0=pg.getViewport({scale:1}),sc=1300/Math.min(v0.width,v0.height),v=pg.getViewport({scale:sc}),c=document.createElement("canvas");c.width=Math.round(v.width);c.height=Math.round(v.height);
+    await pg.render({canvasContext:c.getContext("2d"),viewport:v}).promise;await onPage(c,`${f.name} p${p}`,++n,pdf.numPages)}}
+  else{const url=URL.createObjectURL(f),im=await new Promise((ok,no)=>{const i=new Image();i.onload=()=>ok(i);i.onerror=no;i.src=url});const s=1300/Math.min(im.width,im.height),c=document.createElement("canvas");c.width=Math.round(im.width*s);c.height=Math.round(im.height*s);c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(url);await onPage(c,f.name,++n,files.length)}}}
+/* landscape scans are turned upright; a sheet scanned upside down is tried both ways */
+function omrUpright(c,turn){const o=document.createElement("canvas"),q=turn%4;o.width=q%2?c.height:c.width;o.height=q%2?c.width:c.height;const g=o.getContext("2d");g.translate(o.width/2,o.height/2);g.rotate(q*Math.PI/2);g.drawImage(c,-c.width/2,-c.height/2);return o}
+function omrIdentify(x,canvas){const tries=canvas.width>canvas.height?[1,3]:[0,2];let last=null;
+ for(const t of tries){const c=t?omrUpright(canvas,t):canvas,img=omrGray(c),F=omrFrame(img);if(F.error){last={error:F.error};continue}
+  const q=omrQrCrop(img,F,300),qr=typeof jsQR==="function"?jsQR(q.data,300,300,{inversionAttempts:"dontInvert"}):null;
+  /* roll bubbles sit in the same place on every paper, so the roll number can be read before the paper is known */
+  const probe=omrRead(img,{n:5,opts:5,sections:[]},F);
+  if(!qr&&!/^\d{5}$/.test(probe.rollText)&&t===tries[0]){last={canvas:c,img,F,qr:null,probe};continue}
+  return{canvas:c,img,F,qr:qr?qr.data:null,probe}}
+ return last||{error:"The sheet could not be read."}}
+function omrCandByRoll(x,roll){if(!/^\d{5}$/.test(roll))return null;const R=x.roll||{};const id=Object.keys(R).find(k=>R[k]===roll);return(id&&DB.pgts.find(p=>p.id===id))||DB.pgts.find(p=>p.reg==="Verified"&&rollOf(p)===roll)||null}
+/* one sheet: identify it, read it, note where each doubtful row is (for the review crops) */
+function omrSheetFrom(x,canvas,label,force){const id=omrIdentify(x,canvas);const sc={id:uid("SC"),file:label,at:new Date().toISOString(),use:true,fix:{},fl:{}};
+ if(id.error){sc.issue="unreadable";sc.err=id.error;return{sc,url:canvas.toDataURL("image/jpeg",.6)}}
+ const parts=(id.qr||"").split("|");let sp="",pid=null;sc.ar=+(id.canvas.width/id.canvas.height).toFixed(4);
+ if(parts[0]==="RICDME"){if(parts[1]!==x.id&&parts[1]!=="TRIAL")sc.issue="other-exam";sp=omrSpecBySid(x,parts[2]);if(parts[3]&&parts[3]!=="B")pid=parts[3]}
+ const rollText=id.probe.rollText;sc.roll=rollText;
+ const byRoll=omrCandByRoll(x,rollText);if(!pid&&byRoll)pid=byRoll.id;if(force)pid=force;
+ if(pid&&byRoll&&byRoll.id!==pid)sc.rollClash=byRoll.id;
+ if(!sp&&pid){const p=DB.pgts.find(q=>q.id===pid);if(p&&omrSpec(x,exPaperOf(x,p)))sp=exPaperOf(x,p)}
+ sc.pid=pid;sc.spec=sp;const url=id.canvas.toDataURL("image/jpeg",.62);
+ {const sx=1/id.canvas.width,sy=1/id.canvas.height,a=id.F.map(130,40),b=id.F.map(196,98);sc.rbox=[a[0]*sx,a[1]*sy,b[0]*sx,b[1]*sy].map(v=>+v.toFixed(4))}
+ if(!sp){sc.issue=sc.issue||"no-paper";return{sc,url}}
+ const cfg=omrCfgOf(x,sp),r=omrRead(id.img,cfg,id.F),L=omrLayout(cfg),A=omrAlignAll(id.img,id.F,L);
+ sc.ans=r.ans.map(a=>a.a||(a.flag==="multiple"?"*":"-")).join("");r.ans.forEach((a,q)=>{if(a.flag)sc.fl[q+1]=[a.flag,a.m||""]});
+ const sx=1/id.canvas.width,sy=1/id.canvas.height;sc.box={};r.ans.forEach((a,q)=>{if(!a.flag)return;const row=L.q[q],o=A.off[q],p0=id.F.map(row[0][0]+o[0]-10,row[0][1]+o[1]-3.4),p1=id.F.map(row[row.length-1][0]+o[0]+3,row[0][1]+o[1]+3.4);sc.box[q+1]=[p0[0]*sx,p0[1]*sy,p1[0]*sx,p1[1]*sy].map(v=>+v.toFixed(4))});
+ {const p=pid&&DB.pgts.find(q=>q.id===pid);if(p&&exPaperOf(x,p)!==sp&&!force)sc.issue=sc.issue||"other-paper"}
+ if(!pid)sc.issue=sc.issue||"unidentified";else if(!force&&!/^\d{5}$/.test(rollText)&&!parts[3])sc.issue=sc.issue||"roll";
+ return{sc,url}}
+async function omrProcess(x,files){const S=omrScans(x),out=[];UI.omrRun={done:0,total:0,msg:"Loading the scanning tools…"};render();
+ try{await omrLoad(OMR_JSQR)}catch(e){UI.omrRun=null;toast(e.message);render();return}
+ try{await omrPages(files,async(canvas,label,i,tot)=>{UI.omrRun={done:i-1,total:tot,msg:`Reading ${label}`};omrRunBar();await new Promise(r=>setTimeout(r,0));
+  const{sc,url}=omrSheetFrom(x,canvas,label);UI.omrImg[sc.id]=url;out.push(sc)})}catch(e){toast("Could not open the file: "+(e.message||e))}
+ /* keep the images on the live app so any sheet can be looked at later */
+ if(LIVE&&SYNC.sb){let k=0;for(const sc of out){UI.omrRun={done:k++,total:out.length,msg:"Saving sheet images"};omrRunBar();await omrSaveImg(x,sc)}}
+ out.forEach(sc=>S.push(sc));omrDupes(x);
+ xlog(x,`OMR: ${out.length} sheet${out.length===1?"":"s"} scanned (${out.filter(s=>omrNeeds(x,s)).length} need review)`);UI.omrRun=null;UI.omrTab="review";persist();render();
+ setTimeout(()=>document.getElementById("omrscan")?.scrollIntoView({behavior:"smooth"}),50)}
+async function omrSaveImg(x,sc){try{const blob=await(await fetch(UI.omrImg[sc.id])).blob(),path=`exams/${x.id}/${sc.id}.jpg`;const{error}=await SYNC.sb.storage.from("dme-uploads").upload(path,blob,{contentType:"image/jpeg",upsert:true});if(!error)sc.img=path}catch(e){}}
+/* a sheet whose paper was unknown is read again once you say whose it is */
+async function omrReread(x,s,pid){let src=UI.omrImg[s.id];if(!src&&s.img&&LIVE){try{const{data}=await SYNC.sb.storage.from("dme-uploads").createSignedUrl(s.img,600);src=data&&data.signedUrl}catch(e){}}
+ if(!src){toast("The sheet image is not available; scan it again.");return}
+ await omrLoad(OMR_JSQR).catch(()=>{});const im=await new Promise((ok,no)=>{const i=new Image();i.crossOrigin="anonymous";i.onload=()=>ok(i);i.onerror=no;i.src=src});const c=document.createElement("canvas");c.width=im.width;c.height=im.height;c.getContext("2d").drawImage(im,0,0);
+ const{sc}=omrSheetFrom(x,c,s.file,pid);Object.assign(s,{...sc,id:s.id,img:s.img,at:s.at});if(!s.spec){s.issue="no-paper"}omrDupes(x);persist();render()}
+function omrDupes(x){const S=omrScans(x),seen={};S.forEach(s=>{if(s.issue==="duplicate")delete s.issue});S.filter(s=>s.pid&&s.use).forEach(s=>{if(seen[s.pid]){s.issue=s.issue||"duplicate";seen[s.pid].issue=seen[s.pid].issue||"duplicate"}else seen[s.pid]=s})}
+function omrRunBar(){const R=UI.omrRun,el=document.getElementById("omrrun");if(!R||!el)return;el.innerHTML=`<div class="subt">${esc(R.msg)}</div><div class="bar"><i style="width:${R.total?Math.round(R.done/R.total*100):5}%"></i></div>`}
+
+/* ---------- state of each sheet ---------- */
+const OMR_ISSUE={unreadable:"Could not read the sheet",unidentified:"Candidate not identified",roll:"Roll number incomplete","no-paper":"Paper (specialty) not known","other-exam":"Sheet belongs to another exam",duplicate:"Same candidate scanned more than once","not-candidate":"Not on this exam's candidate list","other-paper":"Candidate's specialty does not match this paper"};
+const OMR_FL={multiple:"Two or more answers",faint:"Very faint mark",light:"Light mark, tick or cross",smudge:"Possible erasure"};
+function omrOpen(x,s){if(!s.use)return[];const o=[];if(s.issue&&s.issue!=="duplicate"&&!s.okIssue)o.push("issue");if(s.issue==="duplicate")o.push("dup");
+ if(s.pid&&!s.okIssue&&!exCands(x).some(p=>p.id===s.pid)&&!(x.added||[]).includes(s.pid))o.push("cand");
+ Object.keys(s.fl||{}).forEach(q=>{if(!(q in s.fix))o.push("q"+q)});return o}
+const omrNeeds=(x,s)=>omrOpen(x,s).length>0;
+function omrFinal(x,s){const sp=omrSpec(x,s.spec);if(!sp||!s.ans)return null;return Array.from({length:sp.n},(_,i)=>{const q=i+1;if(q in s.fix)return s.fix[q];const a=s.ans[i];return a==="-"||a==="*"?"":a})}
+function omrScore(x,s){const sp=omrSpec(x,s.spec),A=omrFinal(x,s);if(!A)return null;const key=omrKeyArr(sp),drop=new Set(sp.drop||[]),alt=sp.alt||{};let o=0,t=0;const secs={};
+ const secOf=q=>(sp.sections||[]).find(z=>q>=z.from&&q<=z.to);
+ for(let i=0;i<sp.n;i++){const q=i+1;if(drop.has(q)||!key[i])continue;t++;const ok=A[i]&&(A[i]===key[i]||alt[q]===A[i]);if(ok)o++;const z=secOf(q);if(z){secs[z.name]=secs[z.name]||[0,0];secs[z.name][1]++;if(ok)secs[z.name][0]++}}
+ return{o,t,pct:t?Math.round(o/t*1000)/10:0,secs}}
+
+/* ---------- the panel on the exam page ---------- */
+function omrScanPanel(x){if(isViewer())return"";const O=omrOf(x),specs=Object.keys(O.specs);if(!specs.length)return"";const S=omrScans(x),R=UI.omrRun;
+ const used=S.filter(s=>s.use),need=used.filter(s=>omrNeeds(x,s)),ok=used.filter(s=>!omrNeeds(x,s)&&s.pid);
+ const keyMiss=specs.filter(sp=>omrKeyDone(O.specs[sp])<O.specs[sp].n);
+ const absent=exCands(x).filter(p=>omrSpec(x,exPaperOf(x,p))&&!used.some(s=>s.pid===p.id)&&!x.absent[p.id]);
+ const tab=UI.omrTab;
+ let body="";
+ if(tab==="review")body=need.length?need.map(s=>omrReviewCard(x,s)).join(""):`<p class="subt" style="margin:0">${S.length?"Nothing needs review.":"No sheets scanned yet."}</p>`;
+ if(tab==="all")body=omrAllTable(x,used);
+ if(tab==="absent")body=absent.length?`<p style="margin:0">${absent.length} candidate${absent.length>1?"s":""} with no scanned sheet:</p><div class="chips">${absent.map(p=>`<span class="chip" aria-pressed="false">Dr. ${esc(p.name)} · ${esc(p.spec)}</span>`).join("")}</div><div><button class="btn small" data-act="omr-absent">Mark all ${absent.length} as absent</button></div><p class="subt" style="margin:0">Only do this once every pile has been scanned.</p>`:`<p class="subt" style="margin:0">Every candidate has a sheet or is marked absent.</p>`;
+ return`<div class="panel" id="omrscan" style="display:grid;gap:12px"><div class="head"><h3 style="margin:0">Scan answer sheets</h3><label class="btn small primary" for="omr-file" ${R?'aria-disabled="true"':""}>Upload scanned PDF or photos</label><input type="file" id="omr-file" accept="application/pdf,image/*" multiple class="sr"></div>
+ <p class="subt" style="margin:0">Scan the sheets with Adobe Scan (or CamScanner) using the <b>Original</b> or <b>Grayscale</b> filter, as one PDF; piles of different specialties can be mixed. Reading happens on this computer. Only doubtful marks come to you for a decision.</p>
+ ${R?`<div id="omrrun" style="display:grid;gap:6px"><div class="subt">${esc(R.msg)}</div><div class="bar"><i style="width:${R.total?Math.round(R.done/R.total*100):5}%"></i></div></div>`:""}
+ ${S.length?`<div class="omrstats"><div><b>${used.length}</b><span>sheets read</span></div><div><b>${need.length}</b><span>need review</span></div><div><b>${ok.length}</b><span>ready</span></div><div><b>${absent.length}</b><span>candidates without a sheet</span></div></div>
+  ${keyMiss.length?`<div class="flag">Answer key incomplete for ${keyMiss.map(esc).join(", ")}. Marks are worked out from the key, so finish it before putting results into the exam.</div>`:""}
+  <div class="seg2" role="tablist">${[["review",`Needs review (${need.length})`],["all",`All sheets (${used.length})`],["absent",`Without a sheet (${absent.length})`]].map(([k,l])=>`<button class="chip" data-omrtab="${k}" aria-pressed="${tab===k}">${l}</button>`).join("")}</div>
+  <div style="display:grid;gap:10px">${body}</div>
+  <div class="actions" style="justify-content:flex-start"><button class="btn primary" data-act="omr-apply" ${need.length||keyMiss.length||!ok.length?"disabled":""}>Put ${ok.length} result${ok.length===1?"":"s"} into the exam</button>${need.length?`<span class="subt">Finish the review first.</span>`:""}</div>`:""}</div>`}
+{const _o=omrPanel;omrPanel=function(x){return _o(x)+omrScanPanel(x)}}
+function omrCrop(x,s,box,h){const src=UI.omrImg[s.id];if(!box)return"";const[x0,y0,x1,y1]=box,W=x1-x0,H=y1-y0;
+ if(src)return`<div class="omrcrop" style="height:${h}px;aspect-ratio:${(W/H*(s.ar||.707)).toFixed(3)};background-image:url(${src});background-size:${(100/W).toFixed(2)}% ${(100/H).toFixed(2)}%;background-position:${(x0/(1-W)*100).toFixed(2)}% ${(y0/(1-H)*100).toFixed(2)}%"></div>`;
+ return s.img?`<div class="omrcrop" data-omrimg="${esc(s.img)}" data-box="${box.join(",")}" style="height:${h}px;aspect-ratio:${(W/H*.707).toFixed(3)}"></div>`:`<span class="subt">(image not kept)</span>`}
+function omrWho(x,s){const p=s.pid&&DB.pgts.find(q=>q.id===s.pid);return p?`Dr. ${esc(p.name)} <span class="subt">${esc(p.code||"")} · ${esc(s.spec||p.spec)}</span>`:`<span class="d-red">Not identified</span>${s.roll?` <span class="subt">roll read as ${esc(s.roll)}</span>`:""}`}
+function omrReviewCard(x,s){const open=omrOpen(x,s),letters="ABCDE".slice(0,(omrSpec(x,s.spec)||{opts:5}).opts).split("");
+ const cands=exCands(x).slice().sort((a,b)=>(exPaperOf(x,a)===s.spec?0:1)-(exPaperOf(x,b)===s.spec?0:1)||a.name.localeCompare(b.name));
+ const issue=open.includes("issue")||open.includes("cand")?`<div class="flag" style="display:grid;gap:8px"><b>${esc(open.includes("cand")?OMR_ISSUE["not-candidate"]:OMR_ISSUE[s.issue]||s.issue)}</b>${s.err?`<span class="subt">${esc(s.err)}</span>`:""}
+  ${s.rbox?omrCrop(x,s,s.rbox,190):""}
+  ${["unidentified","roll","no-paper","other-paper"].includes(s.issue)||open.includes("cand")?`<label class="f">This sheet belongs to<select data-omrwho="${s.id}">${opt([["","Choose the candidate"],...cands.map(p=>[p.id,`Dr. ${p.name} · ${p.code||""} · ${exPaperOf(x,p)}`])],s.pid||"")}</select></label>`:""}
+  <div class="actions" style="justify-content:flex-start">${open.includes("cand")?`<button class="btn small" data-act="omr-addcand" data-id="${s.id}">Add to the candidate list</button>`:""}${s.issue==="other-exam"||s.issue==="unreadable"?`<button class="btn small" data-act="omr-skip" data-id="${s.id}">Leave this sheet out</button>`:""}${["roll"].includes(s.issue)&&s.pid?`<button class="btn small" data-act="omr-okissue" data-id="${s.id}">Roll number is fine</button>`:""}${s.issue==="other-paper"&&s.pid?`<button class="btn small" data-act="omr-okissue" data-id="${s.id}">Correct: this candidate sat the ${esc(s.spec)} paper</button>`:""}</div></div>`:"";
+ const dup=open.includes("dup")?`<div class="flag" style="display:grid;gap:6px"><b>${OMR_ISSUE.duplicate}</b><span>Keep this sheet, or leave it out?</span><div class="actions" style="justify-content:flex-start"><button class="btn small" data-act="omr-keep" data-id="${s.id}">Keep this one</button><button class="btn small" data-act="omr-skip" data-id="${s.id}">Leave this one out</button></div></div>`:"";
+ const qs=open.filter(k=>k[0]==="q").map(k=>+k.slice(1)).sort((a,b)=>a-b).map(q=>{const[f,m]=s.fl[q];return`<div class="omrq"><div><b>Q${q}</b> <span class="subt">${esc(OMR_FL[f]||f)}${m?` · read as ${esc(m)}`:s.ans&&s.ans[q-1]&&s.ans[q-1]!=="-"&&s.ans[q-1]!=="*"?` · read as ${s.ans[q-1]}`:""}</span></div>${omrCrop(x,s,s.box&&s.box[q],44)}
+  <div class="omrpick">${letters.map(l=>`<button class="btn small ${(s.ans||"")[q-1]===l||(m||"").includes(l)?"read":""}" data-omrfix="${s.id}|${q}|${l}" title="${(s.ans||"")[q-1]===l?"What the reader saw":""}">${l}</button>`).join("")}<button class="btn small" data-omrfix="${s.id}|${q}|">No answer</button></div></div>`}).join("");
+ return`<div class="omrcard"><div class="head"><span>${omrWho(x,s)}</span><span class="subt">${esc(s.file)}${s.img||UI.omrImg[s.id]?` · <button class="btn link" data-omrview="${s.id}">View sheet</button>`:""}</span></div>${issue}${dup}${qs}</div>`}
+function omrAllTable(x,L){const rows=L.slice().sort((a,b)=>(a.spec||"").localeCompare(b.spec||"")||((DB.pgts.find(p=>p.id===a.pid)||{}).name||"").localeCompare((DB.pgts.find(p=>p.id===b.pid)||{}).name||""));
+ return`<div class="tblwrap"><table><thead><tr><th>Candidate</th><th>Paper</th><th>Roll</th><th class="num">Score</th><th>Status</th><th></th></tr></thead><tbody>${rows.map(s=>{const sc=omrScore(x,s),n=omrNeeds(x,s);
+  return`<tr><td>${omrWho(x,s)}</td><td>${esc(s.spec||"—")}</td><td class="code">${esc(s.roll||"")}</td><td class="num">${sc?`${sc.o}/${sc.t} · ${sc.pct}%`:"—"}</td><td>${n?'<span class="pill p-pause">Review</span>':'<span class="pill p-ric">Ready</span>'}</td><td>${s.img||UI.omrImg[s.id]?`<button class="btn link" data-omrview="${s.id}">View</button>`:""}<button class="btn link" data-act="omr-skip" data-id="${s.id}">Remove</button></td></tr>`}).join("")}</tbody></table></div>`}
+
+/* ---------- actions ---------- */
+document.addEventListener("change",e=>{if(e.target.id==="omr-file"&&e.target.files.length){const x=DB.exams.find(v=>v.id===route.id);if(!x)return;const f=[...e.target.files];e.target.value="";omrProcess(x,f)}
+ const w=e.target.closest("[data-omrwho]");if(w){const x=DB.exams.find(v=>v.id===route.id),s=x&&omrScans(x).find(v=>v.id===w.dataset.omrwho);if(!s)return;const p=DB.pgts.find(q=>q.id===w.value);if(!p)return;
+  xlog(x,`OMR: sheet ${s.file} assigned to Dr. ${p.name}`);
+  if(!s.ans){if(!omrSpec(x,exPaperOf(x,p))){toast(`Set up the ${exPaperOf(x,p)} sheet first`);return}omrReread(x,s,p.id);return}
+  s.pid=p.id;if(["unidentified","roll","no-paper"].includes(s.issue))delete s.issue;if(s.issue==="other-paper"&&exPaperOf(x,p)===s.spec)delete s.issue;omrDupes(x);persist();render()}});
+document.addEventListener("click",async e=>{if(!DB||!DB.exams||!e.target.closest("[data-omrtab],[data-omrfix],[data-omrview],[data-act^=\"omr-\"]"))return;const x=DB.exams.find(v=>v.id===route.id);
+ const t=e.target.closest("[data-omrtab]");if(t){UI.omrTab=t.dataset.omrtab;render();return}
+ const f=e.target.closest("[data-omrfix]");if(f&&x){const[id,q,l]=f.dataset.omrfix.split("|");const s=omrScans(x).find(v=>v.id===id);if(!s)return;s.fix[q]=l;persist();const y=window.scrollY;render();window.scrollTo(0,y);return}
+ const v=e.target.closest("[data-omrview]");if(v&&x){const s=omrScans(x).find(z=>z.id===v.dataset.omrview);if(s)omrView(x,s);return}
+ const a=e.target.closest('[data-act="omr-skip"],[data-act="omr-keep"],[data-act="omr-addcand"],[data-act="omr-okissue"],[data-act="omr-absent"],[data-act="omr-apply"]');if(!a||!x)return;const s=a.dataset.id&&omrScans(x).find(z=>z.id===a.dataset.id);
+ if(a.dataset.act==="omr-skip"&&s){s.use=false;omrDupes(x);xlog(x,`OMR: sheet ${s.file} left out`)}
+ if(a.dataset.act==="omr-keep"&&s){omrScans(x).filter(z=>z!==s&&z.pid===s.pid).forEach(z=>z.use=false);delete s.issue;omrDupes(x);xlog(x,`OMR: kept sheet ${s.file} for the candidate scanned twice`)}
+ if(a.dataset.act==="omr-okissue"&&s){s.okIssue=true}
+ if(a.dataset.act==="omr-addcand"&&s){const p=DB.pgts.find(q=>q.id===s.pid);if(x.cands){if(!x.cands.includes(s.pid))x.cands.push(s.pid)}else{x.added=x.added||[];if(!x.added.includes(s.pid))x.added.push(s.pid)}if(x.removed)delete x.removed[s.pid];xlog(x,`Added Dr. ${p?p.name:""} to the candidate list (sheet scanned)`)}
+ if(a.dataset.act==="omr-absent"){const used=omrScans(x).filter(z=>z.use);const L=exCands(x).filter(p=>omrSpec(x,exPaperOf(x,p))&&!used.some(z=>z.pid===p.id)&&!x.absent[p.id]);L.forEach(p=>{x.absent[p.id]=true;delete x.marks[p.id]});xlog(x,`OMR: ${L.length} candidates without a sheet marked absent`)}
+ if(a.dataset.act==="omr-apply"){omrApply(x);return}
+ persist();const y=window.scrollY;render();window.scrollTo(0,y)});
+function omrApply(x){const used=omrScans(x).filter(s=>s.use&&s.pid&&!omrNeeds(x,s));let n=0;x.raw=x.raw||{};x.secs=x.secs||{};
+ used.forEach(s=>{const sc=omrScore(x,s);if(!sc)return;x.marks[s.pid]=sc.pct;x.raw[s.pid]={o:sc.o,t:sc.t};x.secs[s.pid]=sc.secs;delete x.absent[s.pid];if(x.res)delete x.res[s.pid];n++});
+ if(x.cands)used.forEach(s=>{if(!x.cands.includes(s.pid))x.cands.push(s.pid)});
+ if((x.stage||0)<4)x.stage=Math.max(x.stage||0,4);if(!x.cands)x.cands=exCands(x).map(p=>p.id);
+ xlog(x,`OMR results put into the exam: ${n} candidates`);persist();toast(`${n} results entered`);render()}
+/* re-score after the key changes (dropped question, second answer, corrected key) */
+{const _k=sheetOmrKey;sheetOmrKey=function(x,sp){_k(x,sp);const o=SHEET.onSave;SHEET.onSave=(...a)=>{const r=o(...a);if(r!==false){const has=omrScans(x).some(s=>s.use&&s.spec===sp&&x.marks[s.pid]!=null);if(has){omrApply(x);toast(`Answer key saved; ${sp} re-marked`)}}return r}}}
+
+/* full sheet view */
+async function omrView(x,s){let src=UI.omrImg[s.id];if(!src&&s.img&&LIVE){try{const{data}=await SYNC.sb.storage.from("dme-uploads").createSignedUrl(s.img,600);src=data&&data.signedUrl}catch(e){}}if(!src){toast("The sheet image is not available");return}
+ document.getElementById("overlay").innerHTML=`<div class="scrim" data-act="close"></div><div class="qrfull" role="dialog" aria-modal="true" aria-label="Scanned sheet" style="max-width:min(760px,96vw);max-height:94vh;overflow:auto"><div class="head" style="width:100%"><b>${omrWho(x,s)}</b><button class="btn small" data-act="close">Close</button></div><img src="${src}" alt="Scanned sheet" style="width:100%;height:auto;border:1px solid var(--line)"></div>`}
+/* crops of stored images on the live app: fetch a signed address once per sheet */
+const OMR_URL={};
+setInterval(async()=>{const el=document.querySelector(".omrcrop[data-omrimg]:not([data-l])");if(!el||!LIVE)return;const p=el.dataset.omrimg;
+ if(!OMR_URL[p]){try{const{data}=await SYNC.sb.storage.from("dme-uploads").createSignedUrl(p,3600);OMR_URL[p]=data&&data.signedUrl}catch(e){}}
+ document.querySelectorAll(`.omrcrop[data-omrimg="${CSS.escape(p)}"]`).forEach(c=>{const[x0,y0,x1,y1]=c.dataset.box.split(",").map(Number),W=x1-x0,H=y1-y0;c.dataset.l=1;if(!OMR_URL[p])return;c.style.backgroundImage=`url(${OMR_URL[p]})`;c.style.backgroundSize=`${(100/W).toFixed(2)}% ${(100/H).toFixed(2)}%`;c.style.backgroundPosition=`${(x0/(1-W)*100).toFixed(2)}% ${(y0/(1-H)*100).toFixed(2)}%`})},400);
+
+/* =====================================================================
+   V30 · ITEM ANALYSIS for OMR papers: paper statistics (mean, spread,
+   KR-20 reliability), section and year averages, and per question
+   difficulty, discrimination, point-biserial and distractor analysis,
+   with plain-language flags for the paper setter.
+   ===================================================================== */
+UI.iaSp=UI.iaSp||"";UI.iaFlag=false;
+function iaData(x,sp){const s=omrSpec(x,sp);if(!s)return null;const key=omrKeyArr(s),L="ABCDE".slice(0,s.opts).split(""),drop=new Set(s.drop||[]),alt=s.alt||{};
+ const rows=omrScans(x).filter(z=>z.use&&z.pid&&z.spec===sp&&z.ans&&!omrNeeds(x,z)).map(z=>({p:DB.pgts.find(q=>q.id===z.pid),A:omrFinal(x,z),sc:omrScore(x,z)})).filter(r=>r.p&&r.sc);
+ if(!rows.length)return{s,rows,items:[]};
+ const ok=(r,i)=>!!r.A[i]&&(r.A[i]===key[i]||alt[i+1]===r.A[i]);const tot=rows.map(r=>r.sc.o),n=rows.length;
+ const mean=tot.reduce((a,b)=>a+b,0)/n,sd=Math.sqrt(tot.reduce((a,b)=>a+(b-mean)**2,0)/n);
+ const sorted=rows.slice().sort((a,b)=>b.sc.o-a.sc.o),g=Math.max(1,Math.round(n*.27)),U=sorted.slice(0,g),Lo=sorted.slice(-g);
+ const items=[];let spq=0,k=0;
+ for(let i=0;i<s.n;i++){const q=i+1;if(!key[i]||drop.has(q)){items.push({q,dropped:drop.has(q),nokey:!key[i]});continue}k++;
+  const c=rows.map(r=>ok(r,i)?1:0),P=c.reduce((a,b)=>a+b,0)/n;spq+=P*(1-P);
+  const D=(U.filter(r=>ok(r,i)).length-Lo.filter(r=>ok(r,i)).length)/g;
+  /* point-biserial against the rest of the paper (the item itself left out) */
+  const rest=rows.map((r,j)=>r.sc.o-c[j]),mr=rest.reduce((a,b)=>a+b,0)/n,sr=Math.sqrt(rest.reduce((a,b)=>a+(b-mr)**2,0)/n),mc=P,sc=Math.sqrt(P*(1-P));
+  const rpb=sr&&sc?rows.reduce((a,_,j)=>a+(c[j]-mc)*(rest[j]-mr),0)/n/(sr*sc):0;
+  const opt={};L.forEach(l=>opt[l]={all:rows.filter(r=>r.A[i]===l).length,u:U.filter(r=>r.A[i]===l).length,lo:Lo.filter(r=>r.A[i]===l).length});const blank=rows.filter(r=>!r.A[i]).length;
+  const dis=L.filter(l=>l!==key[i]&&l!==alt[q]),nfd=dis.filter(l=>opt[l].all/n<.05);
+  const flags=[];if(n>=5){
+   const wk=dis.find(l=>opt[l].u>opt[key[i]].u&&opt[l].u>=2);if(wk)flags.push(["key",`Possible wrong key: more of the strongest candidates chose ${wk}`]);
+   if(D<0)flags.push(["neg","Negative discrimination: weaker candidates did better"]);else if(D<.2)flags.push(["weak","Poor discrimination"]);
+   if(P>.9)flags.push(["easy","Very easy (over 90% correct)"]);else if(P<.2)flags.push(["hard","Very hard (under 20% correct)"]);
+   if(nfd.length>=2)flags.push(["nfd",`${nfd.length} distractors hardly chosen (${nfd.join(", ")})`])}
+  items.push({q,key:key[i]+(alt[q]?"/"+alt[q]:""),P,D,rpb,opt,blank,nfd,flags,sec:(s.sections||[]).find(z=>q>=z.from&&q<=z.to)?.name||""})}
+ const kr20=k>1&&sd>0?k/(k-1)*(1-spq/(sd*sd)):null;
+ return{s,rows,items,n,k,mean,sd,kr20,sem:kr20!=null?sd*Math.sqrt(Math.max(0,1-kr20)):null,g,med:tot.slice().sort((a,b)=>a-b)[n>>1],min:Math.min(...tot),max:Math.max(...tot)}}
+const iaD=v=>v==null?"—":(v>=0?"":"−")+Math.abs(v).toFixed(2);
+function iaPanel(x){if(isViewer()&&!canSee("exams"))return"";const specs=Object.keys(omrOf(x).specs||{}).filter(sp=>omrScans(x).some(z=>z.use&&z.spec===sp&&z.pid));if(!specs.length)return"";
+ if(!specs.includes(UI.iaSp))UI.iaSp=specs[0];const sp=UI.iaSp,R=iaData(x,sp);
+ const chips=`<div class="seg2">${specs.map(s=>`<button class="chip" data-iasp="${esc(s)}" aria-pressed="${s===sp}">${esc(s)}</button>`).join("")}</div>`;
+ if(!R||!R.rows.length)return`<div class="panel" style="display:grid;gap:10px"><h3 style="margin:0">Item analysis</h3>${chips}<p class="subt" style="margin:0">Results appear here once the sheets for this paper have been reviewed.</p></div>`;
+ const pm=x.passSpec&&x.passSpec[exPaperSpec(sp)]!=null?x.passSpec[exPaperSpec(sp)]:x.passMark,pass=R.rows.filter(r=>r.sc.pct>=pm).length;
+ const bins=Array(10).fill(0);R.rows.forEach(r=>bins[Math.min(9,Math.floor(r.sc.pct/10))]++);const bmax=Math.max(1,...bins);
+ const secs={};R.rows.forEach(r=>Object.entries(r.sc.secs||{}).forEach(([k,[o,t]])=>{secs[k]=secs[k]||[0,0];secs[k][0]+=o;secs[k][1]+=t}));
+ const yrs={};R.rows.forEach(r=>{const y=examYear(x,r.p)||"?";yrs[y]=yrs[y]||[];yrs[y].push(r.sc.pct)});
+ const rel=R.kr20==null?"—":R.kr20>=.8?"good":R.kr20>=.7?"acceptable":R.kr20>=.5?"low":"poor";
+ const flagged=R.items.filter(i=>i.flags&&i.flags.length),L="ABCDE".slice(0,R.s.opts).split("");
+ const show=R.items.filter(i=>!UI.iaFlag||(i.flags&&i.flags.length)||i.dropped);
+ const tile=(b,l,s)=>`<div><b>${b}</b><span>${l}</span>${s?`<small class="subt">${s}</small>`:""}</div>`;
+ return`<div class="panel" id="ia" style="display:grid;gap:12px"><div class="head"><h3 style="margin:0">Item analysis</h3>${xbtn(`omritem:${x.id}:${sp}`)}</div>${chips}
+ ${R.n<10?`<div class="flag info">Only ${R.n} candidate${R.n>1?"s":""} on this paper: treat the question statistics as a rough guide.</div>`:""}
+ <div class="surstat">${tile(R.n,"candidates")}${tile(`${(R.mean/R.k*100).toFixed(1)}%`,"average",`median ${(R.med/R.k*100).toFixed(0)}% · range ${(R.min/R.k*100).toFixed(0)}-${(R.max/R.k*100).toFixed(0)}%`)}${tile(`${pass} / ${R.n}`,"passed",`pass mark ${pm}%`)}${tile(R.kr20==null?"—":R.kr20.toFixed(2),"reliability (KR-20)",rel+(R.sem!=null?` · error of measurement ±${(R.sem/R.k*100).toFixed(1)}%`:""))}${tile(flagged.length,"questions to look at",`of ${R.k} marked`)}</div>
+ <div class="cols two"><div><div class="subt" style="margin-bottom:6px">Score distribution</div><div class="iahist">${bins.map((v,i)=>`<div title="${i*10}-${i*10+9}%: ${v}"><i style="height:${v/bmax*100}%;background:${i*10+9<pm?"var(--bad)":"var(--ok)"}"></i><span>${i*10}</span></div>`).join("")}</div></div>
+  <div style="display:grid;gap:8px;align-content:start">${Object.keys(secs).length?`<div><div class="subt">Average by section</div>${Object.entries(secs).map(([k,[o,t]])=>`<div class="iarow"><span>${esc(k)}</span><b>${(o/t*100).toFixed(1)}%</b></div>`).join("")}</div>`:""}
+   <div><div class="subt">Average by training year</div>${Object.keys(yrs).sort().map(y=>`<div class="iarow"><span>Year ${y} <span class="subt">(${yrs[y].length})</span></span><b>${(yrs[y].reduce((a,b)=>a+b,0)/yrs[y].length).toFixed(1)}%</b></div>`).join("")}</div></div></div>
+ <label class="subt" style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="ia-flag" ${UI.iaFlag?"checked":""}> Show only questions to look at (${flagged.length})</label>
+ <div class="tblwrap"><table class="iatbl"><thead><tr><th class="num">Q</th><th>Key</th><th class="num" title="Percentage who answered correctly">Correct</th><th class="num" title="Top 27% minus bottom 27%">Discrim.</th><th class="num" title="Point-biserial correlation">r<sub>pb</sub></th>${L.map(l=>`<th class="num">${l}</th>`).join("")}<th class="num">Blank</th><th>To look at</th></tr></thead><tbody>
+ ${show.map(i=>i.dropped?`<tr><td class="num">${i.q}</td><td colspan="${6+L.length}" class="subt">Dropped: nobody loses marks</td></tr>`:i.nokey?`<tr><td class="num">${i.q}</td><td colspan="${6+L.length}" class="subt">No key entered</td></tr>`:`<tr class="${i.flags.some(f=>f[0]==="key")?"changed":""}"><td class="num"><b>${i.q}</b></td><td><b>${i.key}</b></td><td class="num">${Math.round(i.P*100)}%</td><td class="num ${i.D<0?"d-red":i.D<.2?"d-amb":""}">${iaD(i.D)}</td><td class="num">${iaD(i.rpb)}</td>
+  ${L.map(l=>`<td class="num ${i.key.includes(l)?"iakey":i.nfd.includes(l)?"subt":""}">${Math.round(i.opt[l].all/R.n*100)}%</td>`).join("")}<td class="num subt">${i.blank?Math.round(i.blank/R.n*100)+"%":""}</td><td class="wrapcell">${i.flags.map(f=>`<div class="${f[0]==="key"||f[0]==="neg"?"d-red":""}">${esc(f[1])}</div>`).join("")}</td></tr>`).join("")}
+ </tbody></table></div>
+ <p class="subt" style="margin:0">Correct: 30-80% is the useful range. Discrimination (top 27% minus bottom 27% of candidates): 0.30 or more is good, under 0.20 is poor, negative needs checking. Distractors chosen by under 5% are greyed. A possible wrong key usually means the key or the question needs checking; fix it in Answer key and everyone is re-marked.</p></div>`}
+document.addEventListener("click",e=>{const c=e.target.closest("[data-iasp]");if(!c)return;UI.iaSp=c.dataset.iasp;const y=window.scrollY;render();window.scrollTo(0,y)});
+document.addEventListener("change",e=>{if(e.target.id==="ia-flag"){UI.iaFlag=e.target.checked;const y=window.scrollY;render();window.scrollTo(0,y)}});
+EXPORTS.omritem=(xid,sp)=>{const x=DB.exams.find(e=>e.id===xid),R=iaData(x,sp),L="ABCDE".slice(0,R.s.opts).split("");
+ const cand=R.rows.slice().sort((a,b)=>b.sc.o-a.sc.o).map((r,i)=>({"Rank":i+1,"PGT ID":r.p.code||"","Name":"Dr. "+r.p.name,"Year":examYear(x,r.p)||"","Correct":r.sc.o,"Out of":r.sc.t,"%":r.sc.pct,...Object.fromEntries(Object.entries(r.sc.secs||{}).map(([k,[o,t]])=>[k+" (%)",Math.round(o/t*1000)/10])),"Answers":r.A.map(a=>a||"-").join("")}));
+ const items=R.items.map(i=>i.dropped?{"Q":i.q,"Note":"Dropped"}:i.nokey?{"Q":i.q,"Note":"No key"}:{"Q":i.q,"Section":i.sec,"Key":i.key,"Correct %":Math.round(i.P*1000)/10,"Discrimination":+i.D.toFixed(2),"Point-biserial":+i.rpb.toFixed(2),...Object.fromEntries(L.map(l=>[l+" %",Math.round(i.opt[l].all/R.n*1000)/10])),"Blank %":Math.round(i.blank/R.n*1000)/10,"To look at":i.flags.map(f=>f[1]).join("; ")});
+ const sum=[{"Paper":sp,"Exam":`${x.title} · ${x.session}`,"Candidates":R.n,"Questions marked":R.k,"Average %":+(R.mean/R.k*100).toFixed(1),"SD %":+(R.sd/R.k*100).toFixed(1),"KR-20":R.kr20==null?"":+R.kr20.toFixed(2),"Questions to look at":R.items.filter(i=>i.flags&&i.flags.length).length}];
+ return{file:`Item analysis ${sp} ${x.session}`,sheets:[sheetFrom("Summary",sum),sheetFrom("Questions",items),sheetFrom("Candidates",cand)]}};
+
+/* =====================================================================
+   V31 · EXAM PAGE IN TABS + PAPERS PER YEAR + PRACTICE EXAMS
+   Candidates · Papers · Results · Analysis · History, following the way
+   an exam is actually run. A specialty can set one paper for all years,
+   one per year, or papers for groups of years (e.g. Years 3-5).
+   ===================================================================== */
+/* ---------- papers ---------- */
+const exYr=(x,p)=>examYear(x,p)||1;
+function exSplitOf(x,spec){return(x.split||{})[spec]||"all"}
+function exGroupsOf(x,spec){const m=exSplitOf(x,spec);if(m==="all")return null;
+ if(m==="year"){const ys=[...new Set(exCands(x).filter(p=>p.spec===spec).map(p=>exYr(x,p)))].sort((a,b)=>a-b);return ys.map(y=>[y,y])}
+ const g=String(m).split(",").map(t=>t.trim()).filter(Boolean).map(t=>{const[a,b]=t.split("-").map(v=>+v);return[a,b||a]}).filter(([a,b])=>a>0&&b>=a).sort((p,q)=>p[0]-q[0]);return g.length?g:null}
+const exGrpLabel=([a,b])=>a===b?`Year ${a}`:`Years ${a}-${b}`;
+function exPaperOf(x,p){const g=exGroupsOf(x,p.spec);if(!g)return p.spec;const y=exYr(x,p);const G=g.find(([a,b])=>y>=a&&y<=b)||(y<g[0][0]?g[0]:g[g.length-1]);return`${p.spec} · ${exGrpLabel(G)}`}
+function exPaperKeys(x){const C=exCands(x),out=[];exSpecs(x).forEach(sp=>{const g=exGroupsOf(x,sp);if(!g)out.push(sp);else g.forEach(G=>{const k=`${sp} · ${exGrpLabel(G)}`;if(C.some(p=>exPaperOf(x,p)===k))out.push(k)})});return out}
+const exPaperSpec=k=>String(k).split(" · ")[0];
+
+/* old actions now work on papers instead of specialties */
+{const _a=examAction;examAction=function(a,b){const x=DB.exams.find(e=>e.id===route.id);
+ if(x&&a==="ex-req"){exPaperKeys(x).forEach(k=>{x.papers[k]={...(x.papers[k]||{}),req:true}});x.stage=Math.max(x.stage,1);xlog(x,"Papers requested");persist();render();return}
+ if(x&&a==="ex-fin"){const nf=exPaperKeys(x).filter(k=>!(x.papers[k]||{}).final).length;if(nf&&b.dataset.armed!=="1"){b.dataset.armed="1";b.textContent=`${nf} not final · tap again to continue`;return}x.stage=Math.max(x.stage,2);xlog(x,"Papers finalised");persist();render();return}
+ return _a(a,b)}}
+
+/* ---------- page ---------- */
+UI.exTab=UI.exTab||{};UI.exQ="";UI.exF="";
+function exDefTab(x){return x.stage>=5?"analysis":x.stage>=3?"results":"cand"}
+vExam=function(){const x=DB.exams.find(e=>e.id===route.id);if(!x)return`<div class="panel">Not found. <a href="#exams">Back</a></div>`;ensureRolls(x);x.papers=x.papers||{};
+ const C=exCands(x),keys=exPaperKeys(x),tab=UI.exTab[x.id]||exDefTab(x),st=exStats(x),fl=exFlags(x).filter(f=>!/specialt/i.test(f));
+ const nf=keys.filter(k=>!(x.papers[k]||{}).final).length,omrN=keys.filter(k=>omrSpec(x,k)).length;
+ const nextTxt=[`<b>Ask each department for its paper.</b> ${keys.length} papers, ${C.length} candidates.`,`<b>Collect the papers.</b> ${keys.length-nf} of ${keys.length} final; tick them off in Papers.`,`<b>Get ready for the day.</b> Set up and print OMR sheets in Papers${omrN<keys.length?` (${omrN} of ${keys.length} set up)`:""}; check the candidate list.`,`<b>Mark the results.</b> ${st.pending?`${st.pending} candidates still need marks or absent.`:"All candidates have marks or are absent."} Scan the OMR sheets in Results.`,`<b>Check and publish.</b> Look over Analysis, then publish.`][x.stage]||"";
+ const nextBtn=[["ex-req","Papers requested"],["ex-fin","Papers finalised"],["ex-held","Mark exam as held"],["ex-done","Results entered"],["ex-pub","Publish results"]][x.stage];
+ const tabs=[["cand",`Candidates · ${C.length}`],["papers",`Papers · ${keys.length}`],["results","Results"],["analysis","Analysis"],["history","History"]];
+ let body="";
+ if(tab==="cand")body=exCandTab(x);if(tab==="papers")body=exPapersTab(x);if(tab==="results")body=exResultsTab(x);if(tab==="analysis")body=exAnalysisTab(x);
+ if(tab==="history")body=`${exTimeline(x)}<div class="panel flush"><h3>History</h3><div class="tblwrap"><table><tbody>${x.log.slice().reverse().map(l=>`<tr><td class="code">${fdt(l.at)}</td><td class="wrapcell">${esc(l.what)}</td><td>${esc(l.by)}</td></tr>`).join("")||`<tr><td class="empty">No activity yet.</td></tr>`}</tbody></table></div></div>`;
+ return`<div><a href="#exams" class="btn link" style="padding-left:0">← All examinations</a></div>
+ <div class="panel" style="display:grid;gap:12px"><div class="prof"><div class="who"><div class="code">${esc(x.session)}${x.practice?' · <span class="pill p-pause">Practice: not counted</span>':""}</div><h2>${esc(x.title)}</h2><div class="meta"><span>${x.date?fd(x.date):"Date not set"}</span><span>${esc(x.venue)||"Venue not set"}</span><span>Pass mark ${x.passMark}%</span><span>${x.scope==="ric"?"PGTs at RIC":"All active PGTs"}</span></div></div>
+  <div class="actions">${x.stage>=4&&!x.practice?`<a class="btn" href="#certx-${x.id}">Merit certificates</a>`:""}<button class="btn" data-act="ex-edit">Edit details</button>${xbtn("exam:"+x.id)}${x.practice?`<button class="btn danger" data-act="ex-delpr">Delete practice exam</button>`:""}</div></div>
+  <div class="stepper ex">${EX_STAGES.map((s,i)=>`<div class="${i<x.stage?"done":i===x.stage?"now":""}">${s}</div>`).join("")}</div>
+  ${x.stage<5?`<div class="exnext"><span>${nextTxt}</span><span class="actions">${x.stage>0?`<button class="btn small" data-act="ex-back">Back a step</button>`:""}${nextBtn?`<button class="btn small primary" data-act="${nextBtn[0]}">${nextBtn[1]}</button>`:""}</span></div>`:`<div class="exnext"><span><b>Results published.</b></span><span class="actions"><button class="btn small" data-act="ex-back">Back a step</button></span></div>`}
+  ${fl.length?`<div class="flag">${fl.map(esc).join("<br>")}</div>`:""}</div>
+ <div class="extabs" role="tablist">${tabs.map(([k,l])=>`<button role="tab" class="${k===tab?"on":""}" aria-selected="${k===tab}" data-extab="${k}">${l}</button>`).join("")}</div>
+ ${body}<datalist id="ex-fac">${DB.faculty.filter(f=>f.active!==false).map(f=>`<option value="${esc(facName(f))}">`).join("")}</datalist>`};
+document.addEventListener("click",e=>{const t=e.target.closest("[data-extab]");if(t){const x=DB.exams.find(v=>v.id===route.id);if(x){UI.exTab[x.id]=t.dataset.extab;render();window.scrollTo(0,0)}return}
+ const f=e.target.closest("[data-exf]");if(f){UI.exF=f.dataset.exf;UI.exSel.sp=UI.exF?[UI.exF]:[];UI.exSel.g=[];const y=window.scrollY;render();window.scrollTo(0,y)}});
+
+/* ---------- Candidates ---------- */
+function exCandTab(x){const C=exCands(x),ex=exExcluded(x),lock=x.stage>=3,others=verified().filter(p=>CUR.get(p.id).active&&!C.includes(p));
+ const specs=exSpecs(x),F=specs.includes(UI.exF)?UI.exF:"",q=UI.exQ.trim().toLowerCase();
+ const L=C.filter(p=>(!F||p.spec===F)&&(!q||(p.name+" "+(p.code||"")+" "+(x.roll?.[p.id]||"")).toLowerCase().includes(q)));
+ const grp={};L.forEach(p=>{(grp[p.spec]=grp[p.spec]||[]).push(p)});
+ const rows=Object.keys(grp).sort((a,b)=>specIdx(a)-specIdx(b)).map(sp=>{const P=grp[sp].sort((a,b)=>exYr(x,a)-exYr(x,b)||(x.roll?.[a.id]||"").localeCompare(x.roll?.[b.id]||"")||a.name.localeCompare(b.name));const split=exGroupsOf(x,sp);
+  return`<tr class="exgh"><td colspan="6"><b>${esc(sp)}</b> <span class="subt">${P.length} · ${split?`${exPaperKeys(x).filter(k=>exPaperSpec(k)===sp).length} papers`:"one paper"}</span></td></tr>`+P.map(p=>{const ab=x.absent[p.id];return`<tr><td>${x.roll&&!lock?`<input data-exroll="${p.id}" value="${esc(x.roll[p.id]||"")}" class="rollin" aria-label="Roll number for Dr. ${esc(p.name)}">`:`<span class="code">${esc(x.roll?.[p.id]||"—")}</span>`}</td>
+   <td>${pgtName(p)}<div class="code">${esc(p.code||"")}</div></td><td>Year ${exYr(x,p)}<div class="subt">${esc(p.program)}</div></td><td class="subt">${split?esc(exPaperOf(x,p).split(" · ")[1]):""}</td>
+   <td>${ab?'<span class="pill p-done">Absent</span>':x.marks[p.id]!=null?`<span class="subt">${x.marks[p.id]}%</span>`:""}</td><td>${lock?"":`<button class="btn link" data-act="ex-excl" data-id="${p.id}">Exclude</button>`}</td></tr>`}).join("")}).join("");
+ return`<div class="panel" style="display:grid;gap:10px"><p class="subt" style="margin:0">${lock?"<b>The list is fixed</b> because the exam has been marked as held. Use Back a step to change it.":`Made from ${x.scope==="ric"?"active PGTs currently at RIC":"all active PGTs, including those on rotation"}${(x.added||[]).length?`, plus ${(x.added||[]).length} added by hand`:""}${ex.length?`, minus ${ex.length} excluded`:""}. It updates by itself as PGTs join, leave or rotate, until the exam is marked as held.`}</p>
+  ${lock?"":`<div class="toolbar"><input id="ex-add" list="ex-pgts" placeholder="Add a PGT by name or ID" style="flex:1 1 240px" aria-label="Add PGT"><datalist id="ex-pgts">${others.map(p=>`<option value="${esc(pgtLabel(p))}">`).join("")}</datalist><button class="btn small" data-act="ex-addc">Add to exam</button><select id="ex-scope" aria-label="Who is eligible">${opt([["ric","Eligible: active PGTs at RIC"],["all","Eligible: all active PGTs"]],x.scope)}</select></div>`}
+  <div class="toolbar"><input type="search" id="ex-q" value="${esc(UI.exQ)}" placeholder="Search name, PGT ID or roll number" style="flex:1 1 220px" aria-label="Search candidates"><span class="subt">${L.length} shown</span>
+   <span class="actions">${x.roll?"":`<button class="btn small primary" data-act="ex-roll">Make roll numbers</button>`}${waBtn(`examsel:${x.id}`,"WhatsApp list")}${xbtn("examcands:"+x.id,"Download list")}</span></div>
+  <div class="chips"><button class="chip" data-exf="" aria-pressed="${!F}">All<span class="c">${C.length}</span></button>${specs.map(s=>`<button class="chip" data-exf="${esc(s)}" aria-pressed="${F===s}">${esc(s)}<span class="c">${C.filter(p=>p.spec===s).length}</span></button>`).join("")}</div></div>
+ <div class="panel flush"><div class="tblwrap"><table class="extbl"><thead><tr><th>Roll no.</th><th>PGT</th><th>Year</th><th>Paper</th><th></th><th></th></tr></thead><tbody>${rows||`<tr><td colspan="6" class="empty">No candidates match.</td></tr>`}</tbody></table></div>
+ ${ex.length?`<details style="padding:10px 16px"><summary class="subt" style="cursor:pointer">${ex.length} excluded</summary><div class="tblwrap"><table><tbody>${ex.map(([p,r])=>`<tr><td>${pgtName(p)}<div class="subt">${esc(p.spec)}</div></td><td>${esc(r)}</td><td>${lock?"":`<button class="btn link" data-act="ex-incl" data-id="${p.id}">Include again</button>`}</td></tr>`).join("")}</tbody></table></div></details>`:""}</div>
+ <p class="subt">Roll number = PGT ID without the slashes (PGT/25/7/01 → 25701); it stays the same for the whole training.${x.roll?` <button class="btn link" data-act="ex-roll">Remake roll numbers</button>`:""}</p>`}
+document.addEventListener("input",e=>{if(e.target.id!=="ex-q")return;UI.exQ=e.target.value;const pos=e.target.selectionStart;render();const n=document.getElementById("ex-q");if(n){n.focus();n.setSelectionRange(pos,pos)}});
+
+/* ---------- Papers ---------- */
+const EX_SPLIT=[["all","One paper for all years"],["year","A separate paper for each year"],["custom","Papers for groups of years…"]];
+function exPapersTab(x){const specs=exSpecs(x),C=exCands(x),lk=x.stage>=3;const O=omrOf(x);
+ const blocks=specs.map(sp=>{const m=exSplitOf(x,sp),keys=exPaperKeys(x).filter(k=>exPaperSpec(k)===sp),n=C.filter(p=>p.spec===sp).length;
+  const rows=keys.map(k=>{const pp=x.papers[k]||{},s=omrSpec(x,k),cn=C.filter(p=>exPaperOf(x,p)===k).length,kd=s?omrKeyDone(s):0;
+   const cb=(f,l)=>`<label class="exck ${pp[f]?"on":""}"><input type="checkbox" data-expc="${esc(k)}|${f}" ${pp[f]?"checked":""} ${lk?"disabled":""}> ${l}</label>`;
+   return`<div class="exp"><div class="exp-h"><b>${esc(k.includes(" · ")?k.split(" · ")[1]:"All years")}</b><span class="subt">${cn} candidate${cn===1?"":"s"}</span></div>
+    <div class="exp-g"><div><div class="subt">Question paper</div><div class="exck-row">${cb("req","Requested")}${cb("recv","Received")}${cb("key","Key received")}${cb("mod","Moderated")}${cb("final","Final")}</div>
+     <div class="toolbar" style="margin-top:6px"><input data-expc="${esc(k)}|focal" value="${esc(pp.focal||"")}" list="ex-fac" placeholder="Focal person" aria-label="Focal person, ${esc(k)}" style="flex:1 1 180px" ${lk?"disabled":""}><input type="number" min="0" data-expc="${esc(k)}|mcqs" value="${pp.mcqs??""}" placeholder="No. of MCQs" style="width:120px" aria-label="Number of MCQs, ${esc(k)}" ${lk?"disabled":""}></div></div>
+     <div><div class="subt">OMR answer sheet</div>${s?`<div style="margin:4px 0">${s.n} questions · ${s.opts===4?"A-D":"A-E"}${s.sections.length?` · ${s.sections.length} sections`:""} · key ${kd===s.n?'<span class="pill p-ric">complete</span>':`<span class="pill p-pause">${kd}/${s.n}</span>`}${s.printed?` · <span class="subt">printed ${fd(s.printed.at.slice(0,10))}</span>`:""}</div>`:`<div class="subt" style="margin:4px 0">Not set up yet</div>`}
+      <div class="actions" style="justify-content:flex-start"><button class="btn small ${s?"":"primary"}" data-act="omr-setup" data-sp="${esc(k)}">${s?"Sheet setup":"Set up sheet"}</button>${s?`<button class="btn small" data-act="omr-key" data-sp="${esc(k)}">Answer key</button><button class="btn small" data-act="omr-print" data-sp="${esc(k)}">Print sheets</button>`:""}</div></div></div></div>`}).join("");
+  return`<div class="panel" style="display:grid;gap:10px"><div class="head"><h3 style="margin:0">${esc(sp)} <span class="subt" style="text-transform:none;letter-spacing:0">· ${n} candidates</span></h3>
+   <select data-exsplit="${esc(sp)}" aria-label="Papers for ${esc(sp)}" ${lk?"disabled":""}>${opt(EX_SPLIT,m==="all"||m==="year"?m:"custom")}</select></div>
+   ${m!=="all"&&m!=="year"?`<div class="toolbar"><label class="subt" for="exg-${esc(sp)}">Year groups</label><input id="exg-${esc(sp)}" data-exsplitc="${esc(sp)}" value="${esc(m==="custom"?"":m)}" placeholder="e.g. 1-2, 3-5" style="width:160px" ${lk?"disabled":""}><span class="subt">Years separated by commas; a dash joins years into one paper.</span></div>`:""}
+   ${rows}</div>`}).join("");
+ return`<div class="panel" style="display:grid;gap:8px"><p class="subt" style="margin:0">One block per specialty. If a specialty sets different papers for different training years, choose that at the top right of its block; each paper then has its own checklist, OMR sheet and answer key.${Object.keys(O.specs||{}).length?"":" Start with <b>Set up sheet</b> for each paper."}</p>
+  <div class="actions" style="justify-content:flex-start">${Object.keys(O.specs||{}).length?`<button class="btn small" data-act="omr-printall">Print all personalised sheets</button>`:""}${xbtn(`evalbeeall:${x.id}`,"Evalbee lists (if using Evalbee)")}</div></div>${blocks||`<div class="panel empty">No candidates yet.</div>`}`}
+document.addEventListener("change",e=>{const s=e.target.closest("[data-exsplit],[data-exsplitc]");if(!s)return;const x=DB.exams.find(v=>v.id===route.id);if(!x)return;x.split=x.split||{};
+ const sp=s.dataset.exsplit||s.dataset.exsplitc;let v=s.value.trim();
+ if(s.dataset.exsplit!=null){if(v==="custom"){x.split[sp]="custom";render();setTimeout(()=>document.querySelector(`[data-exsplitc="${CSS.escape(sp)}"]`)?.focus(),30);return}}
+ else{if(!/^\d+(-\d+)?(\s*,\s*\d+(-\d+)?)*$/.test(v)){toast("Write year groups like 1-2, 3-5");return}}
+ const was=exSplitOf(x,sp);if(v===was)return;
+ if(omrScans(x).some(z=>z.use&&exPaperSpec(z.spec)===sp)){toast("Sheets for this specialty have already been scanned; the papers cannot be split differently now.");render();return}
+ if(v==="all")delete x.split[sp];else x.split[sp]=v;
+ /* settings made for the whole specialty carry over to each new paper (and back) */
+ const O=omrOf(x),base=O.specs[sp]||Object.entries(O.specs).find(([k])=>exPaperSpec(k)===sp)?.[1];
+ if(base)exPaperKeys(x).filter(k=>exPaperSpec(k)===sp&&!O.specs[k]).forEach(k=>{omrSpec(x,k,true);Object.assign(O.specs[k],{n:base.n,opts:base.opts,sections:JSON.parse(JSON.stringify(base.sections||[]))})});
+ xlog(x,`${sp}: ${v==="all"?"one paper for all years":v==="year"?"a separate paper for each year":"papers for years "+v}`);persist();render()});
+
+/* ---------- Results ---------- */
+function exResultsTab(x){const keys=exPaperKeys(x),C=exCands(x),canMark=x.stage>=3&&x.stage<5;
+ const scan=omrScanPanel(x);
+ const tables=keys.map(k=>{const P=C.filter(p=>exPaperOf(x,p)===k).sort((a,b)=>(x.roll?.[a.id]||"").localeCompare(x.roll?.[b.id]||"")||a.name.localeCompare(b.name));const done=P.filter(p=>x.marks[p.id]!=null||x.absent[p.id]).length;
+  return`<details class="exres" ${UI.exOpen===k?"open":""} data-exopen="${esc(k)}"><summary><b>${esc(k)}</b> <span class="subt">${done} of ${P.length} done</span></summary><div class="tblwrap"><table><thead><tr><th>Roll</th><th>PGT</th><th>Year</th><th>Marks %</th><th>Absent</th><th>Result</th><th class="num">Correct</th></tr></thead><tbody>
+  ${P.map(p=>{const m=x.marks[p.id],ab=x.absent[p.id],r=x.raw&&x.raw[p.id];return`<tr><td class="code">${esc(x.roll?.[p.id]||"")}</td><td>${pgtName(p)}</td><td>${exYr(x,p)}</td><td><input type="number" min="0" max="100" step="0.1" style="width:86px" data-exmark="${p.id}" value="${m??""}" ${canMark&&!ab?"":"disabled"} aria-label="Marks for Dr. ${esc(p.name)}"></td><td><input type="checkbox" data-exabs="${p.id}" ${ab?"checked":""} ${canMark?"":"disabled"} aria-label="Absent"></td>
+   <td>${ab?'<span class="pill p-done">Absent</span>':m==null?"—":exPass(x,p,m)?'<span class="pill p-ric">Pass</span>':'<span class="pill p-bad">Fail</span>'}</td><td class="num subt">${r?`${r.o}/${r.t}`:""}</td></tr>`}).join("")}</tbody></table></div></details>`}).join("");
+ return`${x.stage<3?`<div class="flag info">Marks can be entered once the exam is marked as held. You can still try the OMR scanner here, for example on a practice exam.</div>`:""}
+ ${scan||`<div class="panel"><h3 style="margin:0">Scan answer sheets</h3><p class="subt" style="margin:6px 0 0">Set up the OMR sheet for at least one paper (Papers tab) first.</p></div>`}
+ <div class="panel" style="display:grid;gap:8px"><h3 style="margin:0">Marks by paper</h3><p class="subt" style="margin:0">Scanned results land here. You can also type a mark or tick absent by hand.</p>${tables||'<p class="subt">No papers.</p>'}</div>
+ <details class="panel"><summary style="cursor:pointer"><b>Using Evalbee instead</b> <span class="subt">upload Evalbee result files</span></summary><div style="margin-top:10px">${exImportOrig(x)}</div></details>`}
+document.addEventListener("toggle",e=>{const d=e.target;if(d.dataset&&d.dataset.exopen!=null&&d.open)UI.exOpen=d.dataset.exopen},true);
+
+/* ---------- Analysis ---------- */
+function exAnalysisTab(x){const a=examResultsPanel(x),b=iaPanel(x);return a||b?a+b:`<div class="panel empty">Analysis appears once results are in.</div>`}
+
+/* the scanning panel no longer carries the item analysis (it has its own tab), and the old OMR table moved to Papers */
+const exImportOrig=x=>IMPORT_ORIG(x);
+
+/* ---------- practice exams: the full process with nothing counted ---------- */
+{const _v=vExams;vExams=function(){const all=DB.exams,pr=all.filter(x=>x.practice);let h;DB.exams=all.filter(x=>!x.practice);try{h=_v()}finally{DB.exams=all}
+ if(pr.length)h+=`<div class="panel flush"><h3 style="padding:14px 16px 0;margin:0">Practice exams <span class="subt" style="text-transform:none;letter-spacing:0">· not counted anywhere</span></h3><div class="tblwrap" style="margin-top:8px"><table><tbody>${pr.map(x=>`<tr class="click" data-href="exam-${x.id}"><td>${esc(x.session)}</td><td>${omrScans(x).length} sheets scanned</td><td class="subt">${fd(x.date)}</td></tr>`).join("")}</tbody></table></div></div>`;
+ return h.replace(/(<button class="btn primary" data-act="ex-new">New examination<\/button>)/,'<span class="actions"><button class="btn" data-act="ex-practice" title="Try the whole process, including OMR scanning; nothing reaches PGT profiles">Practice exam</button>$1</span>')}}
+{const _p=pgtExams;pgtExams=function(p){return _p(p).filter(r=>!r.x.practice)}}
+document.addEventListener("click",e=>{const b=e.target.closest('[data-act="ex-practice"],[data-act="ex-delpr"]');if(!b)return;
+ if(b.dataset.act==="ex-practice"){const m=iso(TODAY).slice(0,7);const nx={id:uid("EX"),title:"Practice exam",session:"Practice "+fd(iso(TODAY)),month:m,date:iso(TODAY),venue:"",passMark:60,scope:"ric",stage:2,papers:{},marks:{},absent:{},cands:null,log:[],practice:true};DB.exams.push(nx);xlog(nx,"Practice exam created (not counted anywhere)");UI.exTab[nx.id]="papers";go("exam-"+nx.id);return}
+ const x=DB.exams.find(v=>v.id===route.id);if(!x||!x.practice)return;if(b.dataset.armed!=="1"){b.dataset.armed="1";b.textContent="Tap again to delete";return}
+ DB.exams=DB.exams.filter(v=>v!==x);log("Practice exam deleted","exams");persist();go("exams")});
 
 /* ---------- events ---------- */
 document.addEventListener("click",e=>{
