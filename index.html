@@ -4978,8 +4978,8 @@ const omrKeyDone=s=>omrKeyArr(s).filter(Boolean).length;
 const omrRoll=(x,p)=>(x.roll&&x.roll[p.id])||rollOf(p)||"";
 const omrSecText=s=>s.sections&&s.sections.length?s.sections.map(t=>`${t.name} ${t.from}-${t.to}`).join(" · "):"None";
 
-function omrPanel(x){if(isViewer())return"";ensureRolls(x);const specs=exPaperKeys(x),O=omrOf(x);
- const rows=specs.map(sp=>{const s=omrSpec(x,sp),n=exCands(x).filter(p=>exPaperOf(x,p)===sp).length,k=s?omrKeyDone(s):0;
+function omrPanel(x){if(isViewer())return"";ensureRolls(x);const specs=exAllPapers(x),O=omrOf(x);
+ const rows=specs.map(sp=>{const s=omrSpec(x,sp),n=exCands(x).filter(p=>exInPaper(x,p,sp)).length,k=s?omrKeyDone(s):0;
   return`<tr><td><b>${esc(sp)}</b></td><td class="num">${n}</td><td class="num">${s?s.n:"—"}</td><td>${s?s.opts===4?"A-D":"A-E":"—"}</td><td class="wrapcell subt">${s?esc(omrSecText(s)):"—"}</td>
    <td>${!s?'<span class="subt">Not set up</span>':k===s.n?'<span class="pill p-ric">Complete</span>':`<span class="pill p-pause">${k} / ${s.n}</span>`}</td>
    <td>${s&&s.printed?`<span class="subt">${fd(s.printed.at.slice(0,10))}</span>`:""}</td>
@@ -5063,7 +5063,7 @@ async function omrKeyImport(f){const K=UI.omrK;if(!K)return;try{if(!window.XLSX)
  toast(`${got} answers read from ${f.name}${miss?` · ${miss} still missing`:""}. Check them, then Save.`)}catch(e){toast(e.message||"Could not read this file. Save it as .xlsx or .csv and try again.")}}
 
 /* ---------- printing ---------- */
-function sheetOmrPrint(x,sp){const s=omrSpec(x,sp),C=exCands(x).filter(p=>exPaperOf(x,p)===sp);
+function sheetOmrPrint(x,sp){const s=omrSpec(x,sp),C=exCands(x).filter(p=>exInPaper(x,p,sp));
  openSheet(`Print sheets · ${sp}`,`<label class="f">What to print<select name="mode"><option value="p">Personalised sheets for the ${C.length} candidates</option><option value="b">Blank sheets</option><option value="pb">Both: personalised, then blank</option></select></label>
  <label class="f">Number of blank sheets<input type="number" name="nb" min="1" max="300" value="${Math.max(5,Math.ceil(C.length*.1))}"></label>
  <p class="subt" style="margin:0">${s.n} questions, ${s.opts} options${s.sections.length?`, sections ${esc(omrSecText(s))}`:""}. Print on A4 at 100% (not "fit to page"), one side only.</p>`,()=>{
@@ -5081,7 +5081,7 @@ async function omrMakePdf(x,jobs,file){try{await bioLoadPdf()}catch(e){toast(e.m
  if(!pages){toast("Nothing to print");return}doc.save(file.replace(/[\\/:*?"<>|]+/g," ")+".pdf");persist();render();toast(`PDF ready: ${pages} sheets`)}
 document.addEventListener("click",e=>{const b=e.target.closest('[data-act^="omr-"]');if(!b)return;const x=DB.exams.find(v=>v.id===route.id);if(!x)return;const sp=b.dataset.sp;
  if(b.dataset.act==="omr-setup")return sheetOmrSetup(x,sp);if(b.dataset.act==="omr-key")return sheetOmrKey(x,sp);if(b.dataset.act==="omr-print")return sheetOmrPrint(x,sp);
- if(b.dataset.act==="omr-printall"){const specs=exPaperKeys(x).filter(s=>omrSpec(x,s));omrMakePdf(x,specs.map(sp=>({sp,cand:exCands(x).filter(p=>exPaperOf(x,p)===sp),blank:0})),`OMR all specialties ${x.session}`)}});
+ if(b.dataset.act==="omr-printall"){const specs=exAllPapers(x).filter(s=>omrSpec(x,s));omrMakePdf(x,specs.map(sp=>({sp,cand:exCands(x).filter(p=>exInPaper(x,p,sp)),blank:0})),`OMR all specialties ${x.session}`)}});
 
 /* =====================================================================
    V29 · OMR SCANNING: upload the scanned PDF (or photos), read every
@@ -5128,7 +5128,7 @@ function omrSheetFrom(x,canvas,label,force){const id=omrIdentify(x,canvas);const
  const cfg=omrCfgOf(x,sp),r=omrRead(id.img,cfg,id.F),L=omrLayout(cfg),A=omrAlignAll(id.img,id.F,L);
  sc.ans=r.ans.map(a=>a.a||(a.flag==="multiple"?"*":"-")).join("");r.ans.forEach((a,q)=>{if(a.flag)sc.fl[q+1]=[a.flag,a.m||""]});
  const sx=1/id.canvas.width,sy=1/id.canvas.height;sc.box={};r.ans.forEach((a,q)=>{if(!a.flag)return;const row=L.q[q],o=A.off[q],p0=id.F.map(row[0][0]+o[0]-10,row[0][1]+o[1]-3.4),p1=id.F.map(row[row.length-1][0]+o[0]+3,row[0][1]+o[1]+3.4);sc.box[q+1]=[p0[0]*sx,p0[1]*sy,p1[0]*sx,p1[1]*sy].map(v=>+v.toFixed(4))});
- {const p=pid&&DB.pgts.find(q=>q.id===pid);if(p&&exPaperOf(x,p)!==sp&&!force)sc.issue=sc.issue||"other-paper"}
+ {const p=pid&&DB.pgts.find(q=>q.id===pid);if(p&&!exInPaper(x,p,sp)&&!force)sc.issue=sc.issue||"other-paper"}
  if(!pid)sc.issue=sc.issue||"unidentified";else if(!force&&!/^\d{5}$/.test(rollText)&&!parts[3])sc.issue=sc.issue||"roll";
  return{sc,url}}
 async function omrProcess(x,files){const S=omrScans(x),out=[];UI.omrRun={done:0,total:0,msg:"Loading the scanning tools…"};render();
@@ -5146,7 +5146,7 @@ async function omrReread(x,s,pid){let src=UI.omrImg[s.id];if(!src&&s.img&&LIVE){
  if(!src){toast("The sheet image is not available; scan it again.");return}
  await omrLoad(OMR_JSQR).catch(()=>{});const im=await new Promise((ok,no)=>{const i=new Image();i.crossOrigin="anonymous";i.onload=()=>ok(i);i.onerror=no;i.src=src});const c=document.createElement("canvas");c.width=im.width;c.height=im.height;c.getContext("2d").drawImage(im,0,0);
  const{sc}=omrSheetFrom(x,c,s.file,pid);Object.assign(s,{...sc,id:s.id,img:s.img,at:s.at});if(!s.spec){s.issue="no-paper"}omrDupes(x);persist();render()}
-function omrDupes(x){const S=omrScans(x),seen={};S.forEach(s=>{if(s.issue==="duplicate")delete s.issue});S.filter(s=>s.pid&&s.use).forEach(s=>{if(seen[s.pid]){s.issue=s.issue||"duplicate";seen[s.pid].issue=seen[s.pid].issue||"duplicate"}else seen[s.pid]=s})}
+function omrDupes(x){const S=omrScans(x),seen={};S.forEach(s=>{if(s.issue==="duplicate")delete s.issue});S.filter(s=>s.pid&&s.use).forEach(s=>{if(seen[s.pid+"|"+s.spec]){s.issue=s.issue||"duplicate";seen[s.pid+"|"+s.spec].issue=seen[s.pid+"|"+s.spec].issue||"duplicate"}else seen[s.pid+"|"+s.spec]=s})}
 function omrRunBar(){const R=UI.omrRun,el=document.getElementById("omrrun");if(!R||!el)return;el.innerHTML=`<div class="subt">${esc(R.msg)}</div><div class="bar"><i style="width:${R.total?Math.round(R.done/R.total*100):5}%"></i></div>`}
 
 /* ---------- state of each sheet ---------- */
@@ -5166,12 +5166,12 @@ function omrScore(x,s){const sp=omrSpec(x,s.spec),A=omrFinal(x,s);if(!A)return n
 function omrScanPanel(x){if(isViewer())return"";const O=omrOf(x),specs=Object.keys(O.specs);if(!specs.length)return"";const S=omrScans(x),R=UI.omrRun;
  const used=S.filter(s=>s.use),need=used.filter(s=>omrNeeds(x,s)),ok=used.filter(s=>!omrNeeds(x,s)&&s.pid);
  const keyMiss=specs.filter(sp=>omrKeyDone(O.specs[sp])<O.specs[sp].n);
- const absent=exCands(x).filter(p=>omrSpec(x,exPaperOf(x,p))&&!used.some(s=>s.pid===p.id)&&!x.absent[p.id]);
+ const absent=omrMissing(x);
  const tab=UI.omrTab;
  let body="";
  if(tab==="review")body=need.length?need.map(s=>omrReviewCard(x,s)).join(""):`<p class="subt" style="margin:0">${S.length?"Nothing needs review.":"No sheets scanned yet."}</p>`;
  if(tab==="all")body=omrAllTable(x,used);
- if(tab==="absent")body=absent.length?`<p style="margin:0">${absent.length} candidate${absent.length>1?"s":""} with no scanned sheet:</p><div class="chips">${absent.map(p=>`<span class="chip" aria-pressed="false">Dr. ${esc(p.name)} · ${esc(p.spec)}</span>`).join("")}</div><div><button class="btn small" data-act="omr-absent">Mark all ${absent.length} as absent</button></div><p class="subt" style="margin:0">Only do this once every pile has been scanned.</p>`:`<p class="subt" style="margin:0">Every candidate has a sheet or is marked absent.</p>`;
+ if(tab==="absent")body=absent.length?`<p style="margin:0">${absent.length} candidate${absent.length>1?"s":""} with no scanned sheet:</p><div class="chips">${absent.map(({p,k})=>`<span class="chip" aria-pressed="false">Dr. ${esc(p.name)} · ${esc(k)}</span>`).join("")}</div><div><button class="btn small" data-act="omr-absent">Mark all ${absent.length} as absent</button></div><p class="subt" style="margin:0">Only do this once every pile has been scanned.</p>`:`<p class="subt" style="margin:0">Every candidate has a sheet or is marked absent.</p>`;
  return`<div class="panel" id="omrscan" style="display:grid;gap:12px"><div class="head"><h3 style="margin:0">Scan answer sheets</h3><label class="btn small primary" for="omr-file" ${R?'aria-disabled="true"':""}>Upload scanned PDF or photos</label><input type="file" id="omr-file" accept="application/pdf,image/*" multiple class="sr"></div>
  <p class="subt" style="margin:0">Scan the sheets with Adobe Scan (or CamScanner) using the <b>Original</b> or <b>Grayscale</b> filter, as one PDF; piles of different specialties can be mixed. Reading happens on this computer. Only doubtful marks come to you for a decision.</p>
  ${R?`<div id="omrrun" style="display:grid;gap:6px"><div class="subt">${esc(R.msg)}</div><div class="bar"><i style="width:${R.total?Math.round(R.done/R.total*100):5}%"></i></div></div>`:""}
@@ -5186,7 +5186,7 @@ function omrCrop(x,s,box,h){const src=UI.omrImg[s.id];if(!box)return"";const[x0,
  return s.img?`<div class="omrcrop" data-omrimg="${esc(s.img)}" data-box="${box.join(",")}" style="height:${h}px;aspect-ratio:${(W/H*.707).toFixed(3)}"></div>`:`<span class="subt">(image not kept)</span>`}
 function omrWho(x,s){const p=s.pid&&DB.pgts.find(q=>q.id===s.pid);return p?`Dr. ${esc(p.name)} <span class="subt">${esc(p.code||"")} · ${esc(s.spec||p.spec)}</span>`:`<span class="d-red">Not identified</span>${s.roll?` <span class="subt">roll read as ${esc(s.roll)}</span>`:""}`}
 function omrReviewCard(x,s){const open=omrOpen(x,s),letters="ABCDE".slice(0,(omrSpec(x,s.spec)||{opts:5}).opts).split("");
- const cands=exCands(x).slice().sort((a,b)=>(exPaperOf(x,a)===s.spec?0:1)-(exPaperOf(x,b)===s.spec?0:1)||a.name.localeCompare(b.name));
+ const cands=exCands(x).slice().sort((a,b)=>(exInPaper(x,a,s.spec)?0:1)-(exInPaper(x,b,s.spec)?0:1)||a.name.localeCompare(b.name));
  const issue=open.includes("issue")||open.includes("cand")?`<div class="flag" style="display:grid;gap:8px"><b>${esc(open.includes("cand")?OMR_ISSUE["not-candidate"]:OMR_ISSUE[s.issue]||s.issue)}</b>${s.err?`<span class="subt">${esc(s.err)}</span>`:""}
   ${s.rbox?omrCrop(x,s,s.rbox,190):""}
   ${["unidentified","roll","no-paper","other-paper"].includes(s.issue)||open.includes("cand")?`<label class="f">This sheet belongs to<select data-omrwho="${s.id}">${opt([["","Choose the candidate"],...cands.map(p=>[p.id,`Dr. ${p.name} · ${p.code||""} · ${exPaperOf(x,p)}`])],s.pid||"")}</select></label>`:""}
@@ -5204,26 +5204,26 @@ document.addEventListener("change",e=>{if(e.target.id==="omr-file"&&e.target.fil
  const w=e.target.closest("[data-omrwho]");if(w){const x=DB.exams.find(v=>v.id===route.id),s=x&&omrScans(x).find(v=>v.id===w.dataset.omrwho);if(!s)return;const p=DB.pgts.find(q=>q.id===w.value);if(!p)return;
   xlog(x,`OMR: sheet ${s.file} assigned to Dr. ${p.name}`);
   if(!s.ans){if(!omrSpec(x,exPaperOf(x,p))){toast(`Set up the ${exPaperOf(x,p)} sheet first`);return}omrReread(x,s,p.id);return}
-  s.pid=p.id;if(["unidentified","roll","no-paper"].includes(s.issue))delete s.issue;if(s.issue==="other-paper"&&exPaperOf(x,p)===s.spec)delete s.issue;omrDupes(x);persist();render()}});
+  s.pid=p.id;if(["unidentified","roll","no-paper"].includes(s.issue))delete s.issue;if(s.issue==="other-paper"&&exInPaper(x,p,s.spec))delete s.issue;omrDupes(x);persist();render()}});
 document.addEventListener("click",async e=>{if(!DB||!DB.exams||!e.target.closest("[data-omrtab],[data-omrfix],[data-omrview],[data-act^=\"omr-\"]"))return;const x=DB.exams.find(v=>v.id===route.id);
  const t=e.target.closest("[data-omrtab]");if(t){UI.omrTab=t.dataset.omrtab;render();return}
  const f=e.target.closest("[data-omrfix]");if(f&&x){const[id,q,l]=f.dataset.omrfix.split("|");const s=omrScans(x).find(v=>v.id===id);if(!s)return;s.fix[q]=l;persist();const y=window.scrollY;render();window.scrollTo(0,y);return}
  const v=e.target.closest("[data-omrview]");if(v&&x){const s=omrScans(x).find(z=>z.id===v.dataset.omrview);if(s)omrView(x,s);return}
  const a=e.target.closest('[data-act="omr-skip"],[data-act="omr-keep"],[data-act="omr-addcand"],[data-act="omr-okissue"],[data-act="omr-absent"],[data-act="omr-apply"]');if(!a||!x)return;const s=a.dataset.id&&omrScans(x).find(z=>z.id===a.dataset.id);
  if(a.dataset.act==="omr-skip"&&s){s.use=false;omrDupes(x);xlog(x,`OMR: sheet ${s.file} left out`)}
- if(a.dataset.act==="omr-keep"&&s){omrScans(x).filter(z=>z!==s&&z.pid===s.pid).forEach(z=>z.use=false);delete s.issue;omrDupes(x);xlog(x,`OMR: kept sheet ${s.file} for the candidate scanned twice`)}
+ if(a.dataset.act==="omr-keep"&&s){omrScans(x).filter(z=>z!==s&&z.pid===s.pid&&z.spec===s.spec).forEach(z=>z.use=false);delete s.issue;omrDupes(x);xlog(x,`OMR: kept sheet ${s.file} for the candidate scanned twice`)}
  if(a.dataset.act==="omr-okissue"&&s){s.okIssue=true}
  if(a.dataset.act==="omr-addcand"&&s){const p=DB.pgts.find(q=>q.id===s.pid);if(x.cands){if(!x.cands.includes(s.pid))x.cands.push(s.pid)}else{x.added=x.added||[];if(!x.added.includes(s.pid))x.added.push(s.pid)}if(x.removed)delete x.removed[s.pid];xlog(x,`Added Dr. ${p?p.name:""} to the candidate list (sheet scanned)`)}
- if(a.dataset.act==="omr-absent"){const used=omrScans(x).filter(z=>z.use);const L=exCands(x).filter(p=>omrSpec(x,exPaperOf(x,p))&&!used.some(z=>z.pid===p.id)&&!x.absent[p.id]);L.forEach(p=>{x.absent[p.id]=true;delete x.marks[p.id]});xlog(x,`OMR: ${L.length} candidates without a sheet marked absent`)}
+ if(a.dataset.act==="omr-absent"){const L=omrMissing(x);L.forEach(({p,k})=>{const M=exPM(x,k);M.absent[p.id]=true;delete M.marks[p.id]});xlog(x,`OMR: ${L.length} candidates without a sheet marked absent`)}
  if(a.dataset.act==="omr-apply"){omrApply(x);return}
  persist();const y=window.scrollY;render();window.scrollTo(0,y)});
-function omrApply(x){const used=omrScans(x).filter(s=>s.use&&s.pid&&!omrNeeds(x,s));let n=0;x.raw=x.raw||{};x.secs=x.secs||{};
- used.forEach(s=>{const sc=omrScore(x,s);if(!sc)return;x.marks[s.pid]=sc.pct;x.raw[s.pid]={o:sc.o,t:sc.t};x.secs[s.pid]=sc.secs;delete x.absent[s.pid];if(x.res)delete x.res[s.pid];n++});
+function omrApply(x){const used=omrScans(x).filter(s=>s.use&&s.pid&&!omrNeeds(x,s));let n=0;
+ used.forEach(s=>{const sc=omrScore(x,s);if(!sc)return;const M=exPM(x,s.spec);M.marks[s.pid]=sc.pct;M.raw[s.pid]={o:sc.o,t:sc.t};M.secs[s.pid]=sc.secs;delete M.absent[s.pid];if(!exIsCommon(x,s.spec)&&x.res)delete x.res[s.pid];n++});
  if(x.cands)used.forEach(s=>{if(!x.cands.includes(s.pid))x.cands.push(s.pid)});
  if((x.stage||0)<4)x.stage=Math.max(x.stage||0,4);if(!x.cands)x.cands=exCands(x).map(p=>p.id);
  xlog(x,`OMR results put into the exam: ${n} candidates`);persist();toast(`${n} results entered`);render()}
 /* re-score after the key changes (dropped question, second answer, corrected key) */
-{const _k=sheetOmrKey;sheetOmrKey=function(x,sp){_k(x,sp);const o=SHEET.onSave;SHEET.onSave=(...a)=>{const r=o(...a);if(r!==false){const has=omrScans(x).some(s=>s.use&&s.spec===sp&&x.marks[s.pid]!=null);if(has){omrApply(x);toast(`Answer key saved; ${sp} re-marked`)}}return r}}}
+{const _k=sheetOmrKey;sheetOmrKey=function(x,sp){_k(x,sp);const o=SHEET.onSave;SHEET.onSave=(...a)=>{const r=o(...a);if(r!==false){const has=omrScans(x).some(s=>s.use&&s.spec===sp&&exPM(x,sp).marks[s.pid]!=null);if(has){omrApply(x);toast(`Answer key saved; ${sp} re-marked`)}}return r}}}
 
 /* full sheet view */
 async function omrView(x,s){let src=UI.omrImg[s.id];if(!src&&s.img&&LIVE){try{const{data}=await SYNC.sb.storage.from("dme-uploads").createSignedUrl(s.img,600);src=data&&data.signedUrl}catch(e){}}if(!src){toast("The sheet image is not available");return}
@@ -5269,7 +5269,7 @@ function iaPanel(x){if(isViewer()&&!canSee("exams"))return"";const specs=Object.
  if(!specs.includes(UI.iaSp))UI.iaSp=specs[0];const sp=UI.iaSp,R=iaData(x,sp);
  const chips=`<div class="seg2">${specs.map(s=>`<button class="chip" data-iasp="${esc(s)}" aria-pressed="${s===sp}">${esc(s)}</button>`).join("")}</div>`;
  if(!R||!R.rows.length)return`<div class="panel" style="display:grid;gap:10px"><h3 style="margin:0">Item analysis</h3>${chips}<p class="subt" style="margin:0">Results appear here once the sheets for this paper have been reviewed.</p></div>`;
- const pm=x.passSpec&&x.passSpec[exPaperSpec(sp)]!=null?x.passSpec[exPaperSpec(sp)]:x.passMark,pass=R.rows.filter(r=>r.sc.pct>=pm).length;
+ const pm=exPassFor(x,sp),pass=R.rows.filter(r=>r.sc.pct>=pm).length;
  const bins=Array(10).fill(0);R.rows.forEach(r=>bins[Math.min(9,Math.floor(r.sc.pct/10))]++);const bmax=Math.max(1,...bins);
  const secs={};R.rows.forEach(r=>Object.entries(r.sc.secs||{}).forEach(([k,[o,t]])=>{secs[k]=secs[k]||[0,0];secs[k][0]+=o;secs[k][1]+=t}));
  const yrs={};R.rows.forEach(r=>{const y=examYear(x,r.p)||"?";yrs[y]=yrs[y]||[];yrs[y].push(r.sc.pct)});
@@ -5432,21 +5432,101 @@ document.addEventListener("change",e=>{const t=e.target;if(t.id==="omrk-xl"&&t.f
 const omrNormKey=s=>String(s||"").toLowerCase().replace(/[^a-z0-9]+/g,"");
 const omrSheetName=k=>k.replace(/[\\/?*[\]:]/g," ").slice(0,31);
 /* whole-exam template: a sheet for every paper that is set up, pre-filled with any key already entered */
-EXPORTS.omrkeys=xid=>{const x=DB.exams.find(e=>e.id===xid),O=omrOf(x),keys=Object.keys(O.specs);
- const sheets=keys.map(k=>{const s=O.specs[k],a=omrKeyArr(s),dr=new Set(s.drop||[]),al=s.alt||{};return{name:omrSheetName(k),rows:[["Question","Answer","Also accept","Drop"],...Array.from({length:s.n},(_,i)=>[i+1,a[i]||"",al[i+1]||"",dr.has(i+1)?"Y":""])]}});
+EXPORTS.omrkeys=xid=>{const x=DB.exams.find(e=>e.id===xid),O=omrOf(x),keys=[...new Set([...exAllPapers(x),...Object.keys(O.specs)])];
+ /* papers not set up yet get the usual length (General Cardiology 100, others 50); the upload sets them up */
+ const sheets=keys.map(k=>{const s=O.specs[k]||{n:/^General Cardiology/.test(k)?100:50,opts:5,key:"",drop:[],alt:{}},a=omrKeyArr(s),dr=new Set(s.drop||[]),al=s.alt||{};return{name:omrSheetName(k),rows:[["Question","Answer","Also accept","Drop"],...Array.from({length:s.n},(_,i)=>[i+1,a[i]||"",al[i+1]||"",dr.has(i+1)?"Y":""])]}});
  sheets.push({name:"How to fill",rows:[["How to fill this file"],["One sheet per paper. Keep each sheet's name: it tells the app which paper the answers belong to."],["Answer: one letter per question. Also accept (optional): a second correct letter. Drop (optional): Y."],["Then use Upload answer keys (Excel) on the Papers tab. Every paper is filled in one go."]]});
  return{file:`Answer keys ${x.session}`,sheets}};
 document.addEventListener("change",async e=>{if(e.target.id!=="omrk-all"||!e.target.files[0])return;const f=e.target.files[0];e.target.value="";const x=DB.exams.find(v=>v.id===route.id);if(!x)return;
- try{if(!window.XLSX)throw new Error("The Excel library did not load. Check the connection and reload.");const wb=XLSX.read(await f.arrayBuffer(),{type:"array"}),papers=Object.keys(omrOf(x).specs),done=[],skip=[],bad=[];
+ try{if(!window.XLSX)throw new Error("The Excel library did not load. Check the connection and reload.");const wb=XLSX.read(await f.arrayBuffer(),{type:"array"}),papers=[...new Set([...exAllPapers(x),...Object.keys(omrOf(x).specs)])],done=[],skip=[],bad=[],empty=[];
   for(const nm of wb.SheetNames){if(/^how to fill/i.test(nm))continue;const key=papers.find(k=>omrNormKey(omrSheetName(k))===omrNormKey(nm))||(papers.length===1&&wb.SheetNames.length<=2?papers[0]:null);if(!key){skip.push(nm);continue}
+   const aoa0=XLSX.utils.sheet_to_json(wb.Sheets[nm],{header:1,raw:false,defval:null});
+   /* a paper not set up yet: set it up from the sheet (number of questions = last question number, 5 options) */
+   if(!aoa0.slice(1).some(r=>r&&String(r[1]??"").trim())){empty.push(nm);continue}
+   if(!omrSpec(x,key)){const nq=Math.max(0,...aoa0.map(r=>parseInt(String((r||[])[0]??""),10)||0));if(nq<5){skip.push(nm);continue}const ns=omrSpec(x,key,true);ns.n=nq;ns.opts=aoa0.some(r=>/^\s*E\s*$/i.test(String((r||[])[1]??"")))||!aoa0.length?5:ns.opts}
    const s=omrSpec(x,key),L="ABCDE".slice(0,s.opts).split(""),r=omrKeyParse(XLSX.utils.sheet_to_json(wb.Sheets[nm],{header:1,raw:false,defval:null}),s.n,L);
    if(!Object.keys(r.key).length){skip.push(nm);continue}
    const a=omrKeyArr(s);Object.entries(r.key).forEach(([q,v])=>a[q-1]=v);s.key=a.map(v=>v||"-").join("");s.alt={...(s.alt||{}),...r.alt};if(r.drop.length)s.drop=[...new Set([...(s.drop||[]),...r.drop])].sort((p,q)=>p-q);
    done.push(`${key} (${omrKeyDone(s)}/${s.n})`);r.bad.forEach(b=>bad.push(`${key}: ${b}`))}
-  if(done.length){xlog(x,`Answer keys uploaded from ${f.name}: ${done.join(", ")}`);if(omrScans(x).some(z=>z.use&&x.marks[z.pid]!=null))omrApply(x);persist();render()}
-  toast(done.length?`Keys loaded: ${done.join(", ")}${skip.length?`. Not matched to a paper: ${skip.join(", ")}`:""}${bad.length?`. Check: ${bad.slice(0,3).join("; ")}`:""}`:"No sheet matched a paper. Set up the papers first, then use the template so the sheet names match.")}
+  if(done.length){xlog(x,`Answer keys uploaded from ${f.name}: ${done.join(", ")}`);if(omrScans(x).some(z=>z.use&&exPM(x,z.spec).marks[z.pid]!=null))omrApply(x);persist();render()}
+  toast(done.length?`Keys loaded: ${done.join(", ")}${skip.length?`. Not matched to a paper: ${skip.join(", ")}`:""}${empty.length?`. Left empty: ${empty.length} sheet${empty.length>1?"s":""}`:""}${bad.length?`. Check: ${bad.slice(0,3).join("; ")}`:""}`:(empty.length&&!skip.length?"The sheets have no answers filled in yet.":"No sheet matched a paper. Use the template so the sheet names match the papers."))}
  catch(err){toast(err.message||"That file could not be read")}});
-{const _p=exPapersTab;exPapersTab=function(x){const has=Object.keys(omrOf(x).specs).length;return _p(x).replace('<div class="actions" style="justify-content:flex-start">',`<div class="actions" style="justify-content:flex-start">${has?`${xbtn(`omrkeys:${x.id}`,"Answer key template (all papers)")}<label class="btn small" for="omrk-all">Upload answer keys (Excel)</label><input type="file" id="omrk-all" accept=".xlsx,.xls" class="sr">`:""}`)}}
+{const _p=exPapersTab;exPapersTab=function(x){return _p(x).replace('<div class="actions" style="justify-content:flex-start">',`<div class="actions" style="justify-content:flex-start">${xbtn(`omrkeys:${x.id}`,"Answer key template (all papers)")}<label class="btn small" for="omrk-all">Upload answer keys (Excel)</label><input type="file" id="omrk-all" accept=".xlsx,.xls" class="sr">`)}}
+
+/* =====================================================================
+   V33 · COMMON PAPERS: a named paper sat by candidates of all (or some)
+   specialties on top of their own paper, e.g. Infection Prevention and
+   Control. Each has its own checklist, OMR sheet, key, marks, analysis.
+   Marks live in x.cm[name] = {marks, absent, raw, secs}.
+   ===================================================================== */
+const exCommon=x=>(x.common=x.common||[]);
+const exComm=(x,k)=>exCommon(x).find(c=>c.name===k);
+const exIsCommon=(x,k)=>!!exComm(x,k);
+function exAllPapers(x){return[...exPaperKeys(x),...exCommon(x).map(c=>c.name)]}
+function exInPaper(x,p,k){const c=exComm(x,k);if(c)return!c.specs||!c.specs.length||c.specs.includes(p.spec);return exPaperOf(x,p)===k}
+function exPM(x,k){if(exIsCommon(x,k)){x.cm=x.cm||{};const M=x.cm[k]=x.cm[k]||{};M.marks=M.marks||{};M.absent=M.absent||{};M.raw=M.raw||{};M.secs=M.secs||{};return M}
+ x.marks=x.marks||{};x.absent=x.absent||{};x.raw=x.raw||{};x.secs=x.secs||{};return{marks:x.marks,absent:x.absent,raw:x.raw,secs:x.secs}}
+function exPassFor(x,k){const c=exComm(x,k);if(c)return c.pass!=null?+c.pass:x.passMark;const s=exPaperSpec(k);return x.passSpec&&x.passSpec[s]!=null?x.passSpec[s]:x.passMark}
+const exCommPass=(x,k,m)=>+m>=exPassFor(x,k);
+function omrMissing(x){const used=omrScans(x).filter(z=>z.use&&z.pid),out=[];
+ exAllPapers(x).filter(k=>omrSpec(x,k)).forEach(k=>{const M=exPM(x,k);exCands(x).filter(p=>exInPaper(x,p,k)).forEach(p=>{if(!used.some(z=>z.pid===p.id&&z.spec===k)&&!M.absent[p.id])out.push({p,k})})});return out}
+
+/* ---------- add / edit a common paper ---------- */
+function sheetCommon(x,c){const n=!c,specs=exSpecs(x);c=c||{name:"",specs:[],pass:x.passMark};
+ openSheet(n?"Add a common paper":`Edit · ${c.name}`,`<p class="subt" style="margin:0">A paper sat by candidates of several specialties, besides their own paper, e.g. Infection Prevention and Control.</p>
+ <label class="f">Name of the paper<input name="nm" value="${esc(c.name)}" placeholder="e.g. Infection Prevention and Control"></label>
+ <div class="f"><span>Who sits it</span><label class="check2"><input type="radio" name="who" value="all" ${!c.specs.length?"checked":""}> All candidates of this exam</label><label class="check2"><input type="radio" name="who" value="some" ${c.specs.length?"checked":""}> Only these specialties:</label>
+  <div class="chips" id="cm-specs">${specs.map(s=>`<label class="chip"><input type="checkbox" name="cs" value="${esc(s)}" ${c.specs.includes(s)?"checked":""}> ${esc(s)}</label>`).join("")}</div></div>
+ <label class="f">Pass mark (%)<input type="number" name="pm" min="0" max="100" value="${c.pass??x.passMark}"></label>`,()=>{
+  const nm=fv("nm").replace(/\s+/g," ").trim();if(nm.length<3)return fail("Enter the name of the paper.");if(nm.length>40)return fail("Keep the name under 40 characters (it is printed on the sheet).");
+  if(nm.includes(" · ")||exPaperKeys(x).some(k=>k.toLowerCase()===nm.toLowerCase())||exCommon(x).some(o=>o!==c&&o.name.toLowerCase()===nm.toLowerCase()))return fail("Use a name that is not a specialty or another paper.");
+  const some=document.querySelector('#sheetform [name="who"]:checked')?.value==="some",cs=[...document.querySelectorAll('#sheetform [name="cs"]:checked')].map(i=>i.value);if(some&&!cs.length)return fail("Tick at least one specialty, or choose all candidates.");
+  const rec={name:nm,specs:some?cs:[],pass:+fv("pm")||x.passMark};
+  if(n){exCommon(x).push(rec);xlog(x,`Common paper added: ${nm}`)}
+  else{const old=c.name;if(old!==nm){const O=omrOf(x);if(O.specs[old]){O.specs[nm]=O.specs[old];delete O.specs[old]}if(x.papers&&x.papers[old]){x.papers[nm]=x.papers[old];delete x.papers[old]}if(x.cm&&x.cm[old]){x.cm[nm]=x.cm[old];delete x.cm[old]}omrScans(x).forEach(z=>{if(z.spec===old)z.spec=nm})}Object.assign(c,rec);xlog(x,`Common paper edited: ${nm}`)}
+  toast("Saved");return true})}
+
+/* ---------- Papers tab: common papers after the specialties ---------- */
+function exCommonBlocks(x){const C=exCands(x),lk=x.stage>=3;
+ const rows=exCommon(x).map(c=>{const k=c.name,pp=(x.papers||{})[k]||{},s=omrSpec(x,k),cn=C.filter(p=>exInPaper(x,p,k)).length,kd=s?omrKeyDone(s):0,used=omrScans(x).some(z=>z.spec===k)||Object.keys(exPM(x,k).marks).length;
+  const cb=(f,l)=>`<label class="exck ${pp[f]?"on":""}"><input type="checkbox" data-expc="${esc(k)}|${f}" ${pp[f]?"checked":""} ${lk?"disabled":""}> ${l}</label>`;
+  return`<div class="exp"><div class="exp-h" style="justify-content:space-between;flex-wrap:wrap"><span><b>${esc(k)}</b> <span class="subt">${cn} candidate${cn===1?"":"s"} · ${c.specs.length?esc(c.specs.join(", ")):"all specialties"} · pass ${exPassFor(x,k)}%</span></span><span class="actions"><button class="btn small" data-act="cm-edit" data-k="${esc(k)}">Edit</button>${used?"":`<button class="btn small" data-act="cm-del" data-k="${esc(k)}">Remove</button>`}</span></div>
+   <div class="exp-g"><div><div class="subt">Question paper</div><div class="exck-row">${cb("req","Requested")}${cb("recv","Received")}${cb("key","Key received")}${cb("mod","Moderated")}${cb("final","Final")}</div>
+    <div class="toolbar" style="margin-top:6px"><input data-expc="${esc(k)}|focal" value="${esc(pp.focal||"")}" list="ex-fac" placeholder="Focal person" aria-label="Focal person, ${esc(k)}" style="flex:1 1 180px" ${lk?"disabled":""}><input type="number" min="0" data-expc="${esc(k)}|mcqs" value="${pp.mcqs??""}" placeholder="No. of MCQs" style="width:120px" aria-label="Number of MCQs, ${esc(k)}" ${lk?"disabled":""}></div></div>
+    <div><div class="subt">OMR answer sheet</div>${s?`<div style="margin:4px 0">${s.n} questions · ${s.opts===4?"A-D":"A-E"}${s.sections.length?` · ${s.sections.length} sections`:""} · key ${kd===s.n?'<span class="pill p-ric">complete</span>':`<span class="pill p-pause">${kd}/${s.n}</span>`}${s.printed?` · <span class="subt">printed ${fd(s.printed.at.slice(0,10))}</span>`:""}</div>`:`<div class="subt" style="margin:4px 0">Not set up yet</div>`}
+     <div class="actions" style="justify-content:flex-start"><button class="btn small ${s?"":"primary"}" data-act="omr-setup" data-sp="${esc(k)}">${s?"Sheet setup":"Set up sheet"}</button>${s?`<button class="btn small" data-act="omr-key" data-sp="${esc(k)}">Answer key</button><button class="btn small" data-act="omr-print" data-sp="${esc(k)}">Print sheets</button>`:""}</div></div></div></div>`}).join("");
+ return`<div class="panel" style="display:grid;gap:10px"><div class="head"><h3 style="margin:0">Common papers <span class="subt" style="text-transform:none;letter-spacing:0">· sat as well as the specialty paper</span></h3>${lk?"":`<button class="btn small primary" data-act="cm-add">Add a common paper</button>`}</div>
+  ${rows||`<p class="subt" style="margin:0">None. Add one for a paper everybody sits on the same day, for example Infection Prevention and Control. It gets its own OMR sheet, answer key and marks, and the result shows on each PGT's profile next to the specialty paper.</p>`}</div>`}
+{const _p=exPapersTab;exPapersTab=function(x){return _p(x)+exCommonBlocks(x)}}
+document.addEventListener("click",e=>{const b=e.target.closest('[data-act="cm-add"],[data-act="cm-edit"],[data-act="cm-del"]');if(!b)return;const x=DB.exams.find(v=>v.id===route.id);if(!x)return;
+ if(b.dataset.act==="cm-add")return sheetCommon(x);const c=exComm(x,b.dataset.k);if(!c)return;
+ if(b.dataset.act==="cm-edit")return sheetCommon(x,c);
+ if(b.dataset.armed!=="1"){b.dataset.armed="1";b.textContent="Tap again to remove";return}
+ x.common=exCommon(x).filter(o=>o!==c);delete omrOf(x).specs[c.name];if(x.papers)delete x.papers[c.name];xlog(x,`Common paper removed: ${c.name}`);persist();render()});
+
+/* ---------- Results tab: every paper, specialty and common ---------- */
+exResultsTab=function(x){const keys=exAllPapers(x),C=exCands(x),canMark=x.stage>=3&&x.stage<5;const scan=omrScanPanel(x);
+ const tables=keys.map(k=>{const com=exIsCommon(x,k),M=exPM(x,k),P=C.filter(p=>exInPaper(x,p,k)).sort((a,b)=>(com?specIdx(a.spec)-specIdx(b.spec):0)||(x.roll?.[a.id]||"").localeCompare(x.roll?.[b.id]||"")||a.name.localeCompare(b.name));const done=P.filter(p=>M.marks[p.id]!=null||M.absent[p.id]).length;
+  const mk=p=>com?`data-excm="${esc(k)}|${p.id}"`:`data-exmark="${p.id}"`,ab=p=>com?`data-excab="${esc(k)}|${p.id}"`:`data-exabs="${p.id}"`,pass=(p,m)=>com?exCommPass(x,k,m):exPass(x,p,m);
+  return`<details class="exres" ${UI.exOpen===k?"open":""} data-exopen="${esc(k)}"><summary><b>${esc(k)}</b>${com?' <span class="pill p-rot">common</span>':""} <span class="subt">${done} of ${P.length} done</span></summary><div class="tblwrap"><table><thead><tr><th>Roll</th><th>PGT</th>${com?"<th>Specialty</th>":""}<th>Year</th><th>Marks %</th><th>Absent</th><th>Result</th><th class="num">Correct</th></tr></thead><tbody>
+  ${P.map(p=>{const m=M.marks[p.id],a=M.absent[p.id],r=M.raw[p.id];return`<tr><td class="code">${esc(x.roll?.[p.id]||"")}</td><td>${pgtName(p)}</td>${com?`<td class="subt">${esc(p.spec)}</td>`:""}<td>${exYr(x,p)}</td><td><input type="number" min="0" max="100" step="0.1" style="width:86px" ${mk(p)} value="${m??""}" ${canMark&&!a?"":"disabled"} aria-label="Marks for Dr. ${esc(p.name)}, ${esc(k)}"></td><td><input type="checkbox" ${ab(p)} ${a?"checked":""} ${canMark?"":"disabled"} aria-label="Absent, ${esc(k)}"></td>
+   <td>${a?'<span class="pill p-done">Absent</span>':m==null?"—":pass(p,m)?'<span class="pill p-ric">Pass</span>':'<span class="pill p-bad">Fail</span>'}</td><td class="num subt">${r?`${r.o}/${r.t}`:""}</td></tr>`}).join("")}</tbody></table></div></details>`}).join("");
+ return`${x.stage<3?`<div class="flag info">Marks can be entered once the exam is marked as held. You can still try the OMR scanner here, for example on a practice exam.</div>`:""}
+ ${scan||`<div class="panel"><h3 style="margin:0">Scan answer sheets</h3><p class="subt" style="margin:6px 0 0">Set up the OMR sheet for at least one paper (Papers tab) first.</p></div>`}
+ <div class="panel" style="display:grid;gap:8px"><h3 style="margin:0">Marks by paper</h3><p class="subt" style="margin:0">Scanned results land here. You can also type a mark or tick absent by hand.</p>${tables||'<p class="subt">No papers.</p>'}</div>
+ <details class="panel"><summary style="cursor:pointer"><b>Using Evalbee instead</b> <span class="subt">upload Evalbee result files</span></summary><div style="margin-top:10px">${exImportOrig(x)}</div></details>`};
+document.addEventListener("change",e=>{const t=e.target,d=t.dataset||{};if(d.excm==null&&d.excab==null)return;const x=DB.exams.find(v=>v.id===route.id);if(!x)return;
+ const[k,pid]=(d.excm||d.excab).split("|"),M=exPM(x,k),p=DB.pgts.find(q=>q.id===pid);
+ if(d.excab!=null){if(t.checked){M.absent[pid]=true;delete M.marks[pid]}else delete M.absent[pid];xlog(x,`${k}: Dr. ${p?p.name:""} ${t.checked?"absent":"not absent"}`)}
+ else{const v=t.value.trim();if(v!==""&&(+v<0||+v>100)){toast("Marks must be between 0 and 100");t.value=M.marks[pid]??"";return}if(v==="")delete M.marks[pid];else M.marks[pid]=+v}
+ persist();const y=window.scrollY;render();window.scrollTo(0,y)});
+
+/* ---------- on the PGT's profile, and in the exam download ---------- */
+function pgtCommonRows(p){const out=[];DB.exams.filter(x=>!x.practice&&x.cm).forEach(x=>Object.entries(x.cm).forEach(([k,M])=>{if(M.marks&&M.marks[p.id]!=null||M.absent&&M.absent[p.id])out.push({x,k,m:M.marks[p.id],ab:!!(M.absent&&M.absent[p.id]),r:M.raw&&M.raw[p.id]})}));return out.sort((a,b)=>a.x.month<b.x.month?1:-1)}
+{const _x=pgtExamPanel;pgtExamPanel=function(p){const R=pgtCommonRows(p),h=_x(p);if(!R.length)return h;
+ return h+`<div class="panel flush"><h3 style="padding:14px 16px 0;margin:0">Other exam papers · ${R.length}</h3><div class="tblwrap" style="margin-top:8px"><table><thead><tr><th>Exam</th><th>Paper</th><th class="num">Marks %</th><th>Result</th></tr></thead><tbody>
+ ${R.map(r=>`<tr class="click" data-href="exam-${r.x.id}"><td>${esc(r.x.session)}${r.x.stage>=5?"":' <span class="pill p-pause">Provisional</span>'}</td><td>${esc(r.k)}</td><td class="num">${r.ab?"—":r.m}${r.r?` <span class="subt">(${r.r.o}/${r.r.t})</span>`:""}</td><td>${r.ab?'<span class="pill p-done">Absent</span>':exCommPass(r.x,r.k,r.m)?'<span class="pill p-ric">Pass</span>':'<span class="pill p-bad">Fail</span>'}</td></tr>`).join("")}</tbody></table></div></div>`}}
+{const _e=EXPORTS.exam;EXPORTS.exam=id=>{const r=_e(id),x=DB.exams.find(e=>e.id===id);exCommon(x).forEach(c=>{const M=exPM(x,c.name);r.sheets.push(sheetFrom(c.name.slice(0,31),exCands(x).filter(p=>exInPaper(x,p,c.name)).map(p=>{const m=M.marks[p.id],ab=M.absent[p.id];return{"Roll no.":x.roll?.[p.id]||"","PGT ID":p.code,"Name":"Dr. "+p.name,"Specialty":p.spec,"Marks %":ab?"":m??"","Result":ab?"Absent":m==null?"":exCommPass(x,c.name,m)?"Pass":"Fail"}})))});return r}}
 
 /* ---------- events ---------- */
 document.addEventListener("click",e=>{
