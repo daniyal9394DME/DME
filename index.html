@@ -5490,19 +5490,19 @@ function sheetCommon(x,c){const n=!c,specs=exSpecs(x);c=c||{name:"",specs:[],pas
 function exCommonBlocks(x){const C=exCands(x),lk=x.stage>=3;
  const rows=exCommon(x).map(c=>{const k=c.name,pp=(x.papers||{})[k]||{},s=omrSpec(x,k),cn=C.filter(p=>exInPaper(x,p,k)).length,kd=s?omrKeyDone(s):0,used=omrScans(x).some(z=>z.spec===k)||Object.keys(exPM(x,k).marks).length;
   const cb=(f,l)=>`<label class="exck ${pp[f]?"on":""}"><input type="checkbox" data-expc="${esc(k)}|${f}" ${pp[f]?"checked":""} ${lk?"disabled":""}> ${l}</label>`;
-  return`<div class="exp"><div class="exp-h" style="justify-content:space-between;flex-wrap:wrap"><span><b>${esc(k)}</b> <span class="subt">${cn} candidate${cn===1?"":"s"} · ${c.specs.length?esc(c.specs.join(", ")):"all specialties"} · pass ${exPassFor(x,k)}%</span></span><span class="actions"><button class="btn small" data-act="cm-edit" data-k="${esc(k)}">Edit</button>${used?"":`<button class="btn small" data-act="cm-del" data-k="${esc(k)}">Remove</button>`}</span></div>
+  return`<div class="exp"><div class="exp-h" style="justify-content:space-between;flex-wrap:wrap"><span><b>${esc(k)}</b> <span class="subt">${cn} candidate${cn===1?"":"s"} · ${c.specs.length?esc(c.specs.join(", ")):"all specialties"} · pass ${exPassFor(x,k)}%</span></span><span class="actions"><button class="btn small" data-act="cm-edit" data-k="${esc(k)}">Edit</button><button class="btn small" data-act="cm-del" data-k="${esc(k)}" data-used="${used?1:0}">Remove</button></span></div>
    <div class="exp-g"><div><div class="subt">Question paper</div><div class="exck-row">${cb("req","Requested")}${cb("recv","Received")}${cb("key","Key received")}${cb("mod","Moderated")}${cb("final","Final")}</div>
     <div class="toolbar" style="margin-top:6px"><input data-expc="${esc(k)}|focal" value="${esc(pp.focal||"")}" list="ex-fac" placeholder="Focal person" aria-label="Focal person, ${esc(k)}" style="flex:1 1 180px" ${lk?"disabled":""}><input type="number" min="0" data-expc="${esc(k)}|mcqs" value="${pp.mcqs??""}" placeholder="No. of MCQs" style="width:120px" aria-label="Number of MCQs, ${esc(k)}" ${lk?"disabled":""}></div></div>
     <div><div class="subt">OMR answer sheet</div>${s?`<div style="margin:4px 0">${s.n} questions · ${s.opts===4?"A-D":"A-E"}${s.sections.length?` · ${s.sections.length} sections`:""} · key ${kd===s.n?'<span class="pill p-ric">complete</span>':`<span class="pill p-pause">${kd}/${s.n}</span>`}${s.printed?` · <span class="subt">printed ${fd(s.printed.at.slice(0,10))}</span>`:""}</div>`:`<div class="subt" style="margin:4px 0">Not set up yet</div>`}
      <div class="actions" style="justify-content:flex-start"><button class="btn small ${s?"":"primary"}" data-act="omr-setup" data-sp="${esc(k)}">${s?"Sheet setup":"Set up sheet"}</button>${s?`<button class="btn small" data-act="omr-key" data-sp="${esc(k)}">Answer key</button><button class="btn small" data-act="omr-print" data-sp="${esc(k)}">Print sheets</button>`:""}</div></div></div></div>`}).join("");
- return`<div class="panel" style="display:grid;gap:10px"><div class="head"><h3 style="margin:0">Common papers <span class="subt" style="text-transform:none;letter-spacing:0">· sat as well as the specialty paper</span></h3>${lk?"":`<button class="btn small primary" data-act="cm-add">Add a common paper</button>`}</div>
+ return`<div class="panel" style="display:grid;gap:10px"><div class="head"><h3 style="margin:0">Common papers <span class="subt" style="text-transform:none;letter-spacing:0">· sat as well as the specialty paper</span></h3><button class="btn small primary" data-act="cm-add">Add a common paper</button></div>
   ${rows||`<p class="subt" style="margin:0">None. Add one for a paper everybody sits on the same day, for example Infection Prevention and Control. It gets its own OMR sheet, answer key and marks, and the result shows on each PGT's profile next to the specialty paper.</p>`}</div>`}
 {const _p=exPapersTab;exPapersTab=function(x){return _p(x)+exCommonBlocks(x)}}
 document.addEventListener("click",e=>{const b=e.target.closest('[data-act="cm-add"],[data-act="cm-edit"],[data-act="cm-del"]');if(!b)return;const x=DB.exams.find(v=>v.id===route.id);if(!x)return;
  if(b.dataset.act==="cm-add")return sheetCommon(x);const c=exComm(x,b.dataset.k);if(!c)return;
  if(b.dataset.act==="cm-edit")return sheetCommon(x,c);
- if(b.dataset.armed!=="1"){b.dataset.armed="1";b.textContent="Tap again to remove";return}
- x.common=exCommon(x).filter(o=>o!==c);delete omrOf(x).specs[c.name];if(x.papers)delete x.papers[c.name];xlog(x,`Common paper removed: ${c.name}`);persist();render()});
+ if(b.dataset.armed!=="1"){b.dataset.armed="1";b.textContent=b.dataset.used==="1"?"Its marks and scans will be deleted · tap again":"Tap again to remove";return}
+ x.common=exCommon(x).filter(o=>o!==c);delete omrOf(x).specs[c.name];if(x.papers)delete x.papers[c.name];if(x.cm)delete x.cm[c.name];omrScans(x).forEach(z=>{if(z.spec===c.name)z.use=false});xlog(x,`Common paper removed: ${c.name}`);persist();render()});
 
 /* ---------- Results tab: every paper, specialty and common ---------- */
 exResultsTab=function(x){const keys=exAllPapers(x),C=exCands(x),canMark=x.stage>=3&&x.stage<5;const scan=omrScanPanel(x);
@@ -5527,6 +5527,65 @@ function pgtCommonRows(p){const out=[];DB.exams.filter(x=>!x.practice&&x.cm).for
  return h+`<div class="panel flush"><h3 style="padding:14px 16px 0;margin:0">Other exam papers · ${R.length}</h3><div class="tblwrap" style="margin-top:8px"><table><thead><tr><th>Exam</th><th>Paper</th><th class="num">Marks %</th><th>Result</th></tr></thead><tbody>
  ${R.map(r=>`<tr class="click" data-href="exam-${r.x.id}"><td>${esc(r.x.session)}${r.x.stage>=5?"":' <span class="pill p-pause">Provisional</span>'}</td><td>${esc(r.k)}</td><td class="num">${r.ab?"—":r.m}${r.r?` <span class="subt">(${r.r.o}/${r.r.t})</span>`:""}</td><td>${r.ab?'<span class="pill p-done">Absent</span>':exCommPass(r.x,r.k,r.m)?'<span class="pill p-ric">Pass</span>':'<span class="pill p-bad">Fail</span>'}</td></tr>`).join("")}</tbody></table></div></div>`}}
 {const _e=EXPORTS.exam;EXPORTS.exam=id=>{const r=_e(id),x=DB.exams.find(e=>e.id===id);exCommon(x).forEach(c=>{const M=exPM(x,c.name);r.sheets.push(sheetFrom(c.name.slice(0,31),exCands(x).filter(p=>exInPaper(x,p,c.name)).map(p=>{const m=M.marks[p.id],ab=M.absent[p.id];return{"Roll no.":x.roll?.[p.id]||"","PGT ID":p.code,"Name":"Dr. "+p.name,"Specialty":p.spec,"Marks %":ab?"":m??"","Result":ab?"Absent":m==null?"":exCommPass(x,c.name,m)?"Pass":"Fail"}})))});return r}}
+
+/* =====================================================================
+   V34 · EXAM ATTENDANCE SHEETS: a printable A4 sheet per paper (or all
+   papers in one PDF): roll no., name, PGT ID, year, signature, with a
+   few blank rows for walk-ins and an invigilator block at the end.
+   ===================================================================== */
+async function exAttPdf(x,keys){try{await bioLoadPdf()}catch(e){toast(e.message);return}
+ const{jsPDF}=window.jspdf,doc=new jsPDF({unit:"mm",format:"a4"}),W=210,M=14,logo=document.querySelector('img[alt="RIC logo"]')?.src;
+ const dt=x.date?P(x.date).toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"}):"";
+ const cols=[["Sr.",10],["Roll No.",22],["Name",58],["PGT ID",26],["Year",14],["Signature",52]];const RH=9,brand=[109,31,43];let first=true,total=0;
+ const T=(t,x0,y,o={})=>{doc.setFont("helvetica",o.b?"bold":"normal");doc.setFontSize(o.s||10);doc.setTextColor(...(o.c||[20,20,20]));doc.text(String(t),x0,y,{align:o.a||"left"})};
+ for(const k of keys){const C=exCands(x).filter(p=>exInPaper(x,p,k)).sort((a,b)=>(x.roll?.[a.id]||"~").localeCompare(x.roll?.[b.id]||"~")||a.name.localeCompare(b.name));if(!C.length)continue;total+=C.length;
+  const rows=[...C.map(p=>({roll:x.roll?.[p.id]||rollOf(p)||"",name:"Dr. "+p.name,code:p.code||"",yr:examYear(x,p)?String(examYear(x,p)):""})),{},{},{}];
+  /* split into pages: 24 rows fit a page; the last page also needs room for the invigilator block (4 rows) */
+  const cap=24,chunks=[];let rest=rows.slice();while(rest.length){let n=Math.min(cap,rest.length);if(n===rest.length&&n>cap-4)n=rest.length>cap-4&&rest.length<=cap?rest.length-(n-(cap-4)):n;if(n<1)n=1;chunks.push(rest.slice(0,n));rest=rest.slice(n)}
+  if(chunks.length&&chunks[chunks.length-1].length>cap-4)chunks.push([]);
+  let sr=0;chunks.forEach((chunk,pi)=>{if(!first)doc.addPage();first=false;
+   if(logo&&logo.startsWith("data:"))try{doc.addImage(logo,"JPEG",M,10,18,18)}catch(e){}
+   T("RAWALPINDI INSTITUTE OF CARDIOLOGY",W/2,15,{a:"center",b:1,s:13,c:brand});T("Department of Medical Education & Training",W/2,20.5,{a:"center",s:9.5,c:[110,110,110]});
+   T("ATTENDANCE SHEET",W/2,28,{a:"center",b:1,s:12});doc.setDrawColor(...brand);doc.setLineWidth(.5);doc.line(M,31.5,W-M,31.5);
+   T(`${x.title}  |  ${x.session}`,M,37.5,{b:1,s:10});T(`Paper: ${k}`,M,43,{b:1,s:10.5,c:brand});
+   T(`Date: ${dt||"______________"}`,W-M,37.5,{a:"right",s:9.5});T(`Venue: ${x.venue||"______________"}`,W-M,43,{a:"right",s:9.5});
+   T(`Candidates: ${C.length}${chunks.length>1?`   |   Page ${pi+1} of ${chunks.length}`:""}`,M,48.5,{s:8.5,c:[110,110,110]});
+   let y=52;if(chunk.length){doc.setFillColor(243,236,226);doc.rect(M,y,W-2*M,8,"F");let cx=M;cols.forEach(([h])=>{T(h,cx+2,y+5.4,{b:1,s:9});cx+=cols.find(c=>c[0]===h)[1]});y+=8}
+   doc.setDrawColor(150,150,150);doc.setLineWidth(.2);
+   chunk.forEach(r=>{sr++;let cx=M;const vals=r.name?[String(sr),r.roll,r.name,r.code,r.yr,""]:[String(sr),"","","","",""];
+    cols.forEach(([,w],c)=>{doc.rect(cx,y,w,RH);if(vals[c])T(c===2&&vals[c].length>30?vals[c].slice(0,29)+"...":vals[c],cx+2,y+5.9,{s:c===1||c===3?9:9.5,b:c===1});cx+=w});y+=RH});
+   if(pi===chunks.length-1){y+=8;T("Present: ________     Absent: ________     Total on list: "+C.length,M,y,{s:9.5});y+=11;
+    T("Invigilator name: ______________________________",M,y,{s:9.5});T("Signature: ____________________",W-M,y,{a:"right",s:9.5});y+=9;
+    T("Blank rows at the end are for candidates not on the list: write the name and PGT ID and inform the DME office.",M,y,{s:7.5,c:[120,120,120]})}})}
+ if(!total){toast("No candidates on these papers");return}
+ doc.save(`Attendance ${keys.length===1?keys[0]:"all papers"} ${x.session}`.replace(/[\\/:*?"<>|·]+/g," ").replace(/\s+/g," ")+".pdf");xlog(x,`Attendance sheet downloaded: ${keys.length===1?keys[0]:keys.length+" papers"}`);persist();toast("Attendance sheet ready")}
+/* buttons: one per paper on the Papers tab, and one for all papers */
+{const _p=exPapersTab;exPapersTab=function(x){let h=_p(x);
+ h=h.replace('<div class="actions" style="justify-content:flex-start">','<div class="actions" style="justify-content:flex-start"><button class="btn small" data-act="ex-attall">Attendance sheets (all papers)</button>');
+ /* add an Attendance button next to each paper's OMR buttons */
+ h=h.replace(/<button class="btn small( primary)?" data-act="omr-setup" data-sp="([^"]*)">/g,(m,pr,k)=>`<button class="btn small" data-act="ex-att" data-sp="${k}">Attendance sheet</button>${m}`);return h}}
+document.addEventListener("click",e=>{const b=e.target.closest('[data-act="ex-att"],[data-act="ex-attall"]');if(!b)return;const x=DB.exams.find(v=>v.id===route.id);if(!x)return;
+ const div=document.createElement("textarea");div.innerHTML=b.dataset.sp||"";const k=div.value;
+ exAttPdf(x,b.dataset.act==="ex-att"?[k]:exAllPapers(x))});
+
+/* =====================================================================
+   V35 · CHANGE THE PAPERS OF AN EXAM AT ANY STAGE: a specialty can be
+   taken out of one exam session (its PGTs leave the candidate list,
+   papers, sheets and attendance) and put back later; nothing is deleted.
+   ===================================================================== */
+const exNoSpec=x=>(x.noSpec=x.noSpec||[]);
+{const _c=exCands;exCands=function(x){const L=_c(x),N=x&&x.noSpec;return N&&N.length?L.filter(p=>!N.includes(p.spec)):L}}
+{const _p=exPapersTab;exPapersTab=function(x){let h=_p(x);
+ h=h.replace(/(<select data-exsplit="([^"]*)"[^>]*>[\s\S]*?<\/select>)/g,(m,sel,sp)=>`<span class="actions" style="flex-wrap:nowrap">${sel}<button class="btn small" data-act="ex-nospec" data-sp="${sp}" title="Take this specialty out of this exam session">Remove from exam</button></span>`);
+ const N=exNoSpec(x);
+ if(N.length)h=h.replace('<div class="actions" style="justify-content:flex-start">',`<div class="flag" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span>Not in this exam:</span>${N.map(s=>`<button class="btn small" data-act="ex-yesspec" data-sp="${esc(s)}">${esc(s)} · put back</button>`).join("")}</div><div class="actions" style="justify-content:flex-start">`);
+ return h}}
+document.addEventListener("click",e=>{const b=e.target.closest('[data-act="ex-nospec"],[data-act="ex-yesspec"]');if(!b)return;const x=DB.exams.find(v=>v.id===route.id);if(!x)return;
+ const t=document.createElement("textarea");t.innerHTML=b.dataset.sp;const sp=t.value,N=exNoSpec(x);
+ if(b.dataset.act==="ex-yesspec"){x.noSpec=N.filter(s=>s!==sp);const ids=(x.noSpecIds||{})[sp]||[];if(x.cands)ids.forEach(id=>{if(!x.cands.includes(id))x.cands.push(id)});if(x.noSpecIds)delete x.noSpecIds[sp];xlog(x,`${sp} put back into this exam`);persist();render();return}
+ const n=exCands(x).filter(p=>p.spec===sp).length,marked=exCands(x).filter(p=>p.spec===sp&&(x.marks[p.id]!=null)).length;
+ if(b.dataset.armed!=="1"){b.dataset.armed="1";b.textContent=`${n} PGTs leave this exam${marked?`, ${marked} with marks (kept, hidden)`:""} · tap again`;return}
+ x.noSpecIds=x.noSpecIds||{};x.noSpecIds[sp]=exCands(x).filter(p=>p.spec===sp).map(p=>p.id);N.push(sp);xlog(x,`${sp} taken out of this exam (${n} candidates)`);persist();render();toast(`${sp} removed from this exam. Put it back any time from the Papers tab.`)});
 
 /* ---------- events ---------- */
 document.addEventListener("click",e=>{
