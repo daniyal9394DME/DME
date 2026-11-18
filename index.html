@@ -633,6 +633,7 @@ table.prop .sbw[data-sbw=sched] .sbrow,table.prop .sbw[data-sbw=sched] .sbrow.br
 @media (max-width:560px){.surst .check2{grid-template-columns:auto 1fr}.surst input[type=month]{grid-column:2}}
 #surform [hidden],#surid [hidden]{display:none!important}
 .surhits{display:grid;gap:4px;margin-top:6px}.surhit{display:grid;gap:1px;text-align:left;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface);cursor:pointer;font:inherit;color:var(--ink)}.surhit:hover,.surhit:focus{border-color:var(--brand);outline:none;box-shadow:inset 0 0 0 1px var(--brand)}.surhit b{font-size:15.5px}.surhit span{font-size:12.5px;color:var(--muted)}
+.omrk-xl{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:var(--sunk);border:1px solid var(--line);border-radius:10px;padding:10px 12px}.omrk-xl>div{display:grid;gap:2px}.omrk-xl .actions{display:flex;gap:6px;flex-wrap:wrap}
 .omrk{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:3px 14px;max-height:46vh;overflow:auto;padding:4px;border:1px solid var(--line);border-radius:10px}
 .omrk-h{grid-column:1/-1;font-weight:700;font-size:12px;color:var(--brand);padding:6px 2px 2px;text-transform:uppercase;letter-spacing:.04em}
 .omrk-r{display:flex;align-items:center;gap:4px}.omrk-r b{width:30px;text-align:right;font-size:13px;margin-right:4px}.omrk-r.miss b{color:var(--bad)}
@@ -653,12 +654,12 @@ table.prop .sbw[data-sbw=sched] .sbrow,table.prop .sbw[data-sbw=sched] .sbrow.br
 .extabs{display:flex;gap:4px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none;margin-bottom:-4px}.extabs::-webkit-scrollbar{display:none}
 .extabs button{border:0;background:none;font:inherit;font-weight:600;color:var(--muted);padding:10px 14px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
 .extabs button.on{color:var(--brand);border-bottom-color:var(--brand)}
-.exnext{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;background:var(--surface2,#faf7f2);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
-.extbl .exgh td{background:var(--surface2,#faf7f2);padding-top:10px}.rollin{width:86px;font-family:var(--f-mono)}
+.exnext{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;background:var(--sunk);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.extbl .exgh td{background:var(--sunk);padding-top:10px}.rollin{width:86px;font-family:var(--f-mono)}
 .exp{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;gap:8px}.exp-h{display:flex;gap:10px;align-items:baseline}
 .exp-g{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media (max-width:820px){.exp-g{grid-template-columns:1fr}}
 .exck-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}.exck{display:inline-flex;gap:5px;align-items:center;border:1px solid var(--line2);border-radius:99px;padding:4px 10px;font-size:13px;cursor:pointer}
-.exck.on{background:var(--ok-bg,#e8f3ec);border-color:var(--ok)}.exck input{margin:0;accent-color:var(--ok)}
+.exck.on{background:var(--ok-soft);border-color:var(--ok)}.exck input{margin:0;accent-color:var(--ok)}
 .exres{border:1px solid var(--line);border-radius:10px;padding:8px 12px}.exres summary{cursor:pointer;padding:4px 0}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:sl .18s ease-out}@keyframes sl{from{transform:translateX(24px)}to{transform:none}}}
 </style>
@@ -5006,7 +5007,8 @@ function sheetOmrSetup(x,sp){const s0=omrSpec(x,sp),s=s0||{n:/^General Cardiolog
 /* ---------- answer key ---------- */
 UI.omrK=null;
 function sheetOmrKey(x,sp){const s=omrSpec(x,sp);if(!s)return;UI.omrK={x,sp,a:omrKeyArr(s)};const L="ABCDE".slice(0,s.opts).split("");
- openSheet(`Answer key · ${sp}`,`<label class="f">Type or paste the key <span class="h">letters in order, e.g. ABDCE BDACE ... (spaces and numbers are ignored)</span><textarea id="omrk-paste" rows="3" style="font-family:var(--f-mono);letter-spacing:.06em" placeholder="ABDCEBDACE..."></textarea></label>
+ openSheet(`Answer key · ${sp}`,`<div class="omrk-xl"><div><b>Upload from Excel</b><span class="subt">Columns: Question, Answer, and optionally Also accept and Drop. Download the template to see the layout.</span></div><span class="actions"><button type="button" class="btn small" data-export="omrkey:${x.id}:${encodeURIComponent(sp)}">Download template</button><label class="btn small primary" for="omrk-xl">Upload Excel</label><input type="file" id="omrk-xl" accept=".xlsx,.xls,.csv" class="sr"></span></div>
+  <label class="f">Or type or paste the key <span class="h">letters in order, e.g. ABDCE BDACE ... (spaces and numbers are ignored)</span><textarea id="omrk-paste" rows="3" style="font-family:var(--f-mono);letter-spacing:.06em" placeholder="ABDCEBDACE..."></textarea></label>
   <div id="omrk-cnt" class="subt"></div><div id="omrk-grid" class="omrk">${omrKeyGrid(s,L)}</div>
   <div class="grid2"><label class="f">Questions to drop <span class="h">after the exam, e.g. 12, 45 · nobody loses marks</span><input name="drop" value="${esc((s.drop||[]).join(", "))}"></label>
   <label class="f">Also accept <span class="h">a second correct answer, e.g. 12B, 30D</span><input name="alt" value="${esc(Object.entries(s.alt||{}).map(([q,v])=>q+v).join(", "))}"></label></div>`,()=>{
@@ -5024,6 +5026,41 @@ document.addEventListener("click",e=>{const b=e.target.closest("[data-omrk]");if
 document.addEventListener("input",e=>{if(e.target.id!=="omrk-paste"||!UI.omrK)return;const K=UI.omrK,s=omrSpec(K.x,K.sp),L="ABCDE".slice(0,s.opts);
  const letters=e.target.value.toUpperCase().replace(/[^A-E]/g,"").split("").filter(c=>L.includes(c)).slice(0,s.n);if(!letters.length)return;
  letters.forEach((v,i)=>K.a[i]=v);document.getElementById("omrk-grid").innerHTML=omrKeyGrid(s,L.split(""));omrKCount()});
+
+function omrKeyParse(aoa,n,L){const cell=v=>v==null?"":String(v).trim(),R=aoa.map(r=>(r||[]).map(cell)),out={key:{},alt:{},drop:[],bad:[]};
+ const letOf=v=>{v=v.toUpperCase();if(/^[A-E]$/.test(v))return v;if(/^[1-5]$/.test(v))return"ABCDE"[+v-1];const m=v.match(/^\(?([A-E])\)?[.)]?$/);return m?m[1]:""};
+ let hr=-1,qc=-1,ac=-1,xc=-1,dc=-1;
+ for(let r=0;r<Math.min(R.length,15)&&hr<0;r++){const row=R[r].map(v=>v.toLowerCase());let q=-1,a=-1,x=-1,d=-1;
+  row.forEach((v,i)=>{if(!v)return;if(/also|altern|second|other/.test(v)){if(x<0)x=i}else if(/drop|cancel|delete|remove|void/.test(v)){if(d<0)d=i}else if(/answer|key|correct|option|ans/.test(v)){if(a<0)a=i}else if(/^(q|qn|qs|q\.? ?no\.?|ques\w*( ?no\.?| ?number)?|sr\.? ?no\.?|s\.? ?no\.?|no\.?|#|item)$/.test(v)){if(q<0)q=i}});
+  if(a>=0){hr=r;qc=q;ac=a;xc=x;dc=d}}
+ const put=(q,raw,row)=>{if(!(q>=1&&q<=n)){if(raw)out.bad.push(`row ${row}: question ${q||"?"} is outside 1-${n}`);return}
+  if(/^(drop|dropped|cancel(led)?)$/i.test(raw.trim())){out.drop.push(q);return}
+  const parts=raw.toUpperCase().split(/[\s,\/;&+]+|(?<=[A-E])(?=[A-E])/).map(letOf).filter(Boolean);
+  if(!parts.length){if(raw)out.bad.push(`Q${q}: "${raw}" is not a letter`);return}
+  if(!L.includes(parts[0])){out.bad.push(`Q${q}: ${parts[0]} is not an option on this sheet`);return}
+  out.key[q]=parts[0];if(parts[1]&&L.includes(parts[1])&&parts[1]!==parts[0])out.alt[q]=parts[1]};
+ if(hr>=0){let seq=0;for(let r=hr+1;r<R.length;r++){const row=R[r];if(!row.some(Boolean))continue;seq++;const q=qc>=0?parseInt(row[qc],10):seq;if(qc>=0&&!row[qc])continue;
+   put(q,row[ac]||"",r+1);if(!(q>=1&&q<=n))continue;
+   if(xc>=0&&row[xc]){const v=letOf(row[xc]);if(v&&L.includes(v))out.alt[q]=v;else out.bad.push(`Q${q}: also-accept "${row[xc]}" is not a valid letter`)}
+   if(dc>=0&&/^(y|yes|x|1|true|drop|dropped|✓|✔)$/i.test(row[dc]))out.drop.push(q)}
+  return out}
+ // no headings: rows of number + letter, else letters in reading order
+ let pairs=0;R.forEach((row,ri)=>{const qi=row.findIndex(v=>/^\d+\.?$/.test(v));if(qi<0)return;const ai=row.findIndex((v,i)=>i>qi&&letOf(v)&&!/^\d+$/.test(v));if(ai<0)return;pairs++;put(parseInt(row[qi],10),row[ai],ri+1)});
+ if(pairs)return out;
+ const seq=[];R.forEach(row=>row.forEach(v=>{const u=v.toUpperCase().replace(/[^A-E]/g,"");if(u&&u.length===v.replace(/[\s\d.,)\-]/g,"").length)seq.push(...u)}));
+ seq.slice(0,n).forEach((v,i)=>put(i+1,v,i+1));if(seq.length>n)out.bad.push(`${seq.length-n} extra letters after Q${n} were ignored`);return out}
+async function omrKeyImport(f){const K=UI.omrK;if(!K)return;try{if(!window.XLSX)throw new Error("The Excel library did not load. Check the connection and reload.");
+ const wb=XLSX.read(await f.arrayBuffer(),{type:"array"}),aoa=XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:false,defval:null});
+ const s=omrSpec(K.x,K.sp),L="ABCDE".slice(0,s.opts).split(""),r=omrKeyParse(aoa,s.n,L),got=Object.keys(r.key).length;
+ if(!got)throw new Error("No answers found. Use the template: a Question column and an Answer column.");
+ Object.entries(r.key).forEach(([q,v])=>K.a[q-1]=v);
+ const ai=document.querySelector('#overlay input[name="alt"]'),di=document.querySelector('#overlay input[name="drop"]');
+ if(ai&&Object.keys(r.alt).length){const cur={};for(const m of ai.value.toUpperCase().matchAll(/(\d+)\s*([A-E])/g))cur[+m[1]]=m[2];Object.assign(cur,r.alt);ai.value=Object.entries(cur).sort((a,b)=>a[0]-b[0]).map(([q,v])=>q+v).join(", ")}
+ if(di&&r.drop.length){const cur=new Set(di.value.split(/[^0-9]+/).filter(Boolean).map(Number));r.drop.forEach(q=>cur.add(q));di.value=[...cur].sort((a,b)=>a-b).join(", ")}
+ document.getElementById("omrk-grid").innerHTML=omrKeyGrid(s,L);omrKCount();
+ const miss=K.a.filter(v=>!v).length,err=document.getElementById("sheeterr");
+ if(err)err.textContent=r.bad.length?`Check these in ${f.name}: ${r.bad.slice(0,6).join("; ")}${r.bad.length>6?` and ${r.bad.length-6} more`:""}.`:"";
+ toast(`${got} answers read from ${f.name}${miss?` · ${miss} still missing`:""}. Check them, then Save.`)}catch(e){toast(e.message||"Could not read this file. Save it as .xlsx or .csv and try again.")}}
 
 /* ---------- printing ---------- */
 function sheetOmrPrint(x,sp){const s=omrSpec(x,sp),C=exCands(x).filter(p=>exPaperOf(x,p)===sp);
@@ -5382,6 +5419,34 @@ document.addEventListener("click",e=>{const b=e.target.closest('[data-act="ex-pr
  if(b.dataset.act==="ex-practice"){const m=iso(TODAY).slice(0,7);const nx={id:uid("EX"),title:"Practice exam",session:"Practice "+fd(iso(TODAY)),month:m,date:iso(TODAY),venue:"",passMark:60,scope:"ric",stage:2,papers:{},marks:{},absent:{},cands:null,log:[],practice:true};DB.exams.push(nx);xlog(nx,"Practice exam created (not counted anywhere)");UI.exTab[nx.id]="papers";go("exam-"+nx.id);return}
  const x=DB.exams.find(v=>v.id===route.id);if(!x||!x.practice)return;if(b.dataset.armed!=="1"){b.dataset.armed="1";b.textContent="Tap again to delete";return}
  DB.exams=DB.exams.filter(v=>v!==x);log("Practice exam deleted","exams");persist();go("exams")});
+
+/* =====================================================================
+   V32 · ANSWER KEYS FROM EXCEL. In the Answer key window: Upload Excel /
+   Download template (Question, Answer, Also accept, Drop). On the Papers
+   tab: one workbook for the whole exam, one sheet per paper.
+   ===================================================================== */
+EXPORTS.omrkey=(id,enc)=>{const x=DB.exams.find(e=>e.id===id),sp=decodeURIComponent(enc),k=omrSpec(x,sp),a=UI.omrK&&UI.omrK.sp===sp?UI.omrK.a:omrKeyArr(k),dr=new Set(k.drop||[]),al=k.alt||{};
+  return{file:`Answer key template ${sp} ${x.session}`,sheets:[{name:"Answer key",rows:[["Question","Answer","Also accept","Drop"],...Array.from({length:k.n},(_,i)=>[i+1,a[i]||"",al[i+1]||"",dr.has(i+1)?"Y":""])]},
+   {name:"How to fill",rows:[["How to fill this sheet"],["Keep the first row (the headings) as it is."],["Question: the question number, 1 to "+k.n+"."],["Answer: one letter, "+"ABCDE".slice(0,k.opts).split("").join(", ")+"."],["Also accept (optional): a second correct letter for that question."],["Drop (optional): Y to drop the question so nobody loses marks."],["Then use Upload Excel in the answer key window. Only the first sheet is read."]]}]}};
+document.addEventListener("change",e=>{const t=e.target;if(t.id==="omrk-xl"&&t.files[0]){const f=t.files[0];t.value="";omrKeyImport(f)}});
+const omrNormKey=s=>String(s||"").toLowerCase().replace(/[^a-z0-9]+/g,"");
+const omrSheetName=k=>k.replace(/[\\/?*[\]:]/g," ").slice(0,31);
+/* whole-exam template: a sheet for every paper that is set up, pre-filled with any key already entered */
+EXPORTS.omrkeys=xid=>{const x=DB.exams.find(e=>e.id===xid),O=omrOf(x),keys=Object.keys(O.specs);
+ const sheets=keys.map(k=>{const s=O.specs[k],a=omrKeyArr(s),dr=new Set(s.drop||[]),al=s.alt||{};return{name:omrSheetName(k),rows:[["Question","Answer","Also accept","Drop"],...Array.from({length:s.n},(_,i)=>[i+1,a[i]||"",al[i+1]||"",dr.has(i+1)?"Y":""])]}});
+ sheets.push({name:"How to fill",rows:[["How to fill this file"],["One sheet per paper. Keep each sheet's name: it tells the app which paper the answers belong to."],["Answer: one letter per question. Also accept (optional): a second correct letter. Drop (optional): Y."],["Then use Upload answer keys (Excel) on the Papers tab. Every paper is filled in one go."]]});
+ return{file:`Answer keys ${x.session}`,sheets}};
+document.addEventListener("change",async e=>{if(e.target.id!=="omrk-all"||!e.target.files[0])return;const f=e.target.files[0];e.target.value="";const x=DB.exams.find(v=>v.id===route.id);if(!x)return;
+ try{if(!window.XLSX)throw new Error("The Excel library did not load. Check the connection and reload.");const wb=XLSX.read(await f.arrayBuffer(),{type:"array"}),papers=Object.keys(omrOf(x).specs),done=[],skip=[],bad=[];
+  for(const nm of wb.SheetNames){if(/^how to fill/i.test(nm))continue;const key=papers.find(k=>omrNormKey(omrSheetName(k))===omrNormKey(nm))||(papers.length===1&&wb.SheetNames.length<=2?papers[0]:null);if(!key){skip.push(nm);continue}
+   const s=omrSpec(x,key),L="ABCDE".slice(0,s.opts).split(""),r=omrKeyParse(XLSX.utils.sheet_to_json(wb.Sheets[nm],{header:1,raw:false,defval:null}),s.n,L);
+   if(!Object.keys(r.key).length){skip.push(nm);continue}
+   const a=omrKeyArr(s);Object.entries(r.key).forEach(([q,v])=>a[q-1]=v);s.key=a.map(v=>v||"-").join("");s.alt={...(s.alt||{}),...r.alt};if(r.drop.length)s.drop=[...new Set([...(s.drop||[]),...r.drop])].sort((p,q)=>p-q);
+   done.push(`${key} (${omrKeyDone(s)}/${s.n})`);r.bad.forEach(b=>bad.push(`${key}: ${b}`))}
+  if(done.length){xlog(x,`Answer keys uploaded from ${f.name}: ${done.join(", ")}`);if(omrScans(x).some(z=>z.use&&x.marks[z.pid]!=null))omrApply(x);persist();render()}
+  toast(done.length?`Keys loaded: ${done.join(", ")}${skip.length?`. Not matched to a paper: ${skip.join(", ")}`:""}${bad.length?`. Check: ${bad.slice(0,3).join("; ")}`:""}`:"No sheet matched a paper. Set up the papers first, then use the template so the sheet names match.")}
+ catch(err){toast(err.message||"That file could not be read")}});
+{const _p=exPapersTab;exPapersTab=function(x){const has=Object.keys(omrOf(x).specs).length;return _p(x).replace('<div class="actions" style="justify-content:flex-start">',`<div class="actions" style="justify-content:flex-start">${has?`${xbtn(`omrkeys:${x.id}`,"Answer key template (all papers)")}<label class="btn small" for="omrk-all">Upload answer keys (Excel)</label><input type="file" id="omrk-all" accept=".xlsx,.xls" class="sr">`:""}`)}}
 
 /* ---------- events ---------- */
 document.addEventListener("click",e=>{
