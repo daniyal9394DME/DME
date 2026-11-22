@@ -5140,9 +5140,9 @@ async function omrMakePdf(x,jobs,file){try{await bioLoadPdf()}catch(e){toast(e.m
  toast("Making the PDF…");await new Promise(r=>setTimeout(r,30));
  for(const j of jobs){const s=omrSpec(x,j.sp);if(!s)continue;const base={exam:x.title,session:x.session,date:dt,spec:j.sp,n:s.n,opts:s.opts,sections:s.sections,logo:logo&&logo.startsWith("data:")?logo:null};
   const C=j.cand.slice().sort((a,b)=>omrRoll(x,a).localeCompare(omrRoll(x,b))||a.name.localeCompare(b.name));
-  for(const p of C){if(pages++)doc.addPage();const roll=omrRoll(x,p);omrSheet(doc,{...base,cand:{name:p.name,code:p.code||"",roll,year:examYear(x,p)||"",program:p.program||""},qr:`RICDME|${x.id}|${s.sid}|${p.id}`},qrcode)}
-  for(let i=0;i<j.blank;i++){if(pages++)doc.addPage();omrSheet(doc,{...base,cand:null,qr:`RICDME|${x.id}|${s.sid}|B`},qrcode)}
-  s.printed={at:new Date().toISOString(),p:C.length,b:j.blank};xlog(x,`OMR sheets printed for ${j.sp}: ${C.length} personalised${j.blank?`, ${j.blank} blank`:""}`)}
+  for(const p of C){if(pages++)doc.addPage();const roll=omrRoll(x,p);omrSheet(doc,{...base,cand:{name:p.name,code:p.code||"",roll,year:examYear(x,p)||"",program:p.program||""},qr:`RICDME|${x.id}|${s.sid}|${p.id}|${s.n}`},qrcode)}
+  for(let i=0;i<j.blank;i++){if(pages++)doc.addPage();omrSheet(doc,{...base,cand:null,qr:`RICDME|${x.id}|${s.sid}|B|${s.n}`},qrcode)}
+  s.printed={at:new Date().toISOString(),p:C.length,b:j.blank,n:s.n};xlog(x,`OMR sheets printed for ${j.sp}: ${C.length} personalised${j.blank?`, ${j.blank} blank`:""}`)}
  if(!pages){toast("Nothing to print");return}doc.save(file.replace(/[\\/:*?"<>|]+/g," ")+".pdf");persist();render();toast(`PDF ready: ${pages} sheets`)}
 document.addEventListener("click",e=>{const b=e.target.closest('[data-act^="omr-"]');if(!b)return;const x=DB.exams.find(v=>v.id===route.id);if(!x)return;const sp=b.dataset.sp;
  if(b.dataset.act==="omr-setup")return sheetOmrSetup(x,sp);if(b.dataset.act==="omr-key")return sheetOmrKey(x,sp);if(b.dataset.act==="omr-print")return sheetOmrPrint(x,sp);
@@ -5179,18 +5179,21 @@ function omrIdentify(x,canvas){const tries=canvas.width>canvas.height?[1,3]:[0,2
  return last||{error:"The sheet could not be read."}}
 function omrCandByRoll(x,roll){if(!/^\d{5}$/.test(roll))return null;const R=x.roll||{};const id=Object.keys(R).find(k=>R[k]===roll);return(id&&DB.pgts.find(p=>p.id===id))||DB.pgts.find(p=>p.reg==="Verified"&&rollOf(p)===roll)||null}
 /* one sheet: identify it, read it, note where each doubtful row is (for the review crops) */
-function omrSheetFrom(x,canvas,label,force){const id=omrIdentify(x,canvas);const sc={id:uid("SC"),file:label,at:new Date().toISOString(),use:true,fix:{},fl:{}};
+function omrSheetFrom(x,canvas,label,force,fsp){const id=omrIdentify(x,canvas);const sc={id:uid("SC"),file:label,at:new Date().toISOString(),use:true,fix:{},fl:{}};
  if(id.error){sc.issue="unreadable";sc.err=id.error;return{sc,url:canvas.toDataURL("image/jpeg",.6)}}
  const parts=(id.qr||"").split("|");let sp="",pid=null;sc.ar=+(id.canvas.width/id.canvas.height).toFixed(4);
  if(parts[0]==="RICDME"){if(parts[1]!==x.id&&parts[1]!=="TRIAL")sc.issue="other-exam";sp=omrSpecBySid(x,parts[2]);if(parts[3]&&parts[3]!=="B")pid=parts[3]}
+ if(fsp&&omrSpec(x,fsp))sp=fsp;
  const rollText=id.probe.rollText;sc.roll=rollText;
  const byRoll=omrCandByRoll(x,rollText);if(!pid&&byRoll)pid=byRoll.id;if(force)pid=force;
- if(pid&&byRoll&&byRoll.id!==pid)sc.rollClash=byRoll.id;
- if(!sp&&pid){const p=DB.pgts.find(q=>q.id===pid);if(p&&omrSpec(x,exPaperOf(x,p)))sp=exPaperOf(x,p)}
+ if(!force&&pid&&byRoll&&byRoll.id!==pid){sc.rollClash=byRoll.id;sc.issue=sc.issue||"roll-clash"}
+ /* no QR code: the paper is worked out from the candidate's papers and the printed layout; if that is not certain it is asked */
+ if(!sp&&pid){const p=DB.pgts.find(q=>q.id===pid);if(p){const g=omrGuessPaper(x,id,p);sp=g.sp;if(sp&&!g.sure)sc.issue=sc.issue||"paper-check"}}
  sc.pid=pid;sc.spec=sp;const url=id.canvas.toDataURL("image/jpeg",.62);
  {const sx=1/id.canvas.width,sy=1/id.canvas.height,a=id.F.map(130,40),b=id.F.map(196,98);sc.rbox=[a[0]*sx,a[1]*sy,b[0]*sx,b[1]*sy].map(v=>+v.toFixed(4))}
  if(!sp){sc.issue=sc.issue||"no-paper";return{sc,url}}
- const cfg=omrCfgOf(x,sp),r=omrRead(id.img,cfg,id.F),L=omrLayout(cfg),A=omrAlignAll(id.img,id.F,L);
+ let cfg=omrCfgOf(x,sp);{const pn=+parts[4]||0,S0=omrSpec(x,sp);const n=pn||(typeof omrDetectN==="function"?omrDetectN(id.img,id.F,cfg,S0):0);if(n&&n!==cfg.n){cfg={...cfg,n,sections:(cfg.sections||[]).filter(z=>z.from<=n).map(z=>({...z,to:Math.min(z.to,n)}))};sc.printedN=n}}
+ const r=omrRead(id.img,cfg,id.F),L=omrLayout(cfg),A=omrAlignAll(id.img,id.F,L);
  sc.ans=r.ans.map(a=>a.a||(a.flag==="multiple"?"*":"-")).join("");r.ans.forEach((a,q)=>{if(a.flag)sc.fl[q+1]=[a.flag,a.m||""]});
  const sx=1/id.canvas.width,sy=1/id.canvas.height;sc.box={};r.ans.forEach((a,q)=>{if(!a.flag)return;const row=L.q[q],o=A.off[q],p0=id.F.map(row[0][0]+o[0]-10,row[0][1]+o[1]-3.4),p1=id.F.map(row[row.length-1][0]+o[0]+3,row[0][1]+o[1]+3.4);sc.box[q+1]=[p0[0]*sx,p0[1]*sy,p1[0]*sx,p1[1]*sy].map(v=>+v.toFixed(4))});
  {const p=pid&&DB.pgts.find(q=>q.id===pid);if(p&&!exInPaper(x,p,sp)&&!force)sc.issue=sc.issue||"other-paper"}
@@ -5200,9 +5203,14 @@ async function omrProcess(x,files){const S=omrScans(x),out=[];UI.omrRun={done:0,
  try{await omrLoad(OMR_JSQR)}catch(e){UI.omrRun=null;toast(e.message);render();return}
  try{await omrPages(files,async(canvas,label,i,tot)=>{UI.omrRun={done:i-1,total:tot,msg:`Reading ${label}`};omrRunBar();await new Promise(r=>setTimeout(r,0));
   const{sc,url}=omrSheetFrom(x,canvas,label);UI.omrImg[sc.id]=url;out.push(sc)})}catch(e){toast("Could not open the file: "+(e.message||e))}
+ /* the same page scanned again (same candidate, paper and every answer) is not added twice */
+ {const same=(a,b)=>a.spec===b.spec&&a.ans&&a.ans===b.ans&&(a.pid?a.pid===b.pid:!b.pid&&a.roll===b.roll&&a.ans.replace(/-/g,"").length>=10);let sk=0,rp=0;const keep=[];out.forEach(sc=>{if(S.some(o=>same(o,sc)||sc.issue==="unreadable"&&o.issue==="unreadable"&&o.file===sc.file)||keep.some(o=>same(o,sc))){sk++;delete UI.omrImg[sc.id];return}
+  /* the same page of the same file, read again with a newer version of the reader: the new reading replaces the old one */
+  const i=S.findIndex(o=>o.use!==false&&o.file===sc.file&&o.pid&&o.pid===sc.pid&&o.spec===sc.spec);if(i>=0){delete UI.omrImg[S[i].id];S.splice(i,1);rp++}keep.push(sc)});
+  out.length=0;keep.forEach(z=>out.push(z));if(sk||rp)setTimeout(()=>toast([sk?`${sk} page${sk>1?"s were":" was"} already scanned and ${sk>1?"were":"was"} not added again`:"",rp?`${rp} sheet${rp>1?"s were":" was"} read again and replaced`:""].filter(Boolean).join(" · ")),400)}
  /* keep the images on the live app so any sheet can be looked at later */
  if(LIVE&&SYNC.sb){let k=0;for(const sc of out){UI.omrRun={done:k++,total:out.length,msg:"Saving sheet images"};omrRunBar();await omrSaveImg(x,sc)}}
- out.forEach(sc=>S.push(sc));omrDupes(x);
+ out.forEach(sc=>S.push(sc));omrDupes(x);if(typeof omrPrune==="function")omrPrune(x);
  xlog(x,`OMR: ${out.length} sheet${out.length===1?"":"s"} scanned (${out.filter(s=>omrNeeds(x,s)).length} need review)`);UI.omrRun=null;UI.omrTab="review";persist();render();
  setTimeout(()=>document.getElementById("omrscan")?.scrollIntoView({behavior:"smooth"}),50)}
 async function omrSaveImg(x,sc){try{const blob=await(await fetch(UI.omrImg[sc.id])).blob(),path=`exams/${x.id}/${sc.id}.jpg`;const{error}=await SYNC.sb.storage.from("dme-uploads").upload(path,blob,{contentType:"image/jpeg",upsert:true});if(!error)sc.img=path}catch(e){}}
@@ -5215,7 +5223,7 @@ function omrDupes(x){const S=omrScans(x),seen={};S.forEach(s=>{if(s.issue==="dup
 function omrRunBar(){const R=UI.omrRun,el=document.getElementById("omrrun");if(!R||!el)return;el.innerHTML=`<div class="subt">${esc(R.msg)}</div><div class="bar"><i style="width:${R.total?Math.round(R.done/R.total*100):5}%"></i></div>`}
 
 /* ---------- state of each sheet ---------- */
-const OMR_ISSUE={unreadable:"Could not read the sheet",unidentified:"Candidate not identified",roll:"Roll number incomplete","no-paper":"Paper (specialty) not known","other-exam":"Sheet belongs to another exam",duplicate:"Same candidate scanned more than once","not-candidate":"Not on this exam's candidate list","other-paper":"Candidate's specialty does not match this paper"};
+const OMR_ISSUE={unreadable:"Could not read the sheet",unidentified:"Candidate not identified",roll:"Roll number incomplete","no-paper":"Paper (specialty) not known","other-exam":"Sheet belongs to another exam",duplicate:"Same candidate scanned more than once","not-candidate":"Not on this exam's candidate list","other-paper":"Candidate's specialty does not match this paper","paper-check":"Paper not certain: the QR code could not be read","roll-clash":"The roll number filled in belongs to another candidate"};
 const OMR_FL={multiple:"Two or more answers",faint:"Very faint mark",light:"Light mark, tick or cross",smudge:"Possible erasure"};
 function omrOpen(x,s){if(!s.use)return[];const o=[];if(s.issue&&s.issue!=="duplicate"&&!s.okIssue)o.push("issue");if(s.issue==="duplicate")o.push("dup");
  if(s.pid&&!s.okIssue&&!exCands(x).some(p=>p.id===s.pid)&&!(x.added||[]).includes(s.pid))o.push("cand");
@@ -5230,7 +5238,7 @@ function omrScore(x,s){const sp=omrSpec(x,s.spec),A=omrFinal(x,s);if(!A)return n
 /* ---------- the panel on the exam page ---------- */
 function omrScanPanel(x){if(isViewer())return"";const O=omrOf(x),specs=Object.keys(O.specs);if(!specs.length)return"";const S=omrScans(x),R=UI.omrRun;
  const used=S.filter(s=>s.use),need=used.filter(s=>omrNeeds(x,s)),ok=used.filter(s=>!omrNeeds(x,s)&&s.pid);
- const keyMiss=specs.filter(sp=>omrKeyDone(O.specs[sp])<O.specs[sp].n);
+ const keyMiss=specs.filter(sp=>omrKeyDone(O.specs[sp])<O.specs[sp].n),okK=ok.filter(s=>!keyMiss.includes(s.spec));
  const absent=omrMissing(x);
  const tab=UI.omrTab;
  let body="";
@@ -5244,7 +5252,7 @@ function omrScanPanel(x){if(isViewer())return"";const O=omrOf(x),specs=Object.ke
   ${keyMiss.length?`<div class="flag">Answer key incomplete for ${keyMiss.map(esc).join(", ")}. Marks are worked out from the key, so finish it before putting results into the exam.</div>`:""}
   <div class="seg2" role="tablist">${[["review",`Needs review (${need.length})`],["all",`All sheets (${used.length})`],["absent",`Without a sheet (${absent.length})`]].map(([k,l])=>`<button class="chip" data-omrtab="${k}" aria-pressed="${tab===k}">${l}</button>`).join("")}</div>
   <div style="display:grid;gap:10px">${body}</div>
-  <div class="actions" style="justify-content:flex-start"><button class="btn primary" data-act="omr-apply" ${need.length||keyMiss.length||!ok.length?"disabled":""}>Put ${ok.length} result${ok.length===1?"":"s"} into the exam</button>${need.length?`<span class="subt">Finish the review first.</span>`:""}</div>`:""}</div>`}
+  <div class="actions" style="justify-content:flex-start"><button class="btn primary" data-act="omr-apply" ${!okK.length?"disabled":""}>Put ${okK.length} result${okK.length===1?"":"s"} into the exam</button>${need.length?`<span class="subt">${need.length} sheet${need.length>1?"s":""} still need review; press again once they are done.</span>`:""}${ok.length>okK.length?`<span class="subt">${ok.length-okK.length} wait for an answer key.</span>`:""}</div>`:""}</div>`}
 {const _o=omrPanel;omrPanel=function(x){return _o(x)+omrScanPanel(x)}}
 function omrCrop(x,s,box,h){const src=UI.omrImg[s.id];if(!box)return"";const[x0,y0,x1,y1]=box,W=x1-x0,H=y1-y0;
  if(src)return`<div class="omrcrop" style="height:${h}px;aspect-ratio:${(W/H*(s.ar||.707)).toFixed(3)};background-image:url(${src});background-size:${(100/W).toFixed(2)}% ${(100/H).toFixed(2)}%;background-position:${(x0/(1-W)*100).toFixed(2)}% ${(y0/(1-H)*100).toFixed(2)}%"></div>`;
@@ -5254,8 +5262,8 @@ function omrReviewCard(x,s){const open=omrOpen(x,s),letters="ABCDE".slice(0,(omr
  const cands=exCands(x).slice().sort((a,b)=>(exInPaper(x,a,s.spec)?0:1)-(exInPaper(x,b,s.spec)?0:1)||a.name.localeCompare(b.name));
  const issue=open.includes("issue")||open.includes("cand")?`<div class="flag" style="display:grid;gap:8px"><b>${esc(open.includes("cand")?OMR_ISSUE["not-candidate"]:OMR_ISSUE[s.issue]||s.issue)}</b>${s.err?`<span class="subt">${esc(s.err)}</span>`:""}
   ${s.rbox?omrCrop(x,s,s.rbox,190):""}
-  ${["unidentified","roll","no-paper","other-paper"].includes(s.issue)||open.includes("cand")?`<label class="f">This sheet belongs to<select data-omrwho="${s.id}">${opt([["","Choose the candidate"],...cands.map(p=>[p.id,`Dr. ${p.name} · ${p.code||""} · ${exPaperOf(x,p)}`])],s.pid||"")}</select></label>`:""}
-  <div class="actions" style="justify-content:flex-start">${open.includes("cand")?`<button class="btn small" data-act="omr-addcand" data-id="${s.id}">Add to the candidate list</button>`:""}${s.issue==="other-exam"||s.issue==="unreadable"?`<button class="btn small" data-act="omr-skip" data-id="${s.id}">Leave this sheet out</button>`:""}${["roll"].includes(s.issue)&&s.pid?`<button class="btn small" data-act="omr-okissue" data-id="${s.id}">Roll number is fine</button>`:""}${s.issue==="other-paper"&&s.pid?`<button class="btn small" data-act="omr-okissue" data-id="${s.id}">Correct: this candidate sat the ${esc(s.spec)} paper</button>`:""}</div></div>`:"";
+  ${["unidentified","roll","no-paper","other-paper","paper-check","roll-clash"].includes(s.issue)||open.includes("cand")?`<label class="f">This sheet belongs to<select data-omrwho="${s.id}">${opt([["","Choose the candidate"],...cands.map(p=>[p.id,`Dr. ${p.name} · ${p.code||""} · ${exPaperOf(x,p)}`])],s.pid||"")}</select></label>`:""}
+  <div class="actions" style="justify-content:flex-start">${open.includes("cand")?`<button class="btn small" data-act="omr-addcand" data-id="${s.id}">Add to the candidate list</button>`:""}${s.issue==="other-exam"||s.issue==="unreadable"?`<button class="btn small" data-act="omr-skip" data-id="${s.id}">Leave this sheet out</button>`:""}${["roll"].includes(s.issue)&&s.pid?`<button class="btn small" data-act="omr-okissue" data-id="${s.id}">Roll number is fine</button>`:""}${s.issue==="other-paper"&&s.pid?`<button class="btn small" data-act="omr-okissue" data-id="${s.id}">Correct: this candidate sat the ${esc(s.spec)} paper</button>`:""}${s.issue==="paper-check"&&s.pid?`<button class="btn small" data-act="omr-okissue" data-id="${s.id}">Correct: ${esc(s.spec)} paper</button>`:""}${s.issue==="roll-clash"&&s.pid?`<button class="btn small" data-act="omr-okissue" data-id="${s.id}">Keep Dr. ${esc((DB.pgts.find(q=>q.id===s.pid)||{}).name||"")} (name printed on the sheet)</button>`:""}</div></div>`:"";
  const dup=open.includes("dup")?`<div class="flag" style="display:grid;gap:6px"><b>${OMR_ISSUE.duplicate}</b><span>Keep this sheet, or leave it out?</span><div class="actions" style="justify-content:flex-start"><button class="btn small" data-act="omr-keep" data-id="${s.id}">Keep this one</button><button class="btn small" data-act="omr-skip" data-id="${s.id}">Leave this one out</button></div></div>`:"";
  const qs=open.filter(k=>k[0]==="q").map(k=>+k.slice(1)).sort((a,b)=>a-b).map(q=>{const[f,m]=s.fl[q];return`<div class="omrq"><div><b>Q${q}</b> <span class="subt">${esc(OMR_FL[f]||f)}${m?` · read as ${esc(m)}`:s.ans&&s.ans[q-1]&&s.ans[q-1]!=="-"&&s.ans[q-1]!=="*"?` · read as ${s.ans[q-1]}`:""}</span></div>${omrCrop(x,s,s.box&&s.box[q],44)}
   <div class="omrpick">${letters.map(l=>`<button class="btn small ${(s.ans||"")[q-1]===l||(m||"").includes(l)?"read":""}" data-omrfix="${s.id}|${q}|${l}" title="${(s.ans||"")[q-1]===l?"What the reader saw":""}">${l}</button>`).join("")}<button class="btn small" data-omrfix="${s.id}|${q}|">No answer</button></div></div>`}).join("");
@@ -5268,8 +5276,8 @@ function omrAllTable(x,L){const rows=L.slice().sort((a,b)=>(a.spec||"").localeCo
 document.addEventListener("change",e=>{if(e.target.id==="omr-file"&&e.target.files.length){const x=DB.exams.find(v=>v.id===route.id);if(!x)return;const f=[...e.target.files];e.target.value="";omrProcess(x,f)}
  const w=e.target.closest("[data-omrwho]");if(w){const x=DB.exams.find(v=>v.id===route.id),s=x&&omrScans(x).find(v=>v.id===w.dataset.omrwho);if(!s)return;const p=DB.pgts.find(q=>q.id===w.value);if(!p)return;
   xlog(x,`OMR: sheet ${s.file} assigned to Dr. ${p.name}`);
-  if(!s.ans){if(!omrSpec(x,exPaperOf(x,p))){toast(`Set up the ${exPaperOf(x,p)} sheet first`);return}omrReread(x,s,p.id);return}
-  s.pid=p.id;if(["unidentified","roll","no-paper"].includes(s.issue))delete s.issue;if(s.issue==="other-paper"&&exInPaper(x,p,s.spec))delete s.issue;omrDupes(x);persist();render()}});
+  if(!s.ans){if(!Object.keys(omrOf(x).specs).some(k=>exInPaper(x,p,k))){toast(`Set up the ${exPaperOf(x,p)} sheet first`);return}omrReread(x,s,p.id);return}
+  s.pid=p.id;if(["unidentified","roll","no-paper","roll-clash"].includes(s.issue))delete s.issue;if(s.issue==="other-paper"&&exInPaper(x,p,s.spec))delete s.issue;omrDupes(x);persist();render()}});
 document.addEventListener("click",async e=>{if(!DB||!DB.exams||!e.target.closest("[data-omrtab],[data-omrfix],[data-omrview],[data-act^=\"omr-\"]"))return;const x=DB.exams.find(v=>v.id===route.id);
  const t=e.target.closest("[data-omrtab]");if(t){UI.omrTab=t.dataset.omrtab;render();return}
  const f=e.target.closest("[data-omrfix]");if(f&&x){const[id,q,l]=f.dataset.omrfix.split("|");const s=omrScans(x).find(v=>v.id===id);if(!s)return;s.fix[q]=l;persist();const y=window.scrollY;render();window.scrollTo(0,y);return}
@@ -5282,11 +5290,12 @@ document.addEventListener("click",async e=>{if(!DB||!DB.exams||!e.target.closest
  if(a.dataset.act==="omr-absent"){const L=omrMissing(x);L.forEach(({p,k})=>{const M=exPM(x,k);M.absent[p.id]=true;delete M.marks[p.id]});xlog(x,`OMR: ${L.length} candidates without a sheet marked absent`)}
  if(a.dataset.act==="omr-apply"){omrApply(x);return}
  persist();const y=window.scrollY;render();window.scrollTo(0,y)});
-function omrApply(x){const used=omrScans(x).filter(s=>s.use&&s.pid&&!omrNeeds(x,s));let n=0;
- used.forEach(s=>{const sc=omrScore(x,s);if(!sc)return;const M=exPM(x,s.spec);M.marks[s.pid]=sc.pct;M.raw[s.pid]={o:sc.o,t:sc.t};M.secs[s.pid]=sc.secs;delete M.absent[s.pid];if(!exIsCommon(x,s.spec)&&x.res)delete x.res[s.pid];n++});
+function omrApply(x){const O=omrOf(x),used=omrScans(x).filter(s=>s.use&&s.pid&&!omrNeeds(x,s)&&omrKeyOk(x,s.spec));let n=0;O.applied=O.applied||{};
+ used.forEach(s=>{const sc=omrScore(x,s);if(!sc)return;const M=exPM(x,s.spec);M.marks[s.pid]=sc.pct;M.raw[s.pid]={o:sc.o,t:sc.t};M.secs[s.pid]=sc.secs;O.applied[s.spec+"|"+s.pid]=s.id;delete M.absent[s.pid];if(!exIsCommon(x,s.spec)&&x.res)delete x.res[s.pid];n++});
+ const gone=omrPrune(x),left=omrScans(x).filter(s=>s.use&&omrNeeds(x,s)).length;
  if(x.cands)used.forEach(s=>{if(!x.cands.includes(s.pid))x.cands.push(s.pid)});
  if((x.stage||0)<4)x.stage=Math.max(x.stage||0,4);if(!x.cands)x.cands=exCands(x).map(p=>p.id);
- xlog(x,`OMR results put into the exam: ${n} candidates`);persist();toast(`${n} results entered`);render()}
+ xlog(x,`OMR results put into the exam: ${n} candidates${gone?`; ${gone} earlier result${gone>1?"s":""} removed (sheet left out or moved)`:""}`);persist();toast(`${n} results entered${left?` · ${left} sheet${left>1?"s":""} still need review`:""}`);render()}
 /* re-score after the key changes (dropped question, second answer, corrected key) */
 {const _k=sheetOmrKey;sheetOmrKey=function(x,sp){_k(x,sp);const o=SHEET.onSave;SHEET.onSave=(...a)=>{const r=o(...a);if(r!==false){const has=omrScans(x).some(s=>s.use&&s.spec===sp&&exPM(x,sp).marks[s.pid]!=null);if(has){omrApply(x);toast(`Answer key saved; ${sp} re-marked`)}}return r}}}
 
@@ -6162,7 +6171,7 @@ const secKey=()=>prefs().sec==="type"?route.v:route.v+"-"+route.id;
    ===================================================================== */
 function omrIdentify(x,canvas){const tries=canvas.width>canvas.height?[1,3]:[0,2],R=[];
  for(const t of tries){const c=t?omrUpright(canvas,t):canvas,img=omrGray(c),F=omrFrame(img);if(F.error){R.push({t,error:F.error});continue}
-  const q=omrQrCrop(img,F,300),qr=typeof jsQR==="function"?jsQR(q.data,300,300,{inversionAttempts:"dontInvert"}):null;
+  const qd=omrQrRead(img,F),qr=qd?{data:qd}:null;
   const probe=omrRead(img,{n:5,opts:5,sections:[]},F),roll=/^\d{5}$/.test(probe.rollText);
   /* side squares only line up the right way up; a QR code is only found where it is printed */
   const r={t,canvas:c,img,F,qr:qr?qr.data:null,probe,score:(qr?1000:0)+(F.found||0)*10+(roll?5:0)};R.push(r);
@@ -6170,7 +6179,7 @@ function omrIdentify(x,canvas){const tries=canvas.width>canvas.height?[1,3]:[0,2
  const ok=R.filter(r=>!r.error).sort((a,b)=>b.score-a.score);
  if(!ok.length)return{error:(R.find(r=>r.error)||{}).error||"The sheet could not be read."};
  omrIdentify.last=ok[0].t-tries[0];return ok[0]}
-{const _s=omrSheetFrom;omrSheetFrom=function(x,canvas,label,force){omrIdentify.last=null;const r=_s(x,canvas,label,force);if(r&&r.sc&&omrIdentify.last!=null)r.sc.turn=omrIdentify.last;return r}}
+{const _s=omrSheetFrom;omrSheetFrom=function(x,canvas,label,force,fsp){omrIdentify.last=null;const r=_s(x,canvas,label,force,fsp);if(r&&r.sc&&omrIdentify.last!=null)r.sc.turn=omrIdentify.last;if(r&&r.sc&&r.sc.issue==="unreadable")r.sc.turn=0;return r}}
 /* a re-read sheet keeps the picture the right way up for the review crops */
 {const _r=omrReread;omrReread=async function(x,s,pid){const res=await omrFixOne(x,s,pid||s.pid,true);if(res==="noimg")return _r(x,s,pid)}}
 
@@ -6178,15 +6187,16 @@ async function omrImgCanvas(x,s){let src=UI.omrImg[s.id];if(!src&&s.img&&LIVE){t
  if(!src)return null;const im=await new Promise((ok,no)=>{const i=new Image();i.crossOrigin="anonymous";i.onload=()=>ok(i);i.onerror=no;i.src=src});
  const c=document.createElement("canvas");c.width=im.width;c.height=im.height;c.getContext("2d").drawImage(im,0,0);return c}
 /* read one stored sheet again; returns "turned" when it had been read upside down */
-async function omrFixOne(x,s,pid,always){let c;try{c=await omrImgCanvas(x,s)}catch(e){c=null}if(!c)return"noimg";
- const{sc,url}=omrSheetFrom(x,c,s.file,pid||s.pid||undefined);const turned=sc.turn===2||sc.turn===-2||(sc.turn&&sc.turn!==0);
+async function omrFixOne(x,s,pid,always,fsp){let c;try{c=await omrImgCanvas(x,s)}catch(e){c=null}if(!c)return"noimg";
+ const{sc,url}=omrSheetFrom(x,c,s.file,pid||s.pid||undefined,fsp);const turned=sc.turn===2||sc.turn===-2||(sc.turn&&sc.turn!==0);
  if(!always&&!turned){s.turn=0;return"same"}
- const had=s.pid&&s.spec&&exPM(x,s.spec).marks[s.pid]!=null;
+ const had=s.pid&&s.spec&&exPM(x,s.spec).marks[s.pid]!=null,o0={pid:s.pid,spec:s.spec};
  Object.assign(s,{...sc,id:s.id,img:s.img,at:s.at,use:s.use});if(!s.spec)s.issue="no-paper";
  if(turned){UI.omrImg[s.id]=url;if(LIVE&&SYNC.sb){await omrSaveImg(x,s)}s.turn=0;s.turnedFix=new Date().toISOString()}
- if(had&&omrNeeds(x,s)){const M=exPM(x,s.spec);delete M.marks[s.pid];if(M.raw)delete M.raw[s.pid];if(M.secs)delete M.secs[s.pid]}
+ /* the mark this sheet gave earlier comes out if the sheet now needs a look, or now belongs to another paper or candidate */
+ if(had&&(omrNeeds(x,s)||s.spec!==o0.spec||s.pid!==o0.pid)){const A=omrOf(x).applied||{},key=o0.spec+"|"+o0.pid;if(!A[key]||A[key]===s.id){const M=exPM(x,o0.spec);delete M.marks[o0.pid];if(M.raw)delete M.raw[o0.pid];if(M.secs)delete M.secs[o0.pid];delete A[key]}}
  return turned?"turned":"same"}
-async function omrCheckTurned(x,btn){const S=omrScans(x).filter(s=>s.use!==false&&s.turn==null);if(!S.length){toast("All sheets have already been checked");return}
+async function omrCheckTurned(x,btn){const S=omrScans(x).filter(s=>s.use!==false&&s.turn==null&&s.issue!=="unreadable");if(!S.length){toast("All sheets have already been checked");return}
  if(btn)btn.disabled=true;await omrLoad(OMR_JSQR).catch(()=>{});let n=0,k=0,miss=0;const fixed=[];
  for(const s of S){UI.omrRun={done:k++,total:S.length,msg:`Checking sheet ${k} of ${S.length}`};omrRunBar();await new Promise(r=>setTimeout(r,0));
   try{const r=await omrFixOne(x,s,s.pid,false);if(r==="turned"){n++;fixed.push(s)}if(r==="noimg")miss++}catch(e){miss++}}
@@ -6196,7 +6206,7 @@ async function omrCheckTurned(x,btn){const S=omrScans(x).filter(s=>s.use!==false
  if(ready.length&&omrScans(x).some(s=>s.use&&exPM(x,s.spec).marks[s.pid]!=null))omrApply(x);
  persist();UI.omrTab="review";render();
  toast(n?`${n} sheet${n===1?" was":"s were"} upside down and ${n===1?"has":"have"} been read again. Review any that need it, then put the results into the exam.`:`No upside-down sheets found${miss?` (${miss} had no stored image)`:""}`)}
-{const _p=omrScanPanel;omrScanPanel=function(x){const h=_p(x);const S=omrScans(x);if(!S.length||isViewer())return h;const old=S.filter(s=>s.use!==false&&s.turn==null).length;
+{const _p=omrScanPanel;omrScanPanel=function(x){const h=_p(x);const S=omrScans(x);if(!S.length||isViewer())return h;const old=S.filter(s=>s.use!==false&&s.turn==null&&s.issue!=="unreadable").length;
  const fixedN=S.filter(s=>s.turnedFix).length;
  const box=old?`<div class="flag" style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap"><span><b>${old} sheet${old===1?"":"s"} scanned before the upside-down fix.</b> Check them: any read upside down are read again the right way up, and their answers change.</span><button class="btn small primary" data-act="omr-turncheck">Check for upside-down sheets</button></div>`
   :fixedN?`<p class="subt" style="margin:0">${fixedN} sheet${fixedN===1?" was":"s were"} found upside down and read again.</p>`:"";
@@ -6286,6 +6296,237 @@ document.addEventListener("click",e=>{const c=e.target.closest("[data-pclr]");if
  h=h.replace('<div class="actions" style="justify-content:flex-start">','<div class="actions" style="justify-content:flex-start"><button class="btn small" data-act="ex-passm">Pass marks by paper</button>');
  return h.replace(/<button class="btn small" data-act="ex-att" data-sp="([^"]*)">Attendance sheet<\/button>/g,(m,k)=>{const d=document.createElement("textarea");d.innerHTML=k;const key=d.value;const set=!!(x.passPaper||{})[key];
   return`<button class="btn small ${set?"":"ghostish"}" data-act="ex-passm" data-sp="${k}" title="Pass mark for this paper">Pass: ${esc(passLabel(x,key).replace(" (exam default)",""))}</button>`+m})}}
+
+/* =====================================================================
+   V44 · OMR: sheets printed with a different number of questions from
+   the paper's current set-up (e.g. printed with 50, paper set to 30).
+   New sheets carry the number in their QR code; for sheets printed
+   before that, the layout that matches the printed circles is found.
+   ===================================================================== */
+function omrDetectN(img,F,cfg,S){const cands=[...new Set([cfg.n,S&&S.printed&&S.printed.n,20,25,30,35,40,45,50,60,70,75,80,90,100,120,150,200].filter(n=>n>=5&&n<=200))];
+ const score=n=>{const L=omrLayout({...cfg,n,sections:(cfg.sections||[]).filter(z=>z.from<=n).map(z=>({...z,to:Math.min(z.to,n)}))}),pts=L.q.flat();let best=-1e18;
+  for(const dx of[-.8,0,.8])for(const dy of[-.8,0,.8]){const v=omrRingScore(img,F,pts,2.3,dx,dy)/pts.length;if(v>best)best=v}return best};
+ /* a layout with fewer questions than printed also lands on circles, one with more lands on blank paper:
+    take the largest number whose circles all line up nearly as well as the best */
+ const R=cands.map(n=>({n,s:score(n)}));const top=Math.max(...R.map(r=>r.s));if(!(top>0))return cfg.n;
+ const ok=R.filter(r=>r.s>=top*.88).sort((a,b)=>b.n-a.n);return ok.length?ok[0].n:cfg.n}
+/* the review card says when a sheet was printed for a different number of questions */
+{const _c=omrReviewCard;omrReviewCard=function(x,s){const h=_c(x,s);const S=omrSpec(x,s.spec);if(!s.printedN||!S||s.printedN===S.n)return h;
+ return h.replace('<div class="head">',`<div class="flag info" style="margin:0 0 8px">This sheet was printed with ${s.printedN} questions; the paper is set to ${S.n}. It was read with the printed layout${s.printedN>S.n?`; questions after ${S.n} are not counted`:`; questions ${s.printedN+1}–${S.n} could not be answered on it`}.</div><div class="head">`)}}
+/* =====================================================================
+   V45 · OMR safety checks before the remaining papers are scanned.
+   - The QR code is tried at several sizes, so a sheet whose code is
+     sharp but awkwardly scaled is still recognised.
+   - Without a QR code (blank sheet, damaged corner), the paper is not
+     assumed to be the candidate's specialty: it is chosen from the
+     candidate's papers by the printed layout, and asked when unsure.
+   - Any sheet's paper can be changed from the review card.
+   - Results can be put in for the ready sheets while others wait.
+   - A mark entered from a sheet that is later left out, or moved to
+     another candidate or paper, is taken back out.
+   ===================================================================== */
+function omrQrCropW(img,F,size,pad){const out=new Uint8ClampedArray(size*size*4),X0=166-pad,Y0=6-pad,S=30+2*pad;
+ for(let j=0;j<size;j++)for(let i=0;i<size;i++){const[x,y]=F.map(X0+S*i/size,Y0+S*j/size);const xi=Math.round(x),yi=Math.round(y);const v=xi>=0&&yi>=0&&xi<img.w&&yi<img.h?img.d[yi*img.w+xi]:255;const k=(j*size+i)*4;out[k]=out[k+1]=out[k+2]=v;out[k+3]=255}
+ return out}
+function omrQrRead(img,F){if(typeof jsQR!=="function")return null;
+ for(const[sz,pad]of[[300,0],[240,0],[360,0],[300,3],[200,0],[420,3],[260,1.5]]){const r=jsQR(omrQrCropW(img,F,sz,pad),sz,sz,{inversionAttempts:"dontInvert"});if(r&&/^RICDME\|/.test(r.data))return r.data}
+ return null}
+const omrKeyOk=(x,k)=>{const S=omrSpec(x,k);return!!S&&omrKeyDone(S)>=S.n};
+/* which of the candidate's papers this sheet is, from the printed circles */
+function omrGuessPaper(x,id,p){const ks=Object.keys(omrOf(x).specs).filter(k=>exInPaper(x,p,k));
+ if(!ks.length){const k=exPaperOf(x,p);return{sp:omrSpec(x,k)?k:"",sure:false}}
+ if(ks.length===1)return{sp:ks[0],sure:true};
+ const fit=(cfg,n)=>{const L=omrLayout({...cfg,n,sections:(cfg.sections||[]).filter(z=>z.from<=n).map(z=>({...z,to:Math.min(z.to,n)}))}),pts=L.q.flat();let b=-1e18;
+  for(const dx of[-.8,0,.8])for(const dy of[-.8,0,.8]){const v=omrRingScore(id.img,id.F,pts,2.3,dx,dy)/pts.length;if(v>b)b=v}return b};
+ const R=[];ks.forEach(k=>{const cfg=omrCfgOf(x,k),S=omrSpec(x,k);[...new Set([cfg.n,S&&S.printed&&S.printed.n].filter(Boolean))].forEach(n=>R.push({k,n,s:fit(cfg,n)}))});
+ const top=Math.max(...R.map(r=>r.s)),own=ks.includes(exPaperOf(x,p))?exPaperOf(x,p):ks[0];if(!(top>0))return{sp:own,sure:false};
+ /* a layout with fewer questions than printed also lands on circles: take the largest that fits; two papers of that size cannot be told apart */
+ const ok=R.filter(r=>r.s>=top*.88).sort((a,b)=>b.n-a.n),same=new Set(ok.filter(r=>r.n===ok[0].n).map(r=>r.k));
+ if(same.size>1)return{sp:same.has(own)?own:ok[0].k,sure:false};return{sp:ok[0].k,sure:true}}
+/* take out marks whose sheet was left out, or moved to another candidate or paper */
+function omrPrune(x){const O=omrOf(x),A=O.applied||{},S=omrScans(x);let n=0;
+ Object.entries(A).forEach(([key,sid])=>{const i=key.indexOf("|"),k=key.slice(0,i),pid=key.slice(i+1),s=S.find(z=>z.id===sid);
+  if(s&&s.use&&s.pid===pid&&s.spec===k)return;delete A[key];
+  const other=S.find(z=>z.use&&z.pid===pid&&z.spec===k&&!omrNeeds(x,z));if(other)return;
+  const M=exPM(x,k);if(M.marks[pid]!=null){delete M.marks[pid];if(M.raw)delete M.raw[pid];if(M.secs)delete M.secs[pid];if(!exIsCommon(x,k)&&x.res)delete x.res[pid];n++}});
+ return n}
+/* leaving a sheet out, or giving it to someone else, takes its earlier mark back out at once */
+document.addEventListener("click",e=>{const a=e.target.closest('[data-act="omr-skip"],[data-act="omr-keep"]');if(!a||!DB||!DB.exams)return;
+ setTimeout(()=>{const x=DB.exams.find(v=>v.id===route.id);if(!x||!omrOf(x).applied)return;const n=omrPrune(x);if(n){xlog(x,`OMR: ${n} result${n>1?"s":""} taken out (sheet left out)`);persist();render();toast(`${n} earlier result${n>1?"s":""} taken out`)}},0)});
+/* the review card can set the paper of a sheet */
+{const _c=omrReviewCard;omrReviewCard=function(x,s){let h=_c(x,s);const open=omrOpen(x,s);
+ if(open.includes("issue")&&s.issue==="roll-clash"&&s.rollClash){const o=DB.pgts.find(q=>q.id===s.rollClash),me=DB.pgts.find(q=>q.id===s.pid);h=h.replace(esc(OMR_ISSUE["roll-clash"])+"</b>",esc(OMR_ISSUE["roll-clash"])+`</b><span>The sheet was printed for Dr. ${esc(me?me.name:"")}, but roll number ${esc(s.roll||"")} (Dr. ${esc(o?o.name:"")}) is filled in. Choose whose answers these are.</span>`)}
+ if(!open.includes("issue")||!["no-paper","other-paper","paper-check"].includes(s.issue))return h;
+ const ks=Object.keys(omrOf(x).specs);if(ks.length<2&&s.spec)return h;
+ const sel=`<label class="f">Paper on this sheet<select data-omrpaper="${s.id}">${opt([["","Choose the paper"],...ks.map(k=>[k,`${k} · ${omrSpec(x,k).n} questions`])],s.spec||"")}</select></label>`;
+ const at=h.indexOf('<div class="actions" style="justify-content:flex-start">');return at<0?h:h.slice(0,at)+sel+h.slice(at)}}
+document.addEventListener("change",async e=>{const w=e.target.closest("[data-omrpaper]");if(!w||!w.value||!DB||!DB.exams)return;
+ const x=DB.exams.find(v=>v.id===route.id),s=x&&omrScans(x).find(v=>v.id===w.dataset.omrpaper);if(!s)return;const k=w.value;
+ await omrLoad(OMR_JSQR).catch(()=>{});let r;try{r=await omrFixOne(x,s,s.pid,true,k)}catch(err){r="noimg"}
+ if(r==="noimg"){toast("The picture of this sheet is not available; scan it again.");return}
+ delete s.okIssue;xlog(x,`OMR: sheet ${s.file} read again as the ${k} paper`);omrDupes(x);omrPrune(x);persist();render();toast(`Read again as the ${k} paper`)});
+/* the screen is not drawn before the records have loaded (e.g. the address changes while signing in) */
+{const _r=render;render=function(...a){if(!DB||!DB.pgts)return;return _r.apply(this,a)}}
+/* =====================================================================
+   V46 · RESULT SHEETS. A formal result per specialty (its paper or
+   papers, plus any common paper its candidates sat) or per common
+   paper: an A4 PDF with the RIC header, a summary of each paper and
+   signature lines, or an Excel workbook with the same content.
+   ===================================================================== */
+const RS_PUNJAB="data:image/jpeg;base64,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";
+const rs1=v=>v==null||isNaN(v)?"":Math.round(v*10)/10;
+/* the pass mark as it reads on a formal sheet */
+function rsPass(x,k,T){const r=(x.passPaper||{})[k];if(r&&r.mode==="marks"&&T)return`${r.marks} of ${T} marks (${(r.marks/T*100).toFixed(1)}%)`;
+ const v=+exPassFor(x,k);return T?`${+v.toFixed(2)}% (${Math.ceil(v*T/100-1e-9)} of ${T} marks)`:`${+v.toFixed(2)}%`}
+/* one paper's rows and figures; spec limits a common paper to one specialty's candidates */
+function rsData(x,k,spec,o){const com=exIsCommon(x,k),M=exPM(x,k),T=paperTotal(x,k),S=typeof omrSpec==="function"?omrSpec(x,k):null;
+ const C=exCands(x).filter(p=>exInPaper(x,p,k)&&(!spec||p.spec===spec));
+ let R=C.map(p=>{const ab=!!M.absent[p.id],m=ab?null:M.marks[p.id]??null,r=M.raw&&M.raw[p.id];let ob=null,tt=T;
+  if(m!=null&&r&&r.t){ob=r.o;tt=r.t}else if(m!=null&&T){const v=m*T/100;if(Math.abs(v-Math.round(v))<.06)ob=Math.round(v)}
+  const res=ab?"Absent":m==null?"Awaited":(com?exCommPass(x,k,m):exPass(x,p,m))?"Pass":"Fail";
+  return{p,roll:(x.roll&&x.roll[p.id])||rollOf(p)||"",m,ab,ob,tt,res,secs:(M.secs&&M.secs[p.id])||null,yr:examYear(x,p)||""}});
+ const sat=R.filter(r=>r.m!=null).sort((a,b)=>b.m-a.m);sat.forEach((r,i)=>{r.pos=i&&sat[i-1].m===r.m?sat[i-1].pos:i+1});
+ const ms=sat.map(r=>r.m),st={reg:R.length,sat:sat.length,abs:R.filter(r=>r.ab).length,wait:R.filter(r=>r.res==="Awaited").length,pass:R.filter(r=>r.res==="Pass").length,fail:R.filter(r=>r.res==="Fail").length};
+ st.rate=st.sat?st.pass/st.sat*100:null;st.hi=ms.length?Math.max(...ms):null;st.lo=ms.length?Math.min(...ms):null;st.avg=ms.length?ms.reduce((a,b)=>a+b,0)/ms.length:null;
+ if(o.noAbs)R=R.filter(r=>!r.ab);
+ const byRoll=(a,b)=>String(a.roll||"~").localeCompare(String(b.roll||"~"))||a.p.name.localeCompare(b.p.name);
+ R.sort(o.order==="merit"?(a,b)=>(a.m==null)-(b.m==null)||(b.m??0)-(a.m??0)||byRoll(a,b):o.order==="name"?(a,b)=>a.p.name.localeCompare(b.p.name):com&&!spec?(a,b)=>specIdx(a.p.spec)-specIdx(b.p.spec)||byRoll(a,b):byRoll);
+ const drop=new Set(S&&S.drop||[]);const secs=o.secs&&S&&(S.sections||[]).length>1?S.sections.filter(z=>z.name).map(z=>{let n=0;for(let q=z.from;q<=z.to;q++)if(!drop.has(q))n++;return{name:z.name,n}}):[];
+ const notes=[];if(drop.size){const L=[...drop].sort((a,b)=>a-b);notes.push(`Question${L.length>1?"s":""} ${L.join(", ")} ${L.length>1?"were":"was"} withdrawn from marking${T?`; marks are out of ${T}`:""}.`)}
+ const alt=S&&S.alt?Object.keys(S.alt).sort((a,b)=>a-b):[];if(alt.length)notes.push(`Two answers were accepted for question${alt.length>1?"s":""} ${alt.join(", ")}.`);
+ if(st.wait)notes.push(`${st.wait} candidate${st.wait>1?"s have":" has"} no marks entered yet ("Awaited").`);
+ return{k,com,spec,T,R,st,secs,notes,pass:rsPass(x,k,T)}}
+/* the columns, shared by the PDF and the Excel file */
+function rsCols(d,o){const progs=d.R.some(r=>r.p.program),all=d.com&&!d.spec,C=[];
+ C.push({h:"Sr.",w:8,a:"center",v:(r,i)=>String(i+1)});
+ C.push({h:"Roll No.",w:15,a:"center",v:r=>r.roll});
+ C.push({h:"Name of candidate",w:0,v:r=>"Dr. "+r.p.name});
+ if(all)C.push({h:"Specialty",w:30,v:r=>r.p.spec});
+ C.push({h:"PGT ID",w:24,v:r=>r.p.code||""});
+ if(progs)C.push({h:"Prog.",w:13,a:"center",v:r=>r.p.program||""});
+ C.push({h:"Year",w:9,a:"center",v:r=>r.yr?String(r.yr):"",x:r=>r.yr||""});
+ if(o.pos)C.push({h:"Position",w:14,a:"center",v:r=>r.m!=null?String(r.pos):"—",x:r=>r.m!=null?r.pos:""});
+ d.secs.forEach(z=>C.push({h:`${z.name} (${z.n})`,w:17,a:"center",v:r=>{const s=r.secs&&r.secs[z.name];return s&&r.m!=null?`${s[0]}`:"—"},x:r=>{const s=r.secs&&r.secs[z.name];return s&&r.m!=null?s[0]:""}}));
+ C.push({h:"Marks",xh:d.T?`Marks (out of ${d.T})`:"Marks",w:18,a:"center",v:r=>r.ob!=null?`${r.ob} / ${r.tt}`:"—",x:r=>r.ob!=null?r.ob:""});
+ C.push({h:"%",w:12,a:"center",v:r=>r.m!=null?(+r.m).toFixed(1):"—",x:r=>r.m!=null?+r.m:""});
+ C.push({h:"Result",w:16,a:"center",v:r=>r.res,res:1});
+ return C}
+const rsSpecs=x=>{const A=exAllPapers(x),C=exCands(x);return exSpecs(x).filter(s=>A.some(k=>exIsCommon(x,k)?C.some(p=>p.spec===s&&exInPaper(x,p,k)):exPaperSpec(k)===s))};
+function rsUnits(x,o){const sig=String(o.sig||"").split("\n").map(s=>s.trim()).filter(Boolean).slice(0,4),C=exCands(x);
+ const spU=s=>{const ks=exAllPapers(x).filter(k=>!exIsCommon(x,k)&&exPaperSpec(k)===s),cs=o.common?exCommon(x).map(c=>c.name).filter(n=>C.some(p=>p.spec===s&&exInPaper(x,p,n))):[];
+  return{title:s,kind:"Specialty",papers:[...ks.map(k=>rsData(x,k,null,o)),...cs.map(k=>rsData(x,k,s,o))].filter(d=>d.st.reg),sig}};
+ const w=o.who||"all";let U=[];
+ if(w==="all")U=rsSpecs(x).map(spU);else if(w.startsWith("s:"))U=[spU(w.slice(2))];else if(w.startsWith("c:")){const k=w.slice(2);U=[{title:k,kind:"Common paper",papers:[rsData(x,k,null,o)].filter(d=>d.st.reg),sig}]}
+ return U.filter(u=>u.papers.length)}
+const rsAbbr=k=>k.length<=14?k:k.split(/\s+/).filter(w=>!/^(and|of|the|&|in|for)$/i.test(w)).map(w=>w[0].toUpperCase()).join("");
+const rsWho=o=>o.who==="all"?"all specialties":o.who.slice(2);
+const rsFile=(x,o,ext)=>`Result ${rsWho(o)} ${x.session}`.replace(/[\\/:*?"<>|·]+/g," ").replace(/\s+/g," ").trim()+ext;
+
+async function rsPdf(x,o){try{await bioLoadPdf()}catch(e){toast(e.message);return}
+ const U=rsUnits(x,o);if(!U.length){toast("No candidates on this result");return}
+ const{jsPDF}=window.jspdf,M=13,BR=[109,31,43],GOLD=[176,141,87],INK=[28,28,28],GR=[108,108,108],GRN=[22,112,62],RED=[178,34,34];
+ /* landscape only when the columns do not fit on an upright page */
+ const fits=cw=>U.every(u=>u.papers.every(d=>cw-rsCols(d,o).reduce((a,c)=>a+c.w,0)>=38));const land=!fits(210-2*M);
+ const doc=new jsPDF({unit:"mm",format:"a4",orientation:land?"landscape":"portrait"}),W=land?297:210,H=land?210:297,CW=W-2*M;
+ const ric=document.querySelector('img[alt="RIC logo"]')?.src,pun=RS_PUNJAB.startsWith("data:")?RS_PUNJAB:null;
+ const T=(t,x0,y,q={})=>{doc.setFont(q.f||"helvetica",q.b&&q.i?"bolditalic":q.b?"bold":q.i?"italic":"normal");doc.setFontSize(q.s||9);doc.setTextColor(...(q.c||INK));doc.text(String(t),x0,y,{align:q.a||"left",charSpace:q.cs||0})};
+ const issued=new Date().toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
+ const dt=x.date?P(x.date).toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"}):"";
+ let y=0,first=true,cur=null;
+ const full=u=>{if(ric&&ric.startsWith("data:"))try{doc.addImage(ric,"JPEG",M,9,23,23)}catch(e){}
+  if(pun)try{doc.addImage(pun,"JPEG",W-M-25.8,9,25.8,23)}catch(e){}
+  T("RAWALPINDI INSTITUTE OF CARDIOLOGY",W/2,16.5,{f:"times",b:1,s:16,c:BR,a:"center"});T("RAWAL ROAD, RAWALPINDI",W/2,22,{s:8.2,c:GR,a:"center",cs:.6});
+  T("Department of Medical Education & Training",W/2,27.8,{f:"times",i:1,s:11.5,a:"center"});
+  doc.setDrawColor(...BR);doc.setLineWidth(.7);doc.line(M,35,W-M,35);doc.setDrawColor(...GOLD);doc.setLineWidth(.3);doc.line(M,36.3,W-M,36.3);
+  T("RESULT",W/2,45.5,{f:"times",b:1,s:18,a:"center",cs:2.2});T(`${x.title}  ·  ${x.session}`,W/2,52,{s:10.5,c:GR,a:"center"});
+  if(o.ref)T(`Ref. No.: ${o.ref}`,M,59,{s:8.5});T(`Date of issue: ${issued}`,W-M,59,{s:8.5,a:"right"});
+  doc.setFillColor(...BR);doc.rect(M,62,CW,9,"F");T(`${u.kind.toUpperCase()}:  ${u.title}`,M+3.5,67.9,{b:1,s:10.5,c:[255,255,255]});
+  const n=new Set(u.papers.flatMap(d=>d.R.map(r=>r.p.id))).size;T(`${u.papers.length} paper${u.papers.length>1?"s":""}  ·  ${n} candidate${n>1?"s":""}`,W-M-3.5,67.9,{s:8.5,c:[255,255,255],a:"right"});y=78};
+ const cont=u=>{if(ric&&ric.startsWith("data:"))try{doc.addImage(ric,"JPEG",M,7,10,10)}catch(e){}
+  T("RAWALPINDI INSTITUTE OF CARDIOLOGY",M+13,11,{f:"times",b:1,s:10,c:BR});T(`Result · ${x.title} · ${x.session}`,M+13,15.5,{s:7.8,c:GR});T(`${u.title} (continued)`,W-M,13,{s:8.5,b:1,a:"right"});
+  doc.setDrawColor(...BR);doc.setLineWidth(.4);doc.line(M,19,W-M,19);y=25};
+ const page=(u,isFull)=>{if(!first)doc.addPage();first=false;cur=u;isFull?full(u):cont(u)};
+ const room=h=>y+h<=H-17;
+ for(const u of U){page(u,true);
+  u.papers.forEach((d,pi)=>{const cols=rsCols(d,o),fixed=cols.reduce((a,c)=>a+c.w,0);cols.find(c=>c.w===0).w=CW-fixed;
+   doc.setFont("helvetica","bold");doc.setFontSize(7.8);const hl=cols.map(c=>doc.splitTextToSize(c.h,c.w-2));const HH=Math.max(...hl.map(l=>l.length))*3.3+3.4;
+   const thead=()=>{doc.setFillColor(...BR);doc.rect(M,y,CW,HH,"F");let cx=M;cols.forEach((c,i)=>{const L=hl[i];L.forEach((s,j)=>T(s,c.a==="center"?cx+c.w/2:cx+1.8,y+(HH-L.length*3.3)/2+2.6+j*3.3,{b:1,s:7.8,c:[255,255,255],a:c.a==="center"?"center":"left"}));cx+=c.w});y+=HH};
+   if(!room(19+HH+3*7.2))page(u,false);
+   /* paper heading */
+   doc.setFillColor(247,242,235);doc.rect(M,y,CW,15,"F");doc.setFillColor(...BR);doc.rect(M,y,1.6,15,"F");
+   T(`Paper${u.papers.length>1?` ${pi+1}`:""}: ${d.k}${d.com?(d.spec?`  (common paper · ${d.spec} candidates)`:"  (common paper)"):""}`,M+5,y+6,{b:1,s:10.2});
+   T([dt?`Date: ${dt}`:"",d.T?`Total marks: ${d.T}`:"",`Pass marks: ${d.pass}`].filter(Boolean).join("     ·     "),M+5,y+11.4,{s:8,c:GR});y+=18.5;
+   thead();doc.setFont("helvetica","normal");doc.setFontSize(8.6);
+   d.R.forEach((r,i)=>{const vals=cols.map(c=>c.v(r,i)),nm=cols.findIndex(c=>c.w&&c.h==="Name of candidate");doc.setFont("helvetica","normal");doc.setFontSize(8.6);
+    const lines=cols.map((c,j)=>j===nm||c.h==="Specialty"?doc.splitTextToSize(vals[j],c.w-3).slice(0,2):[vals[j]]),rh=Math.max(...lines.map(l=>l.length))>1?10.4:7.2;
+    if(!room(rh)){page(u,false);thead()}
+    if(i%2){doc.setFillColor(250,248,245);doc.rect(M,y,CW,rh,"F")}doc.setDrawColor(222,214,204);doc.setLineWidth(.15);doc.line(M,y+rh,W-M,y+rh);
+    let cx=M;cols.forEach((c,j)=>{const L=lines[j],col=c.res?(r.res==="Pass"?GRN:r.res==="Fail"?RED:GR):j===nm?INK:[50,50,50];
+     L.forEach((s,k2)=>T(s,c.a==="center"?cx+c.w/2:cx+1.8,y+rh/2+1.25+(k2-(L.length-1)/2)*3.5,{s:c.res?8.4:8.6,b:!!c.res&&r.res!=="Awaited",i:!!c.res&&r.res==="Awaited",c:col,a:c.a==="center"?"center":"left"}));cx+=c.w});y+=rh});
+   doc.setDrawColor(...BR);doc.setLineWidth(.4);doc.line(M,y,W-M,y);y+=4;
+   /* summary of the paper */
+   const st=d.st,tiles=[["Candidates",st.reg],["Appeared",st.sat],["Absent",st.abs],...(st.wait?[["Awaited",st.wait]]:[]),["Passed",st.pass,GRN],["Failed",st.fail,RED],["Pass rate",st.rate==null?"—":rs1(st.rate)+"%"],["Highest",st.hi==null?"—":rs1(st.hi)+"%"],["Average",st.avg==null?"—":rs1(st.avg)+"%"]];
+   if(!room(17+d.notes.length*4.5)){page(u,false)}
+   const tw=(CW-(tiles.length-1)*1.6)/tiles.length;tiles.forEach(([l,v,c],i)=>{const tx=M+i*(tw+1.6);doc.setFillColor(250,248,245);doc.setDrawColor(226,216,204);doc.setLineWidth(.2);doc.rect(tx,y,tw,13.5,"FD");
+    T(l.toUpperCase(),tx+tw/2,y+4.6,{s:6.4,c:GR,a:"center",cs:.2});T(String(v),tx+tw/2,y+10.6,{b:1,s:11,c:c||INK,a:"center"})});y+=17;
+   d.notes.forEach(n=>{T(n,M,y,{i:1,s:7.8,c:GR});y+=4.5});y+=5});
+  /* closing: status line and signatures */
+  if(!room(38))page(u,false);
+  if(o.prov){T("This result is provisional and subject to verification by the Department of Medical Education & Training.",M,y+2,{i:1,s:8,c:GR});y+=6}
+  else{T("This result has been verified by the Department of Medical Education & Training.",M,y+2,{i:1,s:8,c:GR});y+=6}
+  if(u.sig.length){y+=19;const sw=CW/u.sig.length;u.sig.forEach((s,i)=>{const cx=M+sw*i+sw/2;doc.setDrawColor(70,70,70);doc.setLineWidth(.3);doc.line(cx-Math.min(28,sw/2-4),y,cx+Math.min(28,sw/2-4),y);
+   T(s,cx,y+4.8,{b:1,s:8.8,a:"center"});const sub=/^head of department$/i.test(s)&&u.kind==="Specialty"?`Department of ${u.title}`:/^director medical education/i.test(s)?"Rawalpindi Institute of Cardiology":"";if(sub)T(sub,cx,y+8.8,{s:7.6,c:GR,a:"center"})});y+=12}}
+ /* page furniture: footer, page numbers, provisional mark */
+ const n=doc.getNumberOfPages();for(let i=1;i<=n;i++){doc.setPage(i);doc.setDrawColor(200,190,180);doc.setLineWidth(.2);doc.line(M,H-12.5,W-M,H-12.5);
+  T("Rawalpindi Institute of Cardiology · Department of Medical Education & Training",M,H-8.3,{s:7,c:GR});T(`Confidential  ·  Page ${i} of ${n}`,W-M,H-8.3,{s:7,c:GR,a:"right"});
+  if(o.prov)try{doc.saveGraphicsState();doc.setGState(new doc.GState({opacity:.07}));doc.setFont("helvetica","bold");doc.setFontSize(78);doc.setTextColor(...BR);const t="PROVISIONAL",w=doc.getTextWidth(t),a=32*Math.PI/180;
+   doc.text(t,W/2-w/2*Math.cos(a),H/2+w/2*Math.sin(a)+8,{angle:32});doc.restoreGraphicsState()}catch(e){}}
+ const blob=doc.output("blob"),file=rsFile(x,o,".pdf");
+ try{await (DL||BROWSER_DL).save({filename:file,data:blob});toast("Result PDF ready")}catch(e){if(e?.code!=="declined")toast("The file could not be saved in this view")}
+ xlog(x,`Result downloaded (PDF): ${rsWho(o)}`);persist()}
+
+async function rsXlsx(x,o,btn){if(!window.XLSX){toast("The Excel library did not load. Check the connection and reload the page.");return}
+ const U=rsUnits(x,o);if(!U.length){toast("No candidates on this result");return}
+ const dt=x.date?P(x.date).toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"}):"";
+ const wb=XLSX.utils.book_new(),used=new Set(),nm=s=>{let b=s.replace(/[\\\/?*\[\]:]/g,"").slice(0,31),t=b,i=2;while(used.has(t.toLowerCase()))t=b.slice(0,28)+" "+i++;used.add(t.toLowerCase());return t};
+ const top=["Rawalpindi Institute of Cardiology · Department of Medical Education & Training",`Result · ${x.title} · ${x.session}${o.prov?" · PROVISIONAL":""}`];
+ const sum=[[top[0]],[top[1]],[dt?`Date of examination: ${dt}`:""],[],["Result for","Paper","Total marks","Pass marks","Candidates","Appeared","Absent","Passed","Failed","Pass rate %","Highest %","Average %","Lowest %"]];
+ U.forEach(u=>u.papers.forEach(d=>sum.push([u.title,d.k+(d.com&&d.spec?` (${d.spec} candidates)`:""),d.T??"",d.pass,d.st.reg,d.st.sat,d.st.abs,d.st.pass,d.st.fail,rs1(d.st.rate),rs1(d.st.hi),rs1(d.st.avg),rs1(d.st.lo)])));
+ const ws0=XLSX.utils.aoa_to_sheet(sum);ws0["!cols"]=[26,40,11,26,11,10,9,9,9,11,10,10,10].map(w=>({wch:w}));ws0["!merges"]=[0,1,2].map(r=>({s:{r,c:0},e:{r,c:12}}));XLSX.utils.book_append_sheet(wb,ws0,nm("Summary"));
+ U.forEach(u=>u.papers.forEach(d=>{const C=rsCols(d,o),rows=[[top[0]],[top[1]],[`Paper: ${d.k}${d.com&&d.spec?` (${d.spec} candidates)`:d.com?" (common paper)":""}`],[[dt?`Date: ${dt}`:"",d.T?`Total marks: ${d.T}`:"",`Pass marks: ${d.pass}`].filter(Boolean).join("   ·   ")],[],C.map(c=>c.xh||c.h)];
+  d.R.forEach((r,i)=>rows.push(C.map(c=>c.x?c.x(r,i):c.h==="Sr."?i+1:c.v(r,i))));
+  rows.push([],["Candidates",d.st.reg],["Appeared",d.st.sat],["Absent",d.st.abs],["Passed",d.st.pass],["Failed",d.st.fail],["Pass rate %",rs1(d.st.rate)],["Highest %",rs1(d.st.hi)],["Average %",rs1(d.st.avg)]);d.notes.forEach(n=>rows.push([n]));
+  const ws=XLSX.utils.aoa_to_sheet(rows);ws["!cols"]=C.map(c=>({wch:c.w===0?30:Math.max(8,Math.round(c.w*.75)+2)}));ws["!merges"]=[0,1,2,3].map(r=>({s:{r,c:0},e:{r,c:C.length-1}}));
+  XLSX.utils.book_append_sheet(wb,ws,nm(d.com&&d.spec?`${rsAbbr(d.k)} (${d.spec})`:d.k))}));
+ const buf=XLSX.write(wb,{bookType:"xlsx",type:"array"});if(btn)btn.disabled=true;
+ try{await (DL||BROWSER_DL).save({filename:rsFile(x,o,".xlsx"),data:buf});toast("Result Excel file ready")}catch(e){if(e?.code!=="declined")toast("The file could not be saved in this view")}finally{if(btn&&btn.isConnected)btn.disabled=false}
+ xlog(x,`Result downloaded (Excel): ${rsWho(o)}`);persist()}
+
+/* the download sheet */
+function sheetResult(x,pre){const S=rsSpecs(x),Cm=exCommon(x).map(c=>c.name).filter(k=>exCands(x).some(p=>exInPaper(x,p,k))),O=x.resOpt||{};
+ const anySec=exAllPapers(x).some(k=>{const s=typeof omrSpec==="function"&&omrSpec(x,k);return s&&(s.sections||[]).length>1});
+ const who=[["all",`All specialties (${S.length}), each starting on a new page`],...S.map(s=>["s:"+s,s]),...Cm.map(c=>["c:"+c,`${c} · common paper, all candidates`])];
+ openSheet("Download result",`<p class="subt" style="margin:0">A formal result on A4 with the RIC header, each paper's summary and signature lines. The same content can be downloaded as Excel.</p>
+ <label class="f">Result for<select name="who">${opt(who,pre||O.who||"all")}</select></label>
+ <label class="f">Order of candidates<select name="order">${opt([["roll","By roll number"],["merit","By marks (highest first)"],["name","By name"]],O.order||"roll")}</select></label>
+ <div style="display:grid;gap:6px">${Cm.length?`<label class="check2"><input type="checkbox" name="common" ${O.common===false?"":"checked"}> Include the common paper${Cm.length>1?"s":""} (${Cm.map(esc).join(", ")}) in each specialty's result</label>`:""}
+ <label class="check2"><input type="checkbox" name="pos" ${O.pos?"checked":""}> Show each candidate's position</label>
+ ${anySec?`<label class="check2"><input type="checkbox" name="secs" ${O.secs?"checked":""}> Show marks by section</label>`:""}
+ <label class="check2"><input type="checkbox" name="noabs" ${O.noAbs?"checked":""}> Leave out absent candidates</label>
+ <label class="check2"><input type="checkbox" name="prov" ${(O.prov??(x.stage||0)<5)?"checked":""}> Mark as provisional</label></div>
+ <label class="f">Reference no. <span class="h">optional, printed at the top</span><input name="ref" value="${esc(O.ref||"")}" placeholder="e.g. RIC/DME/Exam/2026/112" autocomplete="off"></label>
+ <label class="f">Signature lines <span class="h">one per line, up to four</span><textarea name="sig" rows="3">${esc(O.sig??"Head of Department\nDirector Medical Education & Training")}</textarea></label>
+ <div class="actions" style="justify-content:flex-start"><button type="button" class="btn" data-act="rs-xlsx">Download Excel instead</button></div>`,()=>{const o=rsForm(x);rsPdf(x,o)},"Download PDF")}
+function rsForm(x){const f=document.getElementById("sheetform"),g=n=>f.querySelector(`[name="${n}"]`);
+ const o={who:g("who").value,order:g("order").value,common:g("common")?g("common").checked:true,pos:g("pos").checked,secs:g("secs")?g("secs").checked:false,noAbs:g("noabs").checked,prov:g("prov").checked,ref:g("ref").value.trim(),sig:g("sig").value};
+ if(!isViewer())x.resOpt={...o};return o}
+/* buttons: Results tab (marks panel) and Analysis tab */
+{const _r=exResultsTab;exResultsTab=function(x){const h=_r(x);if(!exAllPapers(x).length)return h;
+ return h.replace('<h3 style="margin:0">Marks by paper</h3>','<div class="head"><h3 style="margin:0">Marks by paper</h3><button class="btn small primary" data-act="rs-open">Download result</button></div>')}}
+{const _a=exAnalysisTab;exAnalysisTab=function(x){const h=_a(x);if(!exAllPapers(x).length||!exAllPapers(x).some(k=>{const M=exPM(x,k);return Object.keys(M.marks).length||Object.keys(M.absent).length}))return h;
+ return`<div class="panel" style="display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap"><div><b>Result sheets</b><div class="subt">Formal A4 result per specialty or common paper, with the RIC header and signature lines.</div></div><button class="btn primary" data-act="rs-open">Download result</button></div>`+h}}
+document.addEventListener("click",e=>{const b=e.target.closest('[data-act="rs-open"],[data-act="rs-xlsx"]');if(!b||!DB||!DB.exams)return;const x=DB.exams.find(v=>v.id===route.id);if(!x)return;e.preventDefault();
+ if(b.dataset.act==="rs-open")return sheetResult(x,b.dataset.who);rsXlsx(x,rsForm(x),b)});
 
 /* ---------- events ---------- */
 document.addEventListener("click",e=>{
