@@ -4932,7 +4932,7 @@ function omrBlobs(img,thr){const{w,h,d}=img,lab=new Int32Array(w*h),out=[];let i
  for(let p=0;p<w*h;p++){if(lab[p]||d[p]>=thr)continue;id++;let n=0,x0=1e9,x1=-1,y0=1e9,y1=-1,sx=0,sy=0;st.push(p);lab[p]=id;
   while(st.length){const q=st.pop(),x=q%w,y=(q-x)/w;n++;sx+=x;sy+=y;if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;
    if(n>60000)continue;const nb=[q-1,q+1,q-w,q+w];for(let k=0;k<4;k++){const r=nb[k];if(r<0||r>=w*h)continue;if((k===0&&x===0)||(k===1&&x===w-1))continue;if(!lab[r]&&d[r]<thr){lab[r]=id;st.push(r)}}}
-  const bw=x1-x0+1,bh=y1-y0+1;if(n>20)out.push({x:sx/n,y:sy/n,bw,bh,n,fill:n/(bw*bh)})}
+  const bw=x1-x0+1,bh=y1-y0+1;if(n>20)out.push({x:sx/n,y:sy/n,bw,bh,n,fill:n/(bw*bh),x0,y0,x1,y1})}
  return out}
 function omrFindMarks(img){const mm0=img.w/210,k=Math.max(1,Math.round(mm0*.5)),W=Math.floor(img.w/k),H=Math.floor(img.h/k),sd=new Uint8Array(W*H);
  /* averaged copy (cells of about 0.5 mm): grainy or grey-printed squares become solid */
@@ -4943,9 +4943,13 @@ function omrFindMarks(img){const mm0=img.w/210,k=Math.max(1,Math.round(mm0*.5)),
  /* squares: square outline, mostly dark (printed squares can be grainy and lighter in the middle) */
  const B=omrBlobs({w:W,h:H,d:sd},thr).filter(b=>b.fill>.4&&b.bw/b.bh>.7&&b.bw/b.bh<1.43).map(b=>({...b,x:(b.x+.5)*k,y:(b.y+.5)*k,mm:(b.bw+b.bh)/2/mmS}));
  const corners=B.filter(b=>b.mm>5.4&&b.mm<9.5),sides=B.filter(b=>b.mm>3.3&&b.mm<6.2&&b.fill>.55);
- return{thr,corners,sides,mm0}}
+ /* squares cut by the edge of the picture (a tight crop by the scanning app): the whole side gives the size, and the centre lies half a size in from the inner edge */
+ const cut=[];omrBlobs({w:W,h:H,d:sd},thr).forEach(b=>{const L=b.x0===0,Rt=b.x1===W-1,Tp=b.y0===0,Bt=b.y1===H-1;if((L||Rt)&&(Tp||Bt))return;if(!(L||Rt||Tp||Bt)||b.fill<.6)return;
+  const S=L||Rt?b.bh:b.bw,cutw=L||Rt?b.bw:b.bh,mmz=S/mmS;if(cutw<S*.2||cutw>S*.92)return;const t=mmz>3.3&&mmz<5.9?"s":mmz>=5.9&&mmz<9.5?"c":null;if(!t)return;
+  const cx=L?b.x1+1-S/2:Rt?b.x0+S/2:b.x0+b.bw/2,cy=Tp?b.y1+1-S/2:Bt?b.y0+S/2:b.y0+b.bh/2;cut.push({x:cx*k,y:cy*k,mm:mmz,t,cut:1})});
+ return{thr,corners,sides,cut,mm0}}
 /* ---------- 2. mm -> px mapping ---------- */
-function omrFrame(img){const M=omrFindMarks(img),{w,h}=img,mm0=M.mm0;
+function omrFrame0(img,M){M=M||omrFindMarks(img);const{w,h}=img,mm0=M.mm0;
  /* corners: nearest candidate to each image corner region */
  /* up to 3 candidates per corner (or none); keep the combination that the side squares agree with best */
  const cand=[[0,0],[1,0],[0,1],[1,1]].map(([fx,fy])=>[...M.corners.map(b=>({b,d:Math.hypot((b.x-fx*w)/w,(b.y-fy*h)/h),dx:Math.abs(b.x-fx*w)/w,dy:Math.abs(b.y-fy*h)/h})).filter(c=>c.dx<.18&&c.dy<.18).sort((a,c)=>a.d-c.d).slice(0,3).map(c=>c.b),null]);
@@ -4967,6 +4971,50 @@ function omrFrame(img){const M=omrFindMarks(img),{w,h}=img,mm0=M.mm0;
  const map=(X,Y)=>{const b=bands.find(b=>Y>=b.y0&&Y<=b.y1)||(Y<11.5?bands[0]:bands[bands.length-1]);return b.T(X,Y)};
  const[ax,ay]=map(0,0),[bx,by]=map(100,0);const pxmm=Math.hypot(bx-ax,by-ay)/100;
  return{map,pxmm,found:all.length,of:4+OMR_MK.side.length*2,missing:miss.length+(4-P.length),thr:M.thr}}
+/* the marker pattern: 4 corners, 12 side squares, and the QR code's three finder squares (fixed place on every sheet) */
+const OMR_TPL=[...OMR_MK.corner.map(p=>[p[0],p[1],"c"]),...OMR_MK.side.flatMap(Y=>[[OMR_MK.lx,Y,"s"],[OMR_MK.rx,Y,"s"]]),[172.9,12.9,"c",1],[189.1,12.9,"c",1],[172.9,29.1,"c",1]];
+function omrSim(A,B,a,b){const dX=B[0]-A[0],dY=B[1]-A[1],dx=b[0]-a[0],dy=b[1]-a[1],den=dX*dX+dY*dY,p=(dx*dX+dy*dY)/den,q=(dy*dX-dx*dY)/den,tx=a[0]-(p*A[0]-q*A[1]),ty=a[1]-(q*A[0]+p*A[1]);
+ return{p,q,f:(X,Y)=>[p*X-q*Y+tx,q*X+p*Y+ty]}}
+function omrSimLS(P){const n=P.length;let mX=0,mY=0,mx=0,my=0;P.forEach(([X,Y,x,y])=>{mX+=X/n;mY+=Y/n;mx+=x/n;my+=y/n});let a=0,b=0,ss=0;
+ P.forEach(([X,Y,x,y])=>{const X0=X-mX,Y0=Y-mY,x0=x-mx,y0=y-my;a+=X0*x0+Y0*y0;b+=X0*y0-Y0*x0;ss+=X0*X0+Y0*Y0});const p=a/ss,q=b/ss,tx=mx-(p*mX-q*mY),ty=my-(q*mX+p*mY);return(X,Y)=>[p*X-q*Y+tx,q*X+p*Y+ty]}
+/* which marker squares a mapping explains: template point -> nearest square of the right kind */
+function omrInliers(B,f,tol){const used=new Set(),m=[];OMR_TPL.forEach(([X,Y,t,qr])=>{const[px,py]=f(X,Y);let bb=null,bd=tol*tol;B.forEach(b=>{if(b.t!==t||used.has(b))return;const d=(b.x-px)**2+(b.y-py)**2;if(d<bd){bd=d;bb=b}});if(bb){used.add(bb);m.push([X,Y,bb.x,bb.y,qr?1:0])}});return m}
+/* for tightly cropped scans: fit the whole pattern to whichever squares are visible (any two fix size, turn and place; the rest must agree) */
+function omrFrameFit(img,M){const{w,h}=img,mm0=M.mm0,B=[...M.corners.map(b=>({...b,t:"c"})),...M.sides.map(b=>({...b,t:"s"})),...(M.cut||[])];
+ const N=OMR_TPL.map(([X,Y,t])=>B.filter(b=>b.t===t&&Math.abs(b.x-X/210*w)<.17*w&&Math.abs(b.y-Y/297*h)<.15*h));let best=null;
+ for(let i=0;i<OMR_TPL.length;i++)for(let j=i+1;j<OMR_TPL.length;j++){const A=OMR_TPL[i],C=OMR_TPL[j];if(Math.hypot(A[0]-C[0],A[1]-C[1])<60)continue;
+  for(const a of N[i])for(const b of N[j]){if(a===b)continue;const S=omrSim(A,C,[a.x,a.y],[b.x,b.y]),sc=Math.hypot(S.p,S.q);if(sc<mm0*.85||sc>mm0*1.4||Math.abs(Math.atan2(S.q,S.p))>.14)continue;
+   const m=omrInliers(B,S.f,2.6*sc),k=m.filter(r=>!r[4]).length+m.filter(r=>r[4]).length*.5;if(!best||k>best.k)best={k,m,sc}}}
+ if(!best||best.m.length<4)return null;
+ let m=best.m,T=null,one=null;for(let it=0;it<3;it++){const Ls=m.filter(r=>r[0]===OMR_MK.lx&&OMR_MK.side.includes(r[1])).length,Rs=m.filter(r=>r[0]===OMR_MK.rx&&OMR_MK.side.includes(r[1])).length,La=m.filter(r=>r[0]<105).length,Ra=m.filter(r=>r[0]>105).length;
+  if(La>=2&&Ra>=2){one=null;T=Ls>=3&&Rs>=3&&m.length>=7?homog(m):affine(m)}
+  else{/* one column of side squares: fit size, turn and place from that side only; the width is found later from the answer circles */
+   one=Ra>=La?"r":"l";const keep=m.filter(r=>one==="r"?r[0]>105:r[0]<105);T=omrSimLS(keep.length>=2?keep:m)}
+  m=omrInliers(B,T,2.6*best.sc);if(one)m=m.filter(r=>one==="r"?r[0]>105:r[0]<105);
+  /* the other column, with more room sideways (the page may be stretched across by the scanning app) */
+  if(one){const X=one==="r"?OMR_MK.lx:OMR_MK.rx,tol=2.6*best.sc,used=new Set(),add=[];
+   OMR_MK.side.forEach(Y=>{const[px,py]=T(X,Y);let bb=null,bd=1e18;B.forEach(b=>{if(b.t!=="s"||used.has(b))return;const dx=Math.abs(b.x-px),dy=Math.abs(b.y-py);if(dy<tol&&dx<4*tol&&dx+dy<bd){bd=dx+dy;bb=b}});if(bb){used.add(bb);add.push([X,Y,bb.x,bb.y,0])}});
+   /* they must agree with each other: the same shift sideways */
+   if(add.length>=2){const sh=add.map(r=>r[2]-T(r[0],r[1])[0]).sort((a,b)=>a-b),med=sh[sh.length>>1],ok=add.filter(r=>Math.abs(r[2]-T(r[0],r[1])[0]-med)<1.2*tol);if(ok.length>=2)m=m.concat(ok)}}}
+ {const Ls=m.filter(r=>r[0]===OMR_MK.lx&&OMR_MK.side.includes(r[1])).length,Rs=m.filter(r=>r[0]===OMR_MK.rx&&OMR_MK.side.includes(r[1])).length,La=m.filter(r=>r[0]<105).length,Ra=m.filter(r=>r[0]>105).length;
+  if(La>=2&&Ra>=2){one=null;T=Ls>=3&&Rs>=3&&m.length>=7?homog(m):affine(m)}else one=Ra>=La?"r":"l"}
+ return{m,T,one,sq:m.filter(r=>!r[4]).length}}
+function omrFrame(img){const M=omrFindMarks(img),F0=omrFrame0(img,M);if(!F0.error&&F0.found>=14)return F0;
+ const fit=omrFrameFit(img,M);if(!fit)return F0;
+ if(!F0.error){const B=[...M.corners.map(b=>({...b,t:"c"})),...M.sides.map(b=>({...b,t:"s"})),...(M.cut||[])],m0=omrInliers(B,F0.map,2.6*F0.pxmm).length;if(m0>=fit.m.length)return F0}
+ /* bands as before, from the squares that were found and the fitted pattern for the rest */
+ const all=fit.m.filter(r=>!r[4]).map(r=>r.slice(0,4)),G=fit.T,levels=[11.5,...OMR_MK.side,267.5],pt=(X,Y)=>{const f=all.find(a=>a[0]===X&&a[1]===Y);return f?[f[2],f[3]]:G(X,Y)};
+ const bands=[];for(let i=0;i<levels.length-1;i++){const y0=levels[i],y1=levels[i+1];bands.push({y0,y1,T:homog([[OMR_MK.lx,y0,...pt(OMR_MK.lx,y0)],[OMR_MK.rx,y0,...pt(OMR_MK.rx,y0)],[OMR_MK.lx,y1,...pt(OMR_MK.lx,y1)],[OMR_MK.rx,y1,...pt(OMR_MK.rx,y1)]])})}
+ const map=(X,Y)=>{const b=bands.find(b=>Y>=b.y0&&Y<=b.y1)||(Y<11.5?bands[0]:bands[bands.length-1]);return b.T(X,Y)};
+ const[ax,ay]=map(0,0),[bx,by]=map(100,0),Fr={map,pxmm:Math.hypot(bx-ax,by-ay)/100,found:fit.sq,of:4+OMR_MK.side.length*2,missing:4+OMR_MK.side.length*2-fit.sq,thr:M.thr,fitted:1,onecol:fit.one};
+ return fit.one==="l"?omrRefineX(img,Fr,null):Fr}
+/* only one column of side squares was visible: how wide the page is cannot be told from it, so stretch the sheet sideways
+   (about the visible column) until the printed answer circles line up */
+function omrRefineX(img,F,cfg,rad){if(!F||!F.onecol||F.kx)return F;const L=omrLayout(cfg||{n:5,opts:5,sections:[]}),pts=cfg?L.q.flat():L.roll.flat(),r=rad||(cfg?2.3:1.7);if(!pts.length)return F;const ax=F.onecol==="r"?OMR_MK.rx:OMR_MK.lx;
+ const mk=k=>(X,Y)=>F.map(ax+(X-ax)*k,Y),sc=k=>{const G={...F,map:mk(k)};let b=-1e18;for(const dx of[-.5,0,.5])for(const dy of[-.6,0,.6]){const v=omrRingScore(img,G,pts,r,dx,dy);if(v>b)b=v}return b};
+ let best={k:1,s:sc(1)};for(let k=.86;k<=1.16;k+=.006){const v=sc(k);if(v>best.s)best={k,s:v}}
+ for(let k=best.k-.006;k<=best.k+.006;k+=.0015){const v=sc(k);if(v>best.s)best={k,s:v}}
+ return{...F,map:mk(best.k),kx:best.k,kxBy:cfg?"q":"roll"}}
 
 /* ---------- 3. bubbles ---------- */
 function omrDark(img,F,X,Y,rmm){const[cx,cy]=F.map(X,Y),r=rmm*F.pxmm,r2=r*r;let s=0,n=0;const{w,h,d}=img;
@@ -5027,7 +5075,7 @@ function omrRead(img,cfg,F){F=F||omrFrame(img);if(F.error)return F;const L=omrLa
 function omrQrCrop(img,F,size){size=size||260;const out=new Uint8ClampedArray(size*size*4),X0=166,Y0=6,S=30;
  for(let j=0;j<size;j++)for(let i=0;i<size;i++){const[x,y]=F.map(X0+S*i/size,Y0+S*j/size);const xi=Math.round(x),yi=Math.round(y);const v=xi>=0&&yi>=0&&xi<img.w&&yi<img.h?img.d[yi*img.w+xi]:255;const k=(j*size+i)*4;out[k]=out[k+1]=out[k+2]=v;out[k+3]=255}
  return{data:out,width:size,height:size}}
-if(typeof module!=="undefined")module.exports={omrAlignAll,omrLayout,omrFrame,omrRead,omrQrCrop,omrDark,OMR_T};
+if(typeof module!=="undefined")module.exports={omrRefineX,omrAlignAll,omrLayout,omrFrame,omrRead,omrQrCrop,omrDark,OMR_T,omrFindMarks,omrBlobs,homog,affine,omrRingScore,omrAlign};
 
 /* =====================================================================
    V28 · OMR ANSWER SHEETS (phase 1): per-specialty sheet setup
@@ -5192,8 +5240,10 @@ function omrSheetFrom(x,canvas,label,force,fsp){const id=omrIdentify(x,canvas);c
  sc.pid=pid;sc.spec=sp;const url=id.canvas.toDataURL("image/jpeg",.62);
  {const sx=1/id.canvas.width,sy=1/id.canvas.height,a=id.F.map(130,40),b=id.F.map(196,98);sc.rbox=[a[0]*sx,a[1]*sy,b[0]*sx,b[1]*sy].map(v=>+v.toFixed(4))}
  if(!sp){sc.issue=sc.issue||"no-paper";return{sc,url}}
- let cfg=omrCfgOf(x,sp);{const pn=+parts[4]||0,S0=omrSpec(x,sp);const n=pn||(typeof omrDetectN==="function"?omrDetectN(id.img,id.F,cfg,S0):0);if(n&&n!==cfg.n){cfg={...cfg,n,sections:(cfg.sections||[]).filter(z=>z.from<=n).map(z=>({...z,to:Math.min(z.to,n)}))};sc.printedN=n}}
+ let cfg=omrCfgOf(x,sp);if(id.F&&id.F.onecol&&typeof omrRefineX==="function")id.F=omrRefineX(id.img,id.F,cfg);{const pn=+parts[4]||0,S0=omrSpec(x,sp);const n=pn||(typeof omrDetectN==="function"?omrDetectN(id.img,id.F,cfg,S0):0);if(n&&n!==cfg.n){cfg={...cfg,n,sections:(cfg.sections||[]).filter(z=>z.from<=n).map(z=>({...z,to:Math.min(z.to,n)}))};sc.printedN=n}}
  const r=omrRead(id.img,cfg,id.F),L=omrLayout(cfg),A=omrAlignAll(id.img,id.F,L);
+ /* safety check: the printed circles must sit where the sheet is being read; if they do not, the sheet is not trusted */
+ {let t=0,k=0;L.q.forEach((row,i)=>{t+=omrRingScore(id.img,id.F,row,2.3,A.off[i][0],A.off[i][1]);k+=row.length});sc.ring=Math.round(t/Math.max(1,k));if(sc.ring<1000)sc.issue=sc.issue||"misaligned"}
  sc.ans=r.ans.map(a=>a.a||(a.flag==="multiple"?"*":"-")).join("");r.ans.forEach((a,q)=>{if(a.flag)sc.fl[q+1]=[a.flag,a.m||""]});
  const sx=1/id.canvas.width,sy=1/id.canvas.height;sc.box={};r.ans.forEach((a,q)=>{if(!a.flag)return;const row=L.q[q],o=A.off[q],p0=id.F.map(row[0][0]+o[0]-10,row[0][1]+o[1]-3.4),p1=id.F.map(row[row.length-1][0]+o[0]+3,row[0][1]+o[1]+3.4);sc.box[q+1]=[p0[0]*sx,p0[1]*sy,p1[0]*sx,p1[1]*sy].map(v=>+v.toFixed(4))});
  {const p=pid&&DB.pgts.find(q=>q.id===pid);if(p&&!exInPaper(x,p,sp)&&!force)sc.issue=sc.issue||"other-paper"}
@@ -5204,9 +5254,14 @@ async function omrProcess(x,files){const S=omrScans(x),out=[];UI.omrRun={done:0,
  try{await omrPages(files,async(canvas,label,i,tot)=>{UI.omrRun={done:i-1,total:tot,msg:`Reading ${label}`};omrRunBar();await new Promise(r=>setTimeout(r,0));
   const{sc,url}=omrSheetFrom(x,canvas,label);UI.omrImg[sc.id]=url;out.push(sc)})}catch(e){toast("Could not open the file: "+(e.message||e))}
  /* the same page scanned again (same candidate, paper and every answer) is not added twice */
- {const same=(a,b)=>a.spec===b.spec&&a.ans&&a.ans===b.ans&&(a.pid?a.pid===b.pid:!b.pid&&a.roll===b.roll&&a.ans.replace(/-/g,"").length>=10);let sk=0,rp=0;const keep=[];out.forEach(sc=>{if(S.some(o=>same(o,sc)||sc.issue==="unreadable"&&o.issue==="unreadable"&&o.file===sc.file)||keep.some(o=>same(o,sc))){sk++;delete UI.omrImg[sc.id];return}
-  /* the same page of the same file, read again with a newer version of the reader: the new reading replaces the old one */
-  const i=S.findIndex(o=>o.use!==false&&o.file===sc.file&&o.pid&&o.pid===sc.pid&&o.spec===sc.spec);if(i>=0){delete UI.omrImg[S[i].id];S.splice(i,1);rp++}keep.push(sc)});
+ {const same=(a,b)=>a.spec===b.spec&&a.ans&&a.ans===b.ans&&(a.pid?a.pid===b.pid:!b.pid&&a.roll===b.roll&&a.ans.replace(/-/g,"").length>=10);let sk=0,rp=0;const keep=[];out.forEach(sc=>{
+  /* the same page of the same file read before: a newer reading replaces an older one that differs or had a problem */
+  const i=S.findIndex(o=>o.use!==false&&o.file===sc.file&&(o.pid&&o.pid===sc.pid&&o.spec===sc.spec||sc.pid&&sc.spec&&(!o.pid||!o.spec||["unreadable","no-paper","unidentified"].includes(o.issue))));
+  const dupe=S.some((o,j)=>j!==i&&(same(o,sc)||sc.issue==="unreadable"&&o.issue==="unreadable"&&o.file===sc.file))||keep.some(o=>same(o,sc));
+  if(i>=0&&same(S[i],sc)){sk++;delete UI.omrImg[sc.id];return}
+  if(i>=0){delete UI.omrImg[S[i].id];S.splice(i,1);rp++}
+  if(dupe){sk++;delete UI.omrImg[sc.id];return}
+  keep.push(sc)});
   out.length=0;keep.forEach(z=>out.push(z));if(sk||rp)setTimeout(()=>toast([sk?`${sk} page${sk>1?"s were":" was"} already scanned and ${sk>1?"were":"was"} not added again`:"",rp?`${rp} sheet${rp>1?"s were":" was"} read again and replaced`:""].filter(Boolean).join(" · ")),400)}
  /* keep the images on the live app so any sheet can be looked at later */
  if(LIVE&&SYNC.sb){let k=0;for(const sc of out){UI.omrRun={done:k++,total:out.length,msg:"Saving sheet images"};omrRunBar();await omrSaveImg(x,sc)}}
@@ -5223,7 +5278,7 @@ function omrDupes(x){const S=omrScans(x),seen={};S.forEach(s=>{if(s.issue==="dup
 function omrRunBar(){const R=UI.omrRun,el=document.getElementById("omrrun");if(!R||!el)return;el.innerHTML=`<div class="subt">${esc(R.msg)}</div><div class="bar"><i style="width:${R.total?Math.round(R.done/R.total*100):5}%"></i></div>`}
 
 /* ---------- state of each sheet ---------- */
-const OMR_ISSUE={unreadable:"Could not read the sheet",unidentified:"Candidate not identified",roll:"Roll number incomplete","no-paper":"Paper (specialty) not known","other-exam":"Sheet belongs to another exam",duplicate:"Same candidate scanned more than once","not-candidate":"Not on this exam's candidate list","other-paper":"Candidate's specialty does not match this paper","paper-check":"Paper not certain: the QR code could not be read","roll-clash":"The roll number filled in belongs to another candidate"};
+const OMR_ISSUE={unreadable:"Could not read the sheet",unidentified:"Candidate not identified",roll:"Roll number incomplete","no-paper":"Paper (specialty) not known","other-exam":"Sheet belongs to another exam",duplicate:"Same candidate scanned more than once","not-candidate":"Not on this exam's candidate list","other-paper":"Candidate's specialty does not match this paper","paper-check":"Paper not certain: the QR code could not be read","roll-clash":"The roll number filled in belongs to another candidate",misaligned:"The answer circles could not be lined up on this sheet"};
 const OMR_FL={multiple:"Two or more answers",faint:"Very faint mark",light:"Light mark, tick or cross",smudge:"Possible erasure"};
 function omrOpen(x,s){if(!s.use)return[];const o=[];if(s.issue&&s.issue!=="duplicate"&&!s.okIssue)o.push("issue");if(s.issue==="duplicate")o.push("dup");
  if(s.pid&&!s.okIssue&&!exCands(x).some(p=>p.id===s.pid)&&!(x.added||[]).includes(s.pid))o.push("cand");
@@ -5263,7 +5318,7 @@ function omrReviewCard(x,s){const open=omrOpen(x,s),letters="ABCDE".slice(0,(omr
  const issue=open.includes("issue")||open.includes("cand")?`<div class="flag" style="display:grid;gap:8px"><b>${esc(open.includes("cand")?OMR_ISSUE["not-candidate"]:OMR_ISSUE[s.issue]||s.issue)}</b>${s.err?`<span class="subt">${esc(s.err)}</span>`:""}
   ${s.rbox?omrCrop(x,s,s.rbox,190):""}
   ${["unidentified","roll","no-paper","other-paper","paper-check","roll-clash"].includes(s.issue)||open.includes("cand")?`<label class="f">This sheet belongs to<select data-omrwho="${s.id}">${opt([["","Choose the candidate"],...cands.map(p=>[p.id,`Dr. ${p.name} · ${p.code||""} · ${exPaperOf(x,p)}`])],s.pid||"")}</select></label>`:""}
-  <div class="actions" style="justify-content:flex-start">${open.includes("cand")?`<button class="btn small" data-act="omr-addcand" data-id="${s.id}">Add to the candidate list</button>`:""}${s.issue==="other-exam"||s.issue==="unreadable"?`<button class="btn small" data-act="omr-skip" data-id="${s.id}">Leave this sheet out</button>`:""}${["roll"].includes(s.issue)&&s.pid?`<button class="btn small" data-act="omr-okissue" data-id="${s.id}">Roll number is fine</button>`:""}${s.issue==="other-paper"&&s.pid?`<button class="btn small" data-act="omr-okissue" data-id="${s.id}">Correct: this candidate sat the ${esc(s.spec)} paper</button>`:""}${s.issue==="paper-check"&&s.pid?`<button class="btn small" data-act="omr-okissue" data-id="${s.id}">Correct: ${esc(s.spec)} paper</button>`:""}${s.issue==="roll-clash"&&s.pid?`<button class="btn small" data-act="omr-okissue" data-id="${s.id}">Keep Dr. ${esc((DB.pgts.find(q=>q.id===s.pid)||{}).name||"")} (name printed on the sheet)</button>`:""}</div></div>`:"";
+  <div class="actions" style="justify-content:flex-start">${open.includes("cand")?`<button class="btn small" data-act="omr-addcand" data-id="${s.id}">Add to the candidate list</button>`:""}${s.issue==="other-exam"||s.issue==="unreadable"||s.issue==="misaligned"?`<button class="btn small" data-act="omr-skip" data-id="${s.id}">Leave this sheet out</button>`:""}${s.issue==="misaligned"?`<button class="btn small" data-act="omr-okissue" data-id="${s.id}">I checked the sheet: the reading is right</button>`:""}${["roll"].includes(s.issue)&&s.pid?`<button class="btn small" data-act="omr-okissue" data-id="${s.id}">Roll number is fine</button>`:""}${s.issue==="other-paper"&&s.pid?`<button class="btn small" data-act="omr-okissue" data-id="${s.id}">Correct: this candidate sat the ${esc(s.spec)} paper</button>`:""}${s.issue==="paper-check"&&s.pid?`<button class="btn small" data-act="omr-okissue" data-id="${s.id}">Correct: ${esc(s.spec)} paper</button>`:""}${s.issue==="roll-clash"&&s.pid?`<button class="btn small" data-act="omr-okissue" data-id="${s.id}">Keep Dr. ${esc((DB.pgts.find(q=>q.id===s.pid)||{}).name||"")} (name printed on the sheet)</button>`:""}</div></div>`:"";
  const dup=open.includes("dup")?`<div class="flag" style="display:grid;gap:6px"><b>${OMR_ISSUE.duplicate}</b><span>Keep this sheet, or leave it out?</span><div class="actions" style="justify-content:flex-start"><button class="btn small" data-act="omr-keep" data-id="${s.id}">Keep this one</button><button class="btn small" data-act="omr-skip" data-id="${s.id}">Leave this one out</button></div></div>`:"";
  const qs=open.filter(k=>k[0]==="q").map(k=>+k.slice(1)).sort((a,b)=>a-b).map(q=>{const[f,m]=s.fl[q];return`<div class="omrq"><div><b>Q${q}</b> <span class="subt">${esc(OMR_FL[f]||f)}${m?` · read as ${esc(m)}`:s.ans&&s.ans[q-1]&&s.ans[q-1]!=="-"&&s.ans[q-1]!=="*"?` · read as ${s.ans[q-1]}`:""}</span></div>${omrCrop(x,s,s.box&&s.box[q],44)}
   <div class="omrpick">${letters.map(l=>`<button class="btn small ${(s.ans||"")[q-1]===l||(m||"").includes(l)?"read":""}" data-omrfix="${s.id}|${q}|${l}" title="${(s.ans||"")[q-1]===l?"What the reader saw":""}">${l}</button>`).join("")}<button class="btn small" data-omrfix="${s.id}|${q}|">No answer</button></div></div>`}).join("");
@@ -6218,7 +6273,9 @@ document.addEventListener("click",e=>{const b=e.target.closest('[data-act="omr-t
    sheets and the marks they put into the exam, so the PDFs can be
    uploaded again from scratch.
    ===================================================================== */
-function omrRedoCounts(x,k){const S=omrScans(x).filter(s=>k==="*"||s.spec===k||(!s.spec&&k==="*"));
+function omrRedoCounts(x,k){const base=f=>String(f||"").replace(/ p\d+$/,""),files=new Set(omrScans(x).filter(s=>s.spec===k).map(s=>base(s.file)));
+ /* sheets of the same scanned file whose paper was never worked out go too */
+ const S=omrScans(x).filter(s=>k==="*"||s.spec===k||(!s.spec&&(k==="*"||files.has(base(s.file)))));
  const keys=k==="*"?exAllPapers(x):[k];let marks=0,abs=0,hand=0;
  keys.forEach(pk=>{const M=exPM(x,pk),C=exCands(x).filter(p=>exInPaper(x,p,pk)),scanned=new Set(omrScans(x).filter(s=>s.spec===pk&&s.pid).map(s=>s.pid));
   C.forEach(p=>{if(M.marks[p.id]!=null){if(scanned.has(p.id))marks++;else hand++}if(M.absent[p.id])abs++})});
@@ -6336,8 +6393,8 @@ const omrKeyOk=(x,k)=>{const S=omrSpec(x,k);return!!S&&omrKeyDone(S)>=S.n};
 function omrGuessPaper(x,id,p){const ks=Object.keys(omrOf(x).specs).filter(k=>exInPaper(x,p,k));
  if(!ks.length){const k=exPaperOf(x,p);return{sp:omrSpec(x,k)?k:"",sure:false}}
  if(ks.length===1)return{sp:ks[0],sure:true};
- const fit=(cfg,n)=>{const L=omrLayout({...cfg,n,sections:(cfg.sections||[]).filter(z=>z.from<=n).map(z=>({...z,to:Math.min(z.to,n)}))}),pts=L.q.flat();let b=-1e18;
-  for(const dx of[-.8,0,.8])for(const dy of[-.8,0,.8]){const v=omrRingScore(id.img,id.F,pts,2.3,dx,dy)/pts.length;if(v>b)b=v}return b};
+ const fit=(cfg,n)=>{const c2={...cfg,n,sections:(cfg.sections||[]).filter(z=>z.from<=n).map(z=>({...z,to:Math.min(z.to,n)}))},L=omrLayout(c2),pts=L.q.flat(),F=id.F&&id.F.onecol&&typeof omrRefineX==="function"?omrRefineX(id.img,id.F,c2):id.F;let b=-1e18;
+  for(const dx of[-.8,0,.8])for(const dy of[-.8,0,.8]){const v=omrRingScore(id.img,F,pts,2.3,dx,dy)/pts.length;if(v>b)b=v}return b};
  const R=[];ks.forEach(k=>{const cfg=omrCfgOf(x,k),S=omrSpec(x,k);[...new Set([cfg.n,S&&S.printed&&S.printed.n].filter(Boolean))].forEach(n=>R.push({k,n,s:fit(cfg,n)}))});
  const top=Math.max(...R.map(r=>r.s)),own=ks.includes(exPaperOf(x,p))?exPaperOf(x,p):ks[0];if(!(top>0))return{sp:own,sure:false};
  /* a layout with fewer questions than printed also lands on circles: take the largest that fits; two papers of that size cannot be told apart */
@@ -6355,6 +6412,7 @@ document.addEventListener("click",e=>{const a=e.target.closest('[data-act="omr-s
  setTimeout(()=>{const x=DB.exams.find(v=>v.id===route.id);if(!x||!omrOf(x).applied)return;const n=omrPrune(x);if(n){xlog(x,`OMR: ${n} result${n>1?"s":""} taken out (sheet left out)`);persist();render();toast(`${n} earlier result${n>1?"s":""} taken out`)}},0)});
 /* the review card can set the paper of a sheet */
 {const _c=omrReviewCard;omrReviewCard=function(x,s){let h=_c(x,s);const open=omrOpen(x,s);
+ if(open.includes("issue")&&s.issue==="misaligned")h=h.replace(esc(OMR_ISSUE.misaligned)+"</b>",esc(OMR_ISSUE.misaligned)+`</b><span>The scan may be cut too close or stretched, so answers may have been read from the wrong circles. Open <b>View sheet</b> and compare with the questions below, or rescan this sheet with a little white margin around it.</span>`);
  if(open.includes("issue")&&s.issue==="roll-clash"&&s.rollClash){const o=DB.pgts.find(q=>q.id===s.rollClash),me=DB.pgts.find(q=>q.id===s.pid);h=h.replace(esc(OMR_ISSUE["roll-clash"])+"</b>",esc(OMR_ISSUE["roll-clash"])+`</b><span>The sheet was printed for Dr. ${esc(me?me.name:"")}, but roll number ${esc(s.roll||"")} (Dr. ${esc(o?o.name:"")}) is filled in. Choose whose answers these are.</span>`)}
  if(!open.includes("issue")||!["no-paper","other-paper","paper-check"].includes(s.issue))return h;
  const ks=Object.keys(omrOf(x).specs);if(ks.length<2&&s.spec)return h;
