@@ -5692,7 +5692,7 @@ async function exAttPdf(x,keys){try{await bioLoadPdf()}catch(e){toast(e.message)
 {const _p=exPapersTab;exPapersTab=function(x){let h=_p(x);
  h=h.replace('<div class="actions" style="justify-content:flex-start">','<div class="actions" style="justify-content:flex-start"><button class="btn small" data-act="ex-attall">Attendance sheets (all papers)</button>');
  /* add an Attendance button next to each paper's OMR buttons */
- h=h.replace(/<button class="btn small( primary)?" data-act="omr-setup" data-sp="([^"]*)">/g,(m,pr,k)=>`<button class="btn small" data-act="ex-att" data-sp="${k}">Attendance sheet</button>${m}`);return h}}
+ h=h.replace(/<button class="btn small\s*(primary)?\s*" data-act="omr-setup" data-sp="([^"]*)">/g,(m,pr,k)=>`<button class="btn small" data-act="ex-att" data-sp="${k}">Attendance sheet</button>${m}`);return h}}
 document.addEventListener("click",e=>{const b=e.target.closest('[data-act="ex-att"],[data-act="ex-attall"]');if(!b)return;const x=DB.exams.find(v=>v.id===route.id);if(!x)return;
  const div=document.createElement("textarea");div.innerHTML=b.dataset.sp||"";const k=div.value;
  exAttPdf(x,b.dataset.act==="ex-att"?[k]:exAllPapers(x))});
@@ -6749,7 +6749,7 @@ document.addEventListener("input",e=>{const f=e.target.closest&&e.target.closest
  const box=document.getElementById("seq-maxes");box.innerHTML=Array.from({length:n},(_,i)=>`<label class="f" style="min-width:90px">SEQ ${i+1}<input type="number" min="0" step="0.5" data-seqmax="${i}" value="${each}"></label>`).join("")});
 
 /* Papers tab: an SEQ button beside each paper's sheet buttons */
-{const _p=exPapersTab;exPapersTab=function(x){const h=_p(x);return h.replace(/<button class="btn small( primary)?" data-act="omr-setup" data-sp="([^"]*)">/g,(m,pr,ke)=>{const t=document.createElement("textarea");t.innerHTML=ke;const D=seqCfg(x,t.value);
+{const _p=exPapersTab;exPapersTab=function(x){const h=_p(x);return h.replace(/<button class="btn small\s*(primary)?\s*" data-act="omr-setup" data-sp="([^"]*)">/g,(m,pr,ke)=>{const t=document.createElement("textarea");t.innerHTML=ke;const D=seqCfg(x,t.value);
  return`<button class="btn small" data-seqcfg="${ke}">${D?`SEQ: ${D.n} × · ${seqTotal(D)} marks`:"Add SEQ section"}</button>${m}`})}}
 
 /* ---------- entering SEQ marks: the paper's table on the Results tab ---------- */
