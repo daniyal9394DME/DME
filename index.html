@@ -867,9 +867,9 @@ function checks(p,c){const f=[];
  return f}
 
 /* ---------- routing ---------- */
-const NAV=[["rotating","Rotating trainees"],["status","Training status"],["surform","Training status form"],["kiosk","Attendance kiosk"],["calendar","Academic calendar"],["messages","WhatsApp"],["datacheck","Data checks"],["search","Search"],["overview","Overview"],["exits","Left training"],["tasks","Tasks"],["pgts","PGTs"],["leaves","Leave"],["verify","Verification"],["faculty","Faculty"],["supervisors","Supervisors"],["credentials","Faculty updates"],["workshops","Workshops"],["exams","Exams"],["orientation","Orientation"],["settings","Settings"],["audit","Audit log"]];
+const NAV=[["observers","Observership"],["rotating","Rotating trainees"],["status","Training status"],["surform","Training status form"],["kiosk","Attendance kiosk"],["calendar","Academic calendar"],["messages","WhatsApp"],["datacheck","Data checks"],["search","Search"],["overview","Overview"],["exits","Left training"],["tasks","Tasks"],["pgts","PGTs"],["leaves","Leave"],["verify","Verification"],["faculty","Faculty"],["supervisors","Supervisors"],["credentials","Faculty updates"],["workshops","Workshops"],["exams","Exams"],["orientation","Orientation"],["settings","Settings"],["audit","Audit log"]];
 let route={v:"overview",id:null};
-function parse(){const h=location.hash.slice(1);const m=h.match(/^(pgt|fac|ws|fb|task|fbedit|pfedit|pfill|prop|exam|orient|reg|rgedit|cert|certx|attend|cred|rot)-(\w+)$/);if(m)return{v:m[1],id:m[2]};return{v:NAV.some(n=>n[0]===h)?h:"overview",id:null}}
+function parse(){const h=location.hash.slice(1);const m=h.match(/^(pgt|fac|ws|fb|task|fbedit|pfedit|pfill|prop|exam|orient|reg|rgedit|cert|certx|attend|cred|rot|obs)-(\w+)$/);if(m)return{v:m[1],id:m[2]};return{v:NAV.some(n=>n[0]===h)?h:"overview",id:null}}
 function go(h){if(location.hash==="#"+h)render();else location.hash=h}
 window.addEventListener("hashchange",()=>{route=parse();render();window.scrollTo(0,0)});
 const UI={q:"",phase:"active",spec:"",prog:"",sort:"name",dir:1,fq:"",fspec:"",fcred:""};
@@ -881,7 +881,7 @@ function render(){
  const cur=route.v==="pgt"?"pgts":route.v==="fac"?"faculty":["ws","fb","fbedit","pfedit","pfill","prop","reg","rgedit","attend"].includes(route.v)?"workshops":route.v==="task"?"tasks":route.v==="exam"?"exams":route.v==="orient"?"orientation":route.v==="cert"?"workshops":route.v==="certx"?"exams":route.v==="cred"?"credentials":route.v==="rot"||route.v==="kiosk"?"rotating":route.v==="surform"?"status":route.v;
  renderChrome(cur);if(!canSee(cur)){document.getElementById("main").innerHTML=`<div class="panel empty">You do not have access to this section. Ask the Director of Medical Education to change your access.</div>`;return}
  const m=document.getElementById("main");
- m.innerHTML=({overview:vOverview,pgts:vPgts,pgt:vPgt,verify:vVerify,faculty:vFaculty,fac:vFac,settings:vSettings,audit:vAudit,leaves:vLeaves,credentials:vCreds,workshops:vWorkshops,ws:vWs,tasks:vTasks,task:vTask,fb:vFb,fbedit:vFbEdit,pfedit:vPfEdit,pfill:vPfill,prop:vProp,exams:vExams,exam:vExam,orientation:vOrients,orient:vOrient,supervisors:vSupervisors,reg:vReg,rgedit:vRgEdit,attend:vAttend,search:vSearch,datacheck:vDataCheck,messages:vMessages,calendar:vCalendar,rotating:vRotating,status:vStatus,surform:vSurForm,rot:vRot,kiosk:vKiosk,cred:()=>{if(UI.credFac!==route.id){UI.credFac=route.id;UI.credType=null}return vCreds()},exits:vExits,cert:vCertWs,certx:vCertEx}[route.v]||vOverview)();
+ m.innerHTML=({overview:vOverview,pgts:vPgts,pgt:vPgt,verify:vVerify,faculty:vFaculty,fac:vFac,settings:vSettings,audit:vAudit,leaves:vLeaves,credentials:vCreds,workshops:vWorkshops,ws:vWs,tasks:vTasks,task:vTask,fb:vFb,fbedit:vFbEdit,pfedit:vPfEdit,pfill:vPfill,prop:vProp,exams:vExams,exam:vExam,orientation:vOrients,orient:vOrient,supervisors:vSupervisors,reg:vReg,rgedit:vRgEdit,attend:vAttend,search:vSearch,datacheck:vDataCheck,messages:vMessages,calendar:vCalendar,rotating:vRotating,observers:vObservers,obs:vObs,status:vStatus,surform:vSurForm,rot:vRot,kiosk:vKiosk,cred:()=>{if(UI.credFac!==route.id){UI.credFac=route.id;UI.credType=null}return vCreds()},exits:vExits,cert:vCertWs,certx:vCertEx}[route.v]||vOverview)();
 }
 
 /* ---------- OVERVIEW ---------- */
@@ -1835,7 +1835,7 @@ const DESIGS={
 const meObj=()=>DB.staff.find(s=>s.name===ME)||DB.staff[0];
 const isAdmin=()=>meObj().role==="Admin";
 const seeAll=()=>isAdmin()||!!meObj().seeAll;
-const canSee=k=>{if(k==="exits")k="leaves";if(k==="rotating"||k==="kiosk"||k==="status")k="pgts";if(k==="datacheck")k="pgts";if(k==="messages"||k==="calendar")return true;return k==="overview"||k==="search"||isAdmin()||(meObj().sections||[]).includes(k)};
+const canSee=k=>{if(k==="exits")k="leaves";if(k==="rotating"||k==="observers"||k==="kiosk"||k==="status")k="pgts";if(k==="datacheck")k="pgts";if(k==="messages"||k==="calendar")return true;return k==="overview"||k==="search"||isAdmin()||(meObj().sections||[]).includes(k)};
 const visibleTasks=()=>seeAll()?DB.tasks:DB.tasks.filter(t=>t.assignee===ME);
 const canAssign=()=>seeAll();
 
@@ -3123,10 +3123,11 @@ function bootApp(){
    try{localStorage.setItem("dme-supabase",JSON.stringify({url:u,anonKey:k}))}catch(x){}location.reload()};return}
  if(!LIVE){if(!DB||!DB.pgts)DB=seed();if(migrate9(DB))persist();if(!DB.staff.some(s=>s.name===ME))ME=DB.staff[0].name;route=parse();render();return}
  document.body.classList.add("live");DB=null;try{localStorage.removeItem(KEY)}catch(e){}
- const q=new URLSearchParams(location.search);const pk=["reg","fb","prop","rot","bio","att","sur"].find(k=>q.get(k));
+ const q=new URLSearchParams(location.search);const pk=["reg","fb","prop","rot","obs","bio","att","sur"].find(k=>q.get(k));
  screen(`<p class="subt">Connecting…</p>`);
  loadScript(SUPA_JS).then(()=>{SYNC.sb=window.supabase.createClient(SUPA.url,SUPA.anonKey,{auth:{persistSession:true,detectSessionInUrl:true}});
   if(pk==="rot")return rotPublicPage();
+  if(pk==="obs")return obsPublicPage();
   if(pk==="bio")return bioPublicPage(q.get("bio"));
   if(pk==="att")return attPublicPage(q.get("att"));
   if(pk==="sur")return surPublicPage();
@@ -3252,7 +3253,7 @@ function syncBadge(){const el=document.getElementById("syncst");if(!el)return;
  el.innerHTML=SYNC.err&&SYNC.err!=="view"?`<span class="sy bad">Not saved · <button class="btn link" data-act="sy-retry">Try again</button></span>`:SYNC.pending||SYNC.busy?`<span class="sy">Saving…</span>`:SYNC.stale?`<span class="sy">Others made changes · <button class="btn link" data-act="sy-refresh">Show</button></span>`:`<span class="sy ok">All changes saved</span>`}
 function renderChrome(cur){
  const late=visibleTasks().filter(tOverdue).length,pend=DB.pgts.filter(p=>p.reg==="Pending").length,wa=DB.workshops.filter(w=>wsFlags(w).length).length;
- const dcn=canSee("pgts")?dcIssues().filter(x=>x.k!=="contact").length:0;const badge={datacheck:dcn?[dcn,""]:null,tasks:late?[late,"late"]:null,verify:pend?[pend,""]:null,workshops:wa?[wa,""]:null,rotating:(n=>n?[n,""]:null)(typeof visList==="function"?visList().filter(v=>v.src==="form"&&!v.checked).length:0)};
+ const dcn=canSee("pgts")?dcIssues().filter(x=>x.k!=="contact").length:0;const badge={datacheck:dcn?[dcn,""]:null,tasks:late?[late,"late"]:null,verify:pend?[pend,""]:null,workshops:wa?[wa,""]:null,rotating:(n=>n?[n,""]:null)(typeof visList==="function"?visList().filter(v=>v.src==="form"&&!v.checked&&v.kind!=="obs").length:0),observers:(n=>n?[n,""]:null)(typeof obsAlertCount==="function"?obsAlertCount():0)};
  let g=null,h="";NAVG.filter(n=>canSee(n[1])).forEach(([grp,k,l])=>{if(grp!==g){h+=grp?`<div class="ng">${grp}</div>`:"";g=grp}
   h+=`<a href="#${k}" ${k===cur?'aria-current="page"':""} title="${l}"><span class="ni" aria-hidden="true">${NAV_ICON[k]||""}</span><span class="nl">${l}</span>${badge[k]?`<span class="cnt ${badge[k][1]}">${badge[k][0]}</span>`:""}</a>`});
  document.getElementById("nav").innerHTML=h;const m=meObj();
@@ -4160,6 +4161,9 @@ const ROT_UNITS=["Cardiac Surgery","CT Angiography / Cardiac Imaging","Cardiolog
 const ROT_PROGS=["FCPS","MS","MD","MCPS","Diploma","House job","Other"];
 const AT_L={P:"Present",A:"Absent",L:"Leave",H:"Holiday / off"};
 const visList=()=>(DB.visitors=DB.visitors||[]);
+/* observers (V53) share the visitors list, the kiosk and attendance; they are not PGT rotations */
+const visName=v=>v&&v.kind==="obs"?`${v.title?v.title+" ":""}${v.name}`:`Dr. ${v.name}`;
+const rotOnly=()=>visList().filter(v=>v.kind!=="obs");
 const rotOff=()=>DB.settings.rotOff||[0];
 const dIso=d=>iso(d);
 function rotState(v){const t=iso(TODAY),end=v.left||v.end;if(v.start>t)return"Upcoming";if(end<t)return v.left?"Left early":"Completed";return"Current"}
@@ -4175,7 +4179,7 @@ function markAtt(v,ds,s,by){v.att=v.att||{};if(!s){delete v.att[ds];return}v.att
 
 /* ---------- list ---------- */
 UI.rotTab="Current";UI.rotQ="";
-function vRotating(){const L=visList(),t=iso(TODAY),can=!isViewer();const by=s=>L.filter(v=>rotState(v)===s||(s==="Completed"&&rotState(v)==="Left early"));
+function vRotating(){const L=rotOnly(),t=iso(TODAY),can=!isViewer();const by=s=>L.filter(v=>rotState(v)===s||(s==="Completed"&&rotState(v)==="Left early"));
  const tabs=["Current","Upcoming","Completed"],q=UI.rotQ.toLowerCase();
  const rows=by(UI.rotTab).filter(v=>!q||(v.name+" "+v.inst+" "+v.unit).toLowerCase().includes(q)).sort((a,b)=>UI.rotTab==="Completed"?(a.end<b.end?1:-1):(a.start<b.start?-1:1));
  const cur=by("Current"),markedToday=cur.filter(v=>v.att?.[t]).length,isOffToday=rotOff().includes(TODAY.getDay());
@@ -4274,11 +4278,11 @@ function vKiosk(){try{sessionStorage.setItem("dme-kiosk","1")}catch(e){}document
  const now=new Date();
  if(K.msg)return`<div class="kio"><div class="kio-done ${K.msg.ok?"ok":"bad"}"><b>${esc(K.msg.t)}</b><span>${esc(K.msg.s||"")}</span></div></div>`;
  if(K.sel){const v=cur.find(x=>x.id===K.sel);if(!v){K.sel=null;return vKiosk()}
-  return`<div class="kio"><h2>Dr. ${esc(v.name)}</h2><p class="subt">Enter your 4-digit PIN</p><div class="kio-pin">${[0,1,2,3].map(i=>`<span class="${K.pin.length>i?"f":""}"></span>`).join("")}</div>
+  return`<div class="kio"><h2>${esc(visName(v))}</h2><p class="subt">Enter your 4-digit PIN</p><div class="kio-pin">${[0,1,2,3].map(i=>`<span class="${K.pin.length>i?"f":""}"></span>`).join("")}</div>
   <div class="kio-pad">${[1,2,3,4,5,6,7,8,9,"✕",0,"⌫"].map(k=>`<button data-kio="${k}">${k}</button>`).join("")}</div><button class="btn link" data-kio="back">Not you? Go back</button></div>`}
- return`<div class="kio"><div class="kio-h"><img src="${esc(document.querySelector('img[alt="RIC logo"]')?.src||"")}" alt=""><div><h2>Daily attendance</h2><p>Rotating trainees · Department of Medical Education</p></div><div class="kio-clock"><b>${now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}</b>${now.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"})}</div></div>
+ return`<div class="kio"><div class="kio-h"><img src="${esc(document.querySelector('img[alt="RIC logo"]')?.src||"")}" alt=""><div><h2>Daily attendance</h2><p>Rotating trainees and observers · Department of Medical Education</p></div><div class="kio-clock"><b>${now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}</b>${now.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"})}</div></div>
   <p class="subt" style="text-align:center">Tap your name, then enter your PIN.</p>
-  <div class="kio-names">${cur.map(v=>{const m=v.att?.[t];return`<button data-kio-sel="${v.id}" class="${m?.s==="P"?"done":""}"><b>Dr. ${esc(v.name)}</b><span>${esc(v.unit)}${m?.s==="P"?` · marked ${m.t}`:""}</span></button>`}).join("")||`<p class="subt">No rotating trainees today.</p>`}</div>
+  <div class="kio-names">${cur.map(v=>{const m=v.att?.[t];return`<button data-kio-sel="${v.id}" class="${m?.s==="P"?"done":""}"><b>${esc(visName(v))}</b><span>${esc(v.unit)}${m?.s==="P"?` · marked ${m.t}`:""}</span></button>`}).join("")||`<p class="subt">No rotating trainees or observers today.</p>`}</div>
   <button class="btn link kio-exit" data-kio="exit">Exit kiosk (staff)</button></div>`}
 function kioMsg(ok,t,s){UI.kio={sel:null,pin:"",msg:{ok,t,s}};render();clearTimeout(UI.kioT);UI.kioT=setTimeout(()=>{UI.kio.msg=null;if(route.v==="kiosk")render()},3500)}
 async function kioExit(){if(LIVE&&SYNC.email){const pw=prompt("Staff password to leave the kiosk");if(pw==null)return;const{error}=await SYNC.sb.auth.signInWithPassword({email:SYNC.email,password:pw});if(error){toast("Wrong password");return}}
@@ -4290,8 +4294,8 @@ document.addEventListener("click",e=>{if(route.v!=="kiosk")return;const s=e.targ
  if(K.pin.length<4){render();return}
  const v=visList().find(x=>x.id===K.sel),t=iso(TODAY);if(!v)return;
  if(K.pin!==String(v.pin)){K.fails=(K.fails||0)+1;return kioMsg(false,"Wrong PIN","Try again, or ask the DME office.")}
- if(v.att?.[t]?.s==="P")return kioMsg(true,`Already marked, Dr. ${v.name}`,`Marked present at ${v.att[t].t}`);
- markAtt(v,t,"P","Kiosk");persist();kioMsg(true,`Thank you, Dr. ${v.name}`,`Marked present at ${v.att[t].t} · ${fd(t)}`)});
+ if(v.att?.[t]?.s==="P")return kioMsg(true,`Already marked, ${visName(v)}`,`Marked present at ${v.att[t].t}`);
+ markAtt(v,t,"P","Kiosk");persist();kioMsg(true,`Thank you, ${visName(v)}`,`Marked present at ${v.att[t].t} · ${fd(t)}`)});
 document.addEventListener("keydown",e=>{if(route.v!=="kiosk"||!UI.kio.sel)return;if(/^\d$/.test(e.key)){const b=document.querySelector(`[data-kio="${e.key}"]`);if(b)b.click()}if(e.key==="Backspace"){const b=document.querySelector('[data-kio="⌫"]');if(b)b.click()}});
 /* the kiosk stays on screen until a staff member exits it */
 if(kioskOn()&&location.hash!=="#kiosk")location.hash="#kiosk";
@@ -4308,15 +4312,15 @@ document.addEventListener("click",e=>{const r=e.target.closest("[data-rottab],[d
  const act=r.dataset.act;if(act==="rot-add")return sheetRot();if(act==="rot-off")return sheetRotOff();
  const v=visList().find(x=>x.id===r.dataset.id);if(!v)return;
  if(act==="rot-edit")return sheetRot(v);if(act==="rot-cert")return sheetRotCert(v);
- if(act==="rot-pin"){v.pin=rotPin();log(`New attendance PIN for Dr. ${v.name}`,"rot-"+v.id);render();return}
+ if(act==="rot-pin"){v.pin=rotPin();log(`New attendance PIN for ${visName(v)}`,(v.kind==="obs"?"obs-":"rot-")+v.id);render();return}
  if(act==="rot-del"){if(r.dataset.armed!=="1"){r.dataset.armed="1";r.textContent="Tap again to remove";return}DB.visitors=visList().filter(x=>x!==v);log(`Rotating trainee removed: Dr. ${v.name} (${v.inst})`);toast("Removed");go("rotating")}});
 document.addEventListener("input",e=>{if(e.target.id==="rotq"){UI.rotQ=e.target.value;const p=e.target.selectionStart;render();const n=document.getElementById("rotq");n.focus();n.setSelectionRange(p,p)}});
 function sheetRotOff(){const D=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],o=rotOff();
  openSheet("Weekly off days",`<p class="subt" style="margin:0">Days not counted as working days for rotating trainees. Public holidays can be marked "H" on each trainee's attendance calendar.</p>${D.map((d,i)=>`<label class="check"><input type="checkbox" name="off${i}" ${o.includes(i)?"checked":""}> ${d}</label>`).join("")}`,()=>{
   DB.settings.rotOff=D.map((d,i)=>document.querySelector(`#sheetform [name="off${i}"]`).checked?i:null).filter(x=>x!=null);log("Weekly off days for rotating trainees changed");toast("Saved");return true})}
 VIEW_ACTS.add("rot-cert");
-EXPORTS.rotating=()=>({file:"Rotating trainees",sheets:[sheetFrom("Rotating trainees",visList().map(v=>{const s=rotStats(v);return{"Name":"Dr. "+v.name,"Parent institute":v.inst,"Programme":v.program,"Specialty":v.spec,"Year":v.year,"Rotation unit":v.unit,"Supervisor":rotFac(v),"Start":v.start,"End":v.left||v.end,"Status":rotState(v),"Working days":s.work,"Present":s.P,"Leave":s.L,"Absent":s.A,"Attendance %":s.pct??"","Mobile":v.mobile||"","Certificate":v.cert?.no||""}}))]});
-function rotDashCard(){const cur=visList().filter(v=>rotState(v)==="Current"),t=iso(TODAY),due=visList().filter(v=>rotState(v)!=="Current"&&rotState(v)!=="Upcoming"&&!v.cert);if(!cur.length&&!due.length&&!visList().some(rotNew))return"";
+EXPORTS.rotating=()=>({file:"Rotating trainees",sheets:[sheetFrom("Rotating trainees",rotOnly().map(v=>{const s=rotStats(v);return{"Name":"Dr. "+v.name,"Parent institute":v.inst,"Programme":v.program,"Specialty":v.spec,"Year":v.year,"Rotation unit":v.unit,"Supervisor":rotFac(v),"Start":v.start,"End":v.left||v.end,"Status":rotState(v),"Working days":s.work,"Present":s.P,"Leave":s.L,"Absent":s.A,"Attendance %":s.pct??"","Mobile":v.mobile||"","Certificate":v.cert?.no||""}}))]});
+function rotDashCard(){const cur=rotOnly().filter(v=>rotState(v)==="Current"),t=iso(TODAY),due=rotOnly().filter(v=>rotState(v)!=="Current"&&rotState(v)!=="Upcoming"&&!v.cert);if(!cur.length&&!due.length&&!rotOnly().some(rotNew))return"";
  return card("Rotating trainees",cur.length,"rotating",olist([...cur.slice(0,4).map(v=>oli("rot-"+v.id,"Dr. "+esc(v.name),esc(v.unit)+" · until "+fd(v.end).slice(0,6),(m=>m?.s==="P"?`<span class="pill p-ric">${m.t||"present"}</span>`:m?.s==="A"?'<span class="pill p-bad">absent</span>':m?.s==="L"?'<span class="pill p-leave">leave</span>':'<span class="pill p-pause">not marked</span>')(v.att?.[t]))),...(visList().some(rotNew)?[oli("rotating",`${visList().filter(rotNew).length} new online registration${visList().filter(rotNew).length>1?"s":""} to check`,"","")]:[]),...(due.length?[oli("rotating",`${due.length} experience certificate${due.length>1?"s":""} to issue`,"","")]:[])],"None at RIC."))}
 
 /* =====================================================================
@@ -4378,7 +4382,7 @@ document.addEventListener("click",async e=>{const lb=e.target.closest("[data-rpl
  catch(x){b.disabled=false;b.textContent="Submit";bad(x.message==="upload"?"A document could not be uploaded. Check the connection and try again.":"Could not send. Check the connection and try again.")}});
 /* staff side: link, new-registration badge, documents */
 const rotNew=v=>v.src==="form"&&!v.checked;
-function rotLinkPanel(){if(isViewer())return"";const n=visList().filter(rotNew).length;
+function rotLinkPanel(){if(isViewer())return"";const n=rotOnly().filter(rotNew).length;
  return`<div class="panel" style="display:grid;gap:8px"><div class="toolbar"><span class="subt">Registration link for rotating trainees</span><input id="rotlink" readonly value="${esc(rotLink())}" style="flex:1;min-width:220px;font-family:var(--f-mono);font-size:13px"><button class="btn small" data-act="rot-copylink">Copy link</button>${waNum?`<a class="btn small" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("Rotation registration, Rawalpindi Institute of Cardiology (Department of Medical Education). Please register before your first day and upload your movement order:\n"+rotLink())}">Share on WhatsApp</a>`:""}</div>
   ${n?`<div class="flag info">${n} new online registration${n>1?"s":""}: check the movement order, then press <b>Documents checked</b> on the profile.</div>`:""}</div>`}
 function rotDocsHtml(v){const D=[["movement","Movement order"],["pmdc","PMDC certificate"]];if(!v.docs&&v.src!=="form")return"";
@@ -4400,7 +4404,7 @@ const formCfg=k=>{const s=DB.settings.forms=DB.settings.forms||{};return{...FORM
 const formName=k=>k==="sur"?"Training status":k==="pgt"?"PGT registration":"Rotation registration";
 const formUrl=k=>k==="sur"?(LIVE?pubBase()+"?sur=1":"https://dme.ric.example/status"):k==="pgt"?(LIVE?pubBase().replace(/[^/]*$/,"")+"register.html":"https://dme.ric.example/register"):rotLink();
 const formIsOpen=c=>c.open!==false&&!(c.close&&c.close<iso(TODAY));
-function regLinkPanel(k){if(isViewer())return"";const c=formCfg(k),open=formIsOpen(c),n=k==="rot"?visList().filter(rotNew).length:0;
+function regLinkPanel(k){if(isViewer())return"";const c=formCfg(k),open=formIsOpen(c),n=k==="rot"?rotOnly().filter(rotNew).length:0;
  return`<div class="panel" style="display:grid;gap:10px"><div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
   <button class="qrthumb" data-act="form-qr" data-k="${k}" title="Show QR code">${qrSvg(formUrl(k),2)}</button>
   <div style="flex:1;min-width:240px;display:grid;gap:6px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>${formName(k)} form</b><span class="pill ${open?"p-ric":"p-bad"}">${open?"Open":"Closed"}</span>${c.close&&open?`<span class="subt">closes ${fd(c.close)}</span>`:""}</div>
@@ -6899,6 +6903,323 @@ document.addEventListener("click",e=>{const b=e.target.closest('[data-act="ex-rm
    ${has?`<div class="flag">Dr. ${esc(p.name)} has marks or scanned sheets in this exam. They are set aside, not lost: <b>Include again</b> puts them back.</div>`:""}`,()=>{exRemove(x,p,fv("r")+(fv("n")?": "+fv("n"):""));toast("Removed");return true},"Remove")}},true);
 /* keep the lookup working whenever the records are replaced (sign-in, sync) */
 {const _r=render;render=function(...a){if(DB&&DB.pgts)exGuestAware();return _r.apply(this,a)}}
+/* =====================================================================
+   V53/54 · OBSERVERSHIP PROGRAMME. Doctors, students, nurses,
+   technologists and other staff from outside who observe at RIC.
+   1 Apply online (?obs=1): the details of RIC's observership form, the
+     degree (or a letter that they study / work somewhere) and the CNIC.
+     They get a fee challan (PDF) and their filled application form.
+   2 Pay at the bank with the challan; the DME office records the paid
+     challan.
+   3 Wait for the hospital's office order. When they bring it, the office
+     uploads it and starts the observership; attendance begins.
+   4 Three days before the end the office is reminded to offer an
+     extension (new challan) or tell them it is ending.
+   The hospital issues the certificate, so there is none here.
+   Fees (changeable): first 2 weeks PKR 5,000; each further 2 weeks
+   PKR 3,000; at most 3 months. Records live with the rotating trainees
+   (DB.visitors, kind "obs").
+   ===================================================================== */
+const OBS_CATS=["Doctor (MBBS / house officer / medical officer)","Dental surgeon (BDS)","Medical or dental student","Nurse","Nursing student","Allied health professional","Allied health student","Cath lab technologist","Laboratory technician","Other"];
+FORM_DEF.obs={open:true,msg:"",close:"",contact:"",fee1:5000,fee2:3000,block:14,maxDays:91,dueDays:7,bank:"",branch:"",acctTitle:"",acctNo:"",units:ROT_UNITS.slice(),cats:OBS_CATS.slice()};
+const obsCfg=()=>{const c=formCfg("obs");return{...c,fee1:+c.fee1||0,fee2:+c.fee2||0,block:+c.block||14,maxDays:+c.maxDays||91,dueDays:+c.dueDays||7}};
+const obsList=()=>visList().filter(v=>v.kind==="obs");
+const obsLink=()=>LIVE?pubBase()+"?obs=1":"https://dme.ric.example/observership";
+const obsFee=(c,n)=>n<1?0:c.fee1+c.fee2*(n-1);
+const obsEndOf=(start,len)=>{const d=P(start);d.setDate(d.getDate()+len-1);return iso(d)};
+const obsLen=v=>v.start&&v.end?days(P(v.end),P(v.start))+1:0;
+const obsBlocks=v=>(v.fees||[]).reduce((a,f)=>a+(+f.blocks||0),0)||+v.blocks||1;
+const obsBlocksLeft=(v,c)=>Math.max(0,Math.floor((c.maxDays-(obsLen(v)||obsBlocks(v)*c.block))/c.block));
+const obsUnpaid=v=>(v.fees||[]).filter(f=>f.status!=="verified");
+const obsPaid=v=>(v.fees||[]).filter(f=>f.status==="verified").reduce((a,f)=>a+(+f.amt||0),0);
+const obsWeeks=d=>d>=89&&d<=92?"3 months":d>=59&&d<=62?"2 months":d%7===0?`${d/7} week${d/7>1?"s":""}`:`${d} days`;
+const obsDurOpts=c=>Array.from({length:Math.max(1,Math.floor(c.maxDays/c.block))},(_,i)=>[String(i+1),`${obsWeeks(c.block*(i+1))} · ${money(obsFee(c,i+1))}`]);
+/* where an observer stands */
+function obsStage(v){if(v.closed)return"Closed";if(!v.start)return(v.fees||[]).some(f=>f.kind==="first"&&f.status==="verified")?"Awaiting office order":"Fee pending";const s=rotState(v);return s==="Left early"?"Completed":s}
+const OBS_TABS=["Fee pending","Awaiting office order","Current","Upcoming","Completed","Closed"];
+const obsEnding=v=>obsStage(v)==="Current"&&!v.left&&rotDaysLeft(v)<=3&&!(v.told&&v.told[v.end]);
+const obsNew=v=>v.src==="form"&&!v.checked;
+function obsAlertCount(){return obsList().filter(v=>obsEnding(v)||obsNew(v)).length}
+/* an applicant with no start date yet is not "current": keep them off the kiosk */
+{const _s=rotState;rotState=function(v){if(v&&v.kind==="obs"&&(!v.start||v.closed))return v.closed?"Closed":"Applied";return _s(v)}}
+/* challan numbers: OBS-26-0001 */
+function obsNextChallan(){const yy=String(TODAY.getFullYear()).slice(2),re=new RegExp(`^OBS-${yy}-(\\d+)$`);let mx=0;obsList().forEach(v=>(v.fees||[]).forEach(f=>{const m=String(f.challan||"").match(re);if(m)mx=Math.max(mx,+m[1])}));return`OBS-${yy}-${String(mx+1).padStart(4,"0")}`}
+/* amount in words, Pakistani style */
+function obsWords(n){n=Math.round(+n||0);if(!n)return"Zero";const a=["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"],t=["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
+ const two=x=>x<20?a[x]:t[Math.floor(x/10)]+(x%10?" "+a[x%10]:""),three=x=>(x>=100?a[Math.floor(x/100)]+" Hundred"+(x%100?" ":""):"")+(x%100?two(x%100):"");
+ const parts=[];[[1e7,"Crore"],[1e5,"Lakh"],[1e3,"Thousand"]].forEach(([d,w])=>{if(n>=d){parts.push(two(Math.floor(n/d))+" "+w);n%=d}});if(n)parts.push(three(n));return parts.join(" ")}
+/* the WhatsApp messages */
+function obsMsg(v,kind,f){const c=obsCfg(),n=visName(v);
+ if(kind==="ext")return`Dear ${n},\nYour observership in ${v.unit} at the Rawalpindi Institute of Cardiology ends on ${fd(v.end)}.\nIf you would like to continue, an extension of ${obsWeeks(c.block)} costs ${money(c.fee2)} (up to ${obsWeeks(c.maxDays)} in all). Please contact the DME office for the fee challan before ${fd(v.end)}.\nDME Office, RIC`;
+ if(kind==="end")return`Dear ${n},\nYour observership in ${v.unit} at the Rawalpindi Institute of Cardiology ends on ${fd(v.end)}.\nThank you for observing with us.\nDME Office, RIC`;
+ if(kind==="pin")return`Dear ${n},\nWelcome to the Rawalpindi Institute of Cardiology. Your observership in ${v.unit} runs from ${fd(v.start)} to ${fd(v.end)}.\nPlease mark your attendance every working day on the attendance computer in the Medical Education Department. Your PIN is ${v.pin}.\nDME Office, RIC`;
+ if(kind==="challan")return`Dear ${n},\nYour observership fee challan ${f?f.challan:""} for ${money(f?f.amt:0)} is attached. Please pay at ${c.bank||"the bank"} and bring the bank-stamped copy to the DME office, RIC.\nDME Office, RIC`;
+ return""}
+const obsWa=(v,kind,label,f)=>waNum(v.mobile)?`<a class="btn small" target="_blank" rel="noopener" ${kind==="ext"||kind==="end"?`data-obstold="${v.id}|${kind}"`:""} href="https://wa.me/${waNum(v.mobile)}?text=${encodeURIComponent(obsMsg(v,kind,f))}">${label}</a>`:"";
+
+/* ---------- PDFs: fee challan (three copies) and the application form ---------- */
+async function obsDl(name,blob){try{await (DL||BROWSER_DL).save({filename:name,data:blob})}catch(e){if(e?.code!=="declined")toast("The file could not be saved in this view")}}
+async function obsChallanPdf(v,f,c,save=true){await bioLoadPdf();const{jsPDF}=window.jspdf;const d=new jsPDF({unit:"mm",format:"a4",orientation:"landscape"}),W=297,H=210,M=8,G=6,cw=(W-2*M-2*G)/3;
+ const logo=document.querySelector('img[alt="RIC logo"]')?.src||document.querySelector(".appbar img")?.src||document.querySelector(".fbhead img")?.src;
+ const BR=[109,31,43],T=(t,x,y,o={})=>{d.setFont(o.f||"helvetica",o.b?"bold":"normal");d.setFontSize(o.s||8.5);d.setTextColor(...(o.c||[25,25,25]));d.text(String(t??""),x,y,{align:o.a||"left",maxWidth:o.w})};
+ const issue=f.at?f.at.slice(0,10):iso(TODAY),due=obsEndOf(issue,(c.dueDays||7)+1),dur=f.kind==="first"?`First ${obsWeeks(c.block*(f.blocks||1))}`:f.kind==="ext"?`Extension of ${obsWeeks(c.block*(f.blocks||1))}`:(f.note||"Observership fee");
+ ["BANK COPY","DME OFFICE COPY","APPLICANT COPY"].forEach((lab,i)=>{const x=M+i*(cw+G);let y=M;
+  d.setDrawColor(150);d.setLineWidth(.3);d.rect(x,y,cw,H-2*M);if(i<2){d.setLineDashPattern([1.2,1.2],0);d.line(x+cw+G/2,M,x+cw+G/2,H-M);d.setLineDashPattern([],0)}
+  if(logo&&logo.startsWith("data:"))try{d.addImage(logo,"JPEG",x+3,y+3,13,13)}catch(e){}
+  T("RAWALPINDI INSTITUTE OF CARDIOLOGY",x+18,y+8,{b:1,s:8.6,c:BR});T("Department of Medical Education & Training",x+18,y+12.5,{s:7});T(lab,x+cw-3,y+17.5,{b:1,s:7,a:"right",c:[90,90,90]});
+  y+=20;d.setFillColor(...BR);d.rect(x,y,cw,7,"F");T("FEE CHALLAN · OBSERVERSHIP",x+cw/2,y+4.8,{b:1,s:9,a:"center",c:[255,255,255]});y+=11;
+  const row=(k,val,o={})=>{T(k,x+3,y,{s:7.2,c:[100,100,100]});d.setFont("helvetica",o.b?"bold":"normal");d.setFontSize(o.s||8.2);const L=d.splitTextToSize(String(val||"—"),cw-36);d.setTextColor(25,25,25);d.text(L,x+32,y);y+=Math.max(1,L.length)*3.6+1.4},sep=()=>{y+=1.6;d.setDrawColor(215);d.line(x+3,y-4.4,x+cw-3,y-4.4)};
+  row("Challan no.",f.challan,{b:1,s:9});row("Issued",fd(issue));row("Pay by",fd(due));sep();
+  row("Bank",c.bank||"________________________");if(c.branch)row("Branch",c.branch);row("Account title",c.acctTitle||"________________________");row("Account no.",c.acctNo||"________________________",{b:1});sep();
+  row("Depositor",visName(v),{b:1});row("Father's name",v.father);row("CNIC",v.cnic);row("Mobile",v.mobile);row("Department",v.unit);row("For",dur);y+=2;
+  d.setFillColor(246,240,232);d.rect(x+3,y-3,cw-6,7,"F");T("Observership fee",x+5,y+1.6,{s:8});T(money(f.amt),x+cw-5,y+1.6,{b:1,s:9,a:"right"});y+=8;
+  T("Total",x+5,y,{b:1,s:8.5});T(money(f.amt),x+cw-5,y,{b:1,s:10,a:"right",c:BR});y+=5;
+  const w=d.splitTextToSize(`Rupees ${obsWords(f.amt)} only`,cw-8);T(w,x+5,y,{s:7.4,c:[70,70,70]});y+=w.length*3.4+6;
+  const by=H-M-26;d.setDrawColor(120);d.line(x+5,by,x+cw/2-4,by);d.line(x+cw/2+4,by,x+cw-5,by);T("Depositor's signature",x+5,by+3.6,{s:6.8,c:[100,100,100]});T("Bank stamp and cashier",x+cw/2+4,by+3.6,{s:6.8,c:[100,100,100]});
+  T(i===2?"Keep this copy. Bring the DME office copy, stamped by the bank, to the Medical Education Department.":i===1?"To be handed in at the Medical Education Department, RIC, after payment.":"Bank: please return the DME office and applicant copies to the depositor.",x+cw/2,H-M-12,{s:6.6,a:"center",w:cw-8,c:[90,90,90]})});
+ if(save){const name=`Challan ${f.challan} - ${visName(v).replace(/[^A-Za-z0-9 .]+/g,"")}.pdf`;const blob=d.output("blob");await obsDl(name,blob)}
+ return d}
+async function obsAppPdf(v,save=true,cfg){await bioLoadPdf();const{jsPDF}=window.jspdf;const d=new jsPDF({unit:"mm",format:"a4"}),W=210,L=20,R=W-20,BL=[47,84,150];
+ const T=(t,x,y,o={})=>{d.setFont("times",o.b?"bold":o.i?"italic":"normal");d.setFontSize(o.s||11);d.setTextColor(...(o.c||[20,20,20]));d.text(String(t??""),x,y,{align:o.a||"left",maxWidth:o.w})};
+ const at=(v.regAt||v.at||iso(TODAY)).slice(0,10);let y=17;const RW=7.6;
+ T("OBSERVERSHIP APPLICATION FORM",W/2,y,{b:1,s:15,a:"center"});d.setLineWidth(.4);const tw=d.getTextWidth("OBSERVERSHIP APPLICATION FORM");d.line(W/2-tw/2,y+1,W/2+tw/2,y+1);y+=8;
+ T("Date of Application: ",R-32,y,{b:1,s:10.5,a:"right"});T(fd(at),R,y,{s:10.5,a:"right"});y+=7;
+ T("To,",L,y,{s:11});y+=5.2;T("The Medical Superintendent,",L,y,{b:1});y+=5.2;T("Rawalpindi Institute of Cardiology, Rawalpindi.",L,y,{b:1});y+=8;
+ T("Subject:",L,y,{b:1});T(`Application for Observership in the Department of ${v.unit||""}`,L+17,y,{i:1});y+=8;
+ T("Respected Sir/Madam,",L,y);y+=5.5;const body=d.splitTextToSize("I am writing to respectfully request permission to undertake an observership at Rawalpindi Institute of Cardiology in the department mentioned above. I have provided my personal, educational, and observership-related details below for your kind consideration. I assure you that I will abide by all rules and regulations of the Institute during the observership period.",R-L);
+ d.setFont("times","normal");d.setFontSize(11);d.text(body,L,y,{align:"justify",maxWidth:R-L,lineHeightFactor:1.25});y+=body.length*5.2+2;
+ const sec=t=>{d.setFillColor(222,231,243);d.rect(L,y-4.6,R-L,6.6,"F");T(t,L+1.5,y,{b:1,s:11,c:BL});y+=8.4};
+ const fld=(k,val,x=L,w=R-L,lw=34)=>{T(k,x,y,{b:1,s:10.5});const lines=d.splitTextToSize(String(val||""),w-lw-2);T(lines,x+lw,y,{s:10.5});d.setDrawColor(120);d.setLineWidth(.2);d.line(x+lw,y+1.3+(lines.length-1)*4.6,x+w,y+1.3+(lines.length-1)*4.6);return lines.length};
+ const nx=n=>{y+=RW+4.6*(n-1)};
+ sec("1. Personal & Contact Details");nx(fld("Full Name:",visName(v)));
+ fld("Father's Name:",v.father,L,80,28);fld("Gender:",v.gender,L+95,R-L-95,18);nx(1);fld("Contact No.:",v.mobile,L,80,24);fld("CNIC:",v.cnic,L+95,R-L-95,14);nx(1);nx(fld("Email Address:",v.email||"—",L,R-L,30));y+=2;
+ sec("2. Educational Details");nx(fld("Degree Program:",v.degree||v.qual||v.cat,L,R-L,34));nx(fld("Institution / University:",v.inst,L,R-L,46));fld("Year of Study / Passing:",v.yearStudy,L,90,46);fld("Category:",v.cat,L+95,R-L-95,20);nx(1);nx(fld("Current Semester / Status:",v.status2||v.qual,L,R-L,50));y+=2;
+ sec("3. Observership Details");nx(fld("Department Applied For:",v.unit,L,R-L,46));nx(fld("Duration Requested:",obsWeeks((cfg||obsCfg()).block*(v.blocks||obsBlocks(v))),L,R-L,46));nx(fld("Reason / Purpose of Observership:",v.reason,L,R-L,58));y+=2;
+ sec("Declaration");const dec=d.splitTextToSize("I hereby declare that the information provided above is true and correct to the best of my knowledge. I understand that I will not be entitled to any remuneration, certification of employment, or clinical privileges during this observership, and I will strictly adhere to the code of conduct and policies of Rawalpindi Institute of Cardiology.",R-L);
+ d.setFont("times","normal");d.setFontSize(11);d.setTextColor(20,20,20);d.text(dec,L,y,{align:"justify",maxWidth:R-L,lineHeightFactor:1.25});y+=dec.length*5.2+9;
+ d.setLineWidth(.3);d.setDrawColor(60);d.line(R-62,y,R,y);T("Signature of Applicant",R,y+5,{b:1,s:10.5,a:"right"});if(v.src==="form")T(`Submitted online on ${fd(at)}`,L,y+5,{i:1,s:9,c:[110,110,110]});y+=12;
+ sec("For Office Use Only — Approval");const sy=Math.max(y+14,Math.min(y+20,276)),cw=(R-L)/3;["HOD, Concerned Department","Director, ME & T","Medical Superintendent"].forEach((t,i)=>{const cx=L+cw*i+cw/2;d.line(cx-25,sy,cx+25,sy);T(t,cx,sy+5,{b:1,s:10,a:"center"})});
+ const fee=(v.fees||[]).find(f=>f.kind==="first");if(fee)T(`Fee challan ${fee.challan||""} · ${money(fee.amt)} · ${fee.status==="verified"?"paid":"payment pending"}`,W/2,Math.max(sy+12,288),{s:8.5,a:"center",c:[110,110,110]});
+ if(save){const name=`Observership application - ${visName(v).replace(/[^A-Za-z0-9 .]+/g,"")}.pdf`;const blob=d.output("blob");await obsDl(name,blob)}
+ return d}
+
+/* ---------- list ---------- */
+UI.obsTab="Current";UI.obsQ="";
+function vObservers(){const L=obsList(),t=iso(TODAY),can=!isViewer(),c=obsCfg();
+ const G={};OBS_TABS.forEach(k=>G[k]=L.filter(v=>obsStage(v)===k));
+ const tab=G[UI.obsTab]?UI.obsTab:"Current",q=UI.obsQ.toLowerCase();
+ const rows=G[tab].filter(v=>!q||[v.name,v.inst,v.unit,v.cat,v.mobile,v.cnic,(v.fees||[]).map(f=>f.challan).join(" ")].join(" ").toLowerCase().includes(q)).sort((a,b)=>tab==="Completed"||tab==="Closed"?((b.end||b.regAt||"")>(a.end||a.regAt||"")?1:-1):((a.start||a.regAt||"")<(b.start||b.regAt||"")?-1:1));
+ const end=L.filter(obsEnding),fresh=L.filter(obsNew);
+ const today=v=>{const m=v.att?.[t];return`<div class="attbtns">${["P","A","L"].map(s=>`<button class="ab ${m?.s===s?"on a-"+s:""}" data-att="${v.id}|${t}|${s}" ${can?"":"disabled"} title="${AT_L[s]}">${s}</button>`).join("")}${m?.t?`<span class="subt">${m.t}</span>`:""}</div>`};
+ const stepCell=v=>{const st=obsStage(v),f=obsUnpaid(v)[0];if(st==="Fee pending")return`<span class="pill p-pend">Fee pending</span><div class="subt">${esc(f?f.challan:"")} · ${money(f?f.amt:0)}</div>`;
+  if(st==="Awaiting office order")return`<span class="pill p-rot">Fee paid</span><div class="subt">waiting for the office order</div>`;
+  if(!v.start)return esc(st);const dl=rotDaysLeft(v);return`${fd(v.start)} – ${fd(v.left||v.end)}<div class="subt">${obsWeeks(obsLen(v))}${st==="Current"?` · ${dl===0?"last day":dl+" day"+(dl===1?"":"s")+" left"}`:st==="Upcoming"?` · starts in ${days(P(v.start),TODAY)} days`:""}${f?` · <span class="d-red">${money(f.amt)} unpaid</span>`:""}</div>`};
+ return`<div class="head"><div><h2>Observership</h2><p>Doctors, students, nurses, technologists and other staff observing at RIC. They apply online and pay by challan; the observership starts once the hospital's office order is uploaded. ${money(c.fee1)} for the first ${obsWeeks(c.block)}, ${money(c.fee2)} for each further ${obsWeeks(c.block)}, up to ${obsWeeks(c.maxDays)}.</p></div>
+  <div class="actions">${xbtn("observers")}${can?`<a class="btn" href="#kiosk">Open attendance kiosk</a><button class="btn" data-act="obs-cfg">Fees, bank and form</button><button class="btn primary" data-act="obs-add">Add applicant</button>`:""}</div></div>
+ ${can?obsLinkPanel():""}
+ ${end.length&&can?`<div class="panel" style="display:grid;gap:10px"><h3 style="margin:0">Ending in the next 3 days · ${end.length}</h3><p class="subt" style="margin:0">Offer an extension or tell them it is ending. Sending either message (or pressing <b>Done</b>) clears the reminder.</p>
+  ${end.map(v=>{const left=rotDaysLeft(v),rem=obsBlocksLeft(v,c);return`<div class="toolbar" style="justify-content:space-between;border-top:1px solid var(--line);padding-top:8px"><span><a href="#obs-${v.id}"><b>${esc(visName(v))}</b></a> <span class="subt">${esc(v.unit)} · ends ${fd(v.end)} (${left===0?"today":left===1?"tomorrow":`in ${left} days`}) · ${obsWeeks(obsLen(v))} so far</span></span>
+   <span class="actions">${rem?obsWa(v,"ext","WhatsApp: offer extension"):""}${obsWa(v,"end","WhatsApp: ending")}${rem?`<button class="btn small" data-act="obs-ext" data-id="${v.id}">Extend…</button>`:`<span class="subt">at the ${obsWeeks(c.maxDays)} limit</span>`}<button class="btn small" data-act="obs-told" data-id="${v.id}">Done</button></span></div>`}).join("")}</div>`:""}
+ ${fresh.length&&can?`<div class="flag info">${fresh.length} new online application${fresh.length>1?"s":""}: open each one to check the degree / letter and CNIC, then press <b>Documents checked</b>.</div>`:""}
+ <div class="kpis">${[["Fee pending","challans not yet paid"],["Awaiting office order","fee paid"],["Current",`${G.Current.filter(v=>v.att?.[t]).length} marked today`],["Upcoming","office order received"],["Completed",""]].map(([k,s])=>`<button class="kpi" data-obstab="${k}" aria-pressed="${tab===k}"><span class="n">${G[k].length}</span><span class="l">${k}</span><span class="sub">${s}</span></button>`).join("")}
+  <div class="kpi"><span class="n">${money(L.reduce((a,v)=>a+obsPaid(v),0))}</span><span class="l">Fees paid</span><span class="sub">${money(L.flatMap(obsUnpaid).reduce((a,f)=>a+(+f.amt||0),0))} outstanding</span></div></div>
+ <div class="panel flush"><div style="padding:12px 16px 0;display:grid;gap:8px"><div class="toolbar"><div class="chips">${OBS_TABS.map(k=>`<button class="chip" data-obstab="${k}" aria-pressed="${tab===k}">${k}<span class="c">${G[k].length}</span></button>`).join("")}</div><input type="search" id="obsq" placeholder="Search name, CNIC, challan, institution" value="${esc(UI.obsQ)}" aria-label="Search observers"></div></div>
+  <div class="tblwrap" style="margin-top:8px"><table><thead><tr><th>Applicant</th><th>Department</th><th>${tab==="Fee pending"||tab==="Awaiting office order"?"Status":"Dates"}</th>${tab==="Current"?"<th>Today</th><th class=\"num\">Attendance</th>":""}<th>Applied</th></tr></thead><tbody>
+  ${rows.map(v=>{const s=v.start?rotStats(v):null;return`<tr><td><a href="#obs-${v.id}"><b>${esc(visName(v))}</b></a>${obsNew(v)?' <span class="pill p-pend">New</span>':""}<div class="subt">${esc(v.cat||"")} · ${esc(v.inst||"")}</div></td>
+   <td>${esc(v.unit||"")}<div class="subt">${obsWeeks(c.block*obsBlocks(v))} requested</div></td><td>${stepCell(v)}</td>
+   ${tab==="Current"?`<td>${today(v)}</td><td class="num">${s&&s.pct!=null?`<b class="${s.pct<75?"d-red":""}">${s.pct}%</b><div class="subt">${s.P} of ${s.work} days</div>`:"—"}</td>`:""}<td class="subt">${v.regAt?fd(v.regAt.slice(0,10)):"—"}</td></tr>`}).join("")||`<tr><td colspan="6" class="empty">None.</td></tr>`}
+ </tbody></table></div></div>
+ <p class="subt">Attendance uses the same weekly off days and kiosk as rotating trainees. Unmarked past working days count as absent.</p>`}
+function obsLinkPanel(){const c=obsCfg(),open=formIsOpen(c),url=obsLink();
+ return`<div class="panel" style="display:grid;gap:10px"><div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap"><button class="qrthumb" data-act="obs-qr" title="Show QR code">${qrSvg(url,2)}</button>
+  <div style="flex:1;min-width:240px;display:grid;gap:6px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>Observership application form</b><span class="pill ${open?"p-ric":"p-bad"}">${open?"Open":"Closed"}</span>${c.close&&open?`<span class="subt">closes ${fd(c.close)}</span>`:""}</div>
+   <div class="toolbar"><input id="obslink" readonly class="linkbox" value="${esc(url)}" style="flex:1;min-width:200px;font-family:var(--f-mono);font-size:13px"><button class="btn small" data-act="obs-copy">Copy link</button><button class="btn small" data-act="obs-qr">QR code</button><a class="btn small" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(`Observership at the Rawalpindi Institute of Cardiology (Department of Medical Education).\nApply online here; you will get the fee challan straight away: ${url}`)}">Share on WhatsApp</a></div>
+   ${!c.acctNo?`<p class="subt d-red" style="margin:0">Add the bank account in <b>Fees, bank and form</b>: it is printed on every challan.</p>`:""}</div></div></div>`}
+
+/* ---------- profile ---------- */
+function obsCal(v,can){const t=iso(TODAY),months=[];for(let m=v.start.slice(0,7);m<=(v.left||v.end).slice(0,7);m=mAdd(m,1))months.push(m);
+ return months.map(m=>{const f=P(m+"-01"),st0=new Date(f);st0.setDate(1-((f.getDay()+6)%7));const cells=[];for(let k=0;k<42;k++){const d=new Date(st0);d.setDate(st0.getDate()+k);cells.push(d)}
+  const last=cells.findLastIndex(d=>iso(d).slice(0,7)===m),rowsN=Math.ceil((last+1)/7);
+  return`<div class="attcal"><h4>${f.toLocaleDateString("en-GB",{month:"long",year:"numeric"})}</h4><div class="acg">${["M","T","W","T","F","S","S"].map(x=>`<span class="acgh">${x}</span>`).join("")}${cells.slice(0,rowsN*7).map(d=>{const ds=iso(d),inR=ds>=v.start&&ds<=(v.left||v.end)&&ds.slice(0,7)===m,mk=v.att?.[ds],off=rotOff().includes(d.getDay());
+   if(!inR)return`<span class="acd out">${ds.slice(0,7)===m?d.getDate():""}</span>`;const cls=mk?"a-"+mk.s:off?"a-off":ds<t?"a-miss":"";
+   return`<button class="acd ${cls} ${ds===t?"today":""}" data-attcyc="${v.id}|${ds}" ${can&&ds<=t?"":"disabled"} title="${fd(ds)}: ${mk?AT_L[mk.s]+(mk.t?" at "+mk.t:"")+(mk.by?" · "+mk.by:""):off?"Weekly off":ds<t?"Not marked (absent)":""}">${d.getDate()}</button>`}).join("")}</div></div>`}).join("")}
+const obsDocBtn=x=>!x?"Not uploaded":typeof x==="string"?`<button class="btn link" data-act="doc-open" data-path="${esc(x)}">Open</button>`:x.path?`<button class="btn link" data-act="doc-open" data-path="${esc(x.path)}">Open</button>`:`<span class="subt">${esc(x.name||"file")}</span>`;
+function vObs(){const v=obsList().find(x=>x.id===route.id);if(!v)return`<div class="panel">Not found. <a href="#observers">Back</a></div>`;const st=obsStage(v),can=!isViewer(),c=obsCfg(),rem=obsBlocksLeft(v,c),F=v.fees||[],s=v.start?rotStats(v):null,unpaid=obsUnpaid(v);
+ const steps=[["Applied",true],["Fee paid",F.some(f=>f.kind==="first"&&f.status==="verified")],["Office order",!!v.start],["Observing",!!v.start&&v.start<=iso(TODAY)],["Completed",st==="Completed"]];
+ const next=st==="Fee pending"?`<div class="flag" style="display:grid;gap:8px"><b>Next: the fee.</b><span>Challan ${esc(unpaid[0]?.challan||"")} for ${money(unpaid[0]?.amt)}. When they bring the bank-stamped copy, press <b>Fee paid</b>.</span><div class="actions" style="justify-content:flex-start">${unpaid[0]?`<button class="btn small" data-act="obs-challan" data-id="${v.id}" data-f="${unpaid[0].id}">Challan (PDF)</button>${obsWa(v,"challan","WhatsApp: challan reminder",unpaid[0])}${can?`<button class="btn small primary" data-act="obs-paid" data-id="${v.id}" data-f="${unpaid[0].id}">Fee paid</button>`:""}`:""}</div></div>`
+  :st==="Awaiting office order"?`<div class="flag info" style="display:grid;gap:8px"><b>Next: the office order.</b><span>The fee is paid. When they bring the hospital's office order, upload it and start the observership.</span>${can?`<div class="actions" style="justify-content:flex-start"><button class="btn small primary" data-act="obs-start" data-id="${v.id}">Office order received: start</button></div>`:""}</div>`
+  :obsEnding(v)&&can?`<div class="flag" style="display:grid;gap:8px"><b>The observership ends ${rotDaysLeft(v)===0?"today":fd(v.end)}.</b><span>Offer an extension${rem?` (${money(c.fee2)} for ${obsWeeks(c.block)})`:""} or tell them it is ending.</span><div class="actions" style="justify-content:flex-start">${rem?obsWa(v,"ext","WhatsApp: offer extension"):""}${obsWa(v,"end","WhatsApp: ending")}<button class="btn small" data-act="obs-told" data-id="${v.id}">Done</button></div></div>`:"";
+ return`<div><a href="#observers" class="btn link" style="padding-left:0">← Observership</a></div>
+ <div class="panel"><div class="prof"><div class="avatar" aria-hidden="true">${esc(v.name.split(" ").map(w=>w[0]).slice(0,2).join(""))}</div>
+  <div class="who"><div class="code">Observer · ${esc(st)}</div><h2>${esc(visName(v))}</h2><div class="meta"><span>${esc(v.cat||"")}</span><span>${esc(v.inst||"")}</span><span>${esc(v.unit||"")} · ${obsWeeks(c.block*obsBlocks(v))}</span></div></div>
+  <div class="actions"><button class="btn" data-act="obs-app" data-id="${v.id}">Application form (PDF)</button>${can?`<button class="btn" data-act="obs-edit" data-id="${v.id}">Edit details</button>${v.start&&st!=="Completed"&&rem?`<button class="btn" data-act="obs-ext" data-id="${v.id}">Extend</button>`:""}${st!=="Completed"&&st!=="Closed"?`<button class="btn" data-act="obs-close" data-id="${v.id}">Withdrawn / not approved</button>`:st==="Closed"?`<button class="btn" data-act="obs-reopen" data-id="${v.id}">Reopen</button>`:""}<button class="btn danger" data-act="obs-del" data-id="${v.id}">Delete</button>`:""}</div></div>
+  <ol class="stepper" style="display:flex;gap:6px;flex-wrap:wrap;list-style:none;padding:0;margin:12px 0 0">${steps.map(([l,ok])=>`<li class="pill ${ok?"p-ric":""}" ${ok?"":'style="opacity:.6"'}>${l}</li>`).join("")}</ol></div>
+ ${v.closed?`<div class="flag">Closed: ${esc(v.closed.why||"")} · ${fd(v.closed.at.slice(0,10))}</div>`:""}${next}
+ ${s?`<div class="kpis">${[[s.pct==null?"—":s.pct+"%","Attendance",`${s.P} present of ${s.work} working days so far`],[s.A,"Absent","unmarked past days count as absent"],[obsWeeks(obsLen(v)),"Observership",`${fd(v.start)} – ${fd(v.left||v.end)}`],[money(obsPaid(v)),"Fees paid",unpaid.length?`${money(unpaid.reduce((a,f)=>a+(+f.amt||0),0))} outstanding`:"nothing outstanding"]].map(([n,l,sub])=>`<div class="kpi"><span class="n">${n}</span><span class="l">${l}</span>${sub?`<span class="sub">${sub}</span>`:""}</div>`).join("")}</div>`:""}
+ <div class="cols side"><div style="display:grid;gap:18px;align-content:start">${s?`<div class="panel"><h3>Attendance</h3><p class="subt" style="margin:0 0 8px">${can?"Tap a day to change it: Present › Absent › Leave › Holiday › clear.":""} <span class="lg a-P">P</span> present <span class="lg a-A">A</span> absent <span class="lg a-L">L</span> leave <span class="lg a-H">H</span> holiday / off</p><div class="attcals">${obsCal(v,can)}</div></div>`:""}
+  <div class="panel"><h3>Fees and challans</h3><div class="tblwrap"><table><thead><tr><th>Challan</th><th>For</th><th class="num">Amount</th><th>Status</th></tr></thead><tbody>
+   ${F.map(f=>`<tr><td class="code">${esc(f.challan||"—")}<div><button class="btn link" data-act="obs-challan" data-id="${v.id}" data-f="${f.id}">PDF</button></div></td><td>${f.kind==="first"?`First ${obsWeeks(c.block*(f.blocks||1))}`:f.kind==="ext"?`Extension · ${obsWeeks(c.block*(f.blocks||1))}`:esc(f.note||"Fee")}<div class="subt">issued ${fd((f.at||"").slice(0,10))}</div></td><td class="num">${money(f.amt)}</td>
+    <td>${f.status==="verified"?`<span class="pill p-ric">Paid</span><div class="subt">${f.paidOn?fd(f.paidOn):""}${f.ref?` · ${esc(f.ref)}`:""}</div>${f.doc?`<div>${docBtn(f.doc,"Paid challan")}</div>`:""}`:`<span class="pill p-pend">Unpaid</span>${can?`<div><button class="btn link" data-act="obs-paid" data-id="${v.id}" data-f="${f.id}">Fee paid</button></div>`:""}`}</td></tr>`).join("")||`<tr><td colspan="4" class="empty">No challan.</td></tr>`}</tbody></table></div></div></div>
+  <div style="display:grid;gap:18px;align-content:start"><div class="panel"><h3>Details</h3><dl class="kv"><dt>Father's name</dt><dd>${esc(v.father||"—")}</dd>${v.gender?`<dt>Gender</dt><dd>${esc(v.gender)}</dd>`:""}${v.cnic?`<dt>CNIC</dt><dd>${esc(v.cnic)}</dd>`:""}<dt>Mobile</dt><dd>${esc(v.mobile||"—")}</dd>${v.email?`<dt>Email</dt><dd>${esc(v.email)}</dd>`:""}
+   <dt>Category</dt><dd>${esc(v.cat||"—")}</dd><dt>Degree programme</dt><dd>${esc(v.degree||v.qual||"—")}</dd><dt>Institution</dt><dd>${esc(v.inst||"—")}</dd>${v.yearStudy?`<dt>Year of study / passing</dt><dd>${esc(v.yearStudy)}</dd>`:""}${v.status2?`<dt>Semester / status</dt><dd>${esc(v.status2)}</dd>`:""}
+   <dt>Department</dt><dd>${esc(v.unit||"—")}</dd>${v.sup?`<dt>Supervisor</dt><dd>${esc(rotFac(v))}</dd>`:""}${v.reason?`<dt>Purpose</dt><dd>${esc(v.reason)}</dd>`:""}${v.order?`<dt>Office order</dt><dd>${esc(v.order.no||"")}${v.order.date?` · ${fd(v.order.date)}`:""}</dd>`:""}${v.notes?`<dt>Notes</dt><dd>${esc(v.notes)}</dd>`:""}</dl></div>
+   <div class="panel"><h3>Documents</h3><div class="docs"><div class="doc"><b>Degree / letter</b>${obsDocBtn(v.docs&&v.docs.degree)}</div><div class="doc"><b>CNIC</b>${obsDocBtn(v.docs&&v.docs.cnic)}</div>${v.docs&&v.docs.cnic2?`<div class="doc"><b>CNIC (back)</b>${obsDocBtn(v.docs.cnic2)}</div>`:""}<div class="doc"><b>Office order</b>${obsDocBtn(v.docs&&v.docs.order)}</div></div>
+    ${obsNew(v)&&can?`<div style="margin-top:10px"><button class="btn primary small" data-act="obs-checked" data-id="${v.id}">Documents checked</button></div>`:v.checked?`<p class="subt" style="margin:8px 0 0">Checked${v.checkedBy?" by "+esc(v.checkedBy):""}.</p>`:""}</div>
+   ${can&&v.start?`<div class="panel"><h3>Attendance PIN</h3><p style="margin:0"><span class="code" style="font-size:22px;letter-spacing:.2em">${esc(v.pin)}</span></p><p class="subt" style="margin:4px 0 8px">Entered on the attendance kiosk in the DME office.</p><div style="display:flex;gap:8px;flex-wrap:wrap">${obsWa(v,"pin","Send PIN on WhatsApp")}<button class="btn small" data-act="rot-pin" data-id="${v.id}">New PIN</button></div></div>`:""}</div></div>`}
+
+/* ---------- staff sheets ---------- */
+async function obsSaveFile(file,folder){if(!file)return null;const f=typeof docShrink==="function"?await docShrink(file):file;if(f.size>10*1024*1024)throw new Error(`${file.name} is larger than 10 MB`);
+ if(!LIVE||!SYNC||!SYNC.sb)return{name:file.name};return{path:await docUpload(folder,f),name:file.name,at:new Date().toISOString(),by:ME}}
+function sheetObs(v){const n=!v,c=obsCfg();v=v||{title:"",name:"",gender:"",father:"",cat:"",degree:"",inst:"",yearStudy:"",status2:"",unit:"",reason:"",cnic:"",mobile:"",email:"",notes:""};
+ openSheet(n?"Add applicant":"Edit · "+visName(v),`<p class="subt" style="margin:0">${n?"For someone who applied on paper. A challan is made for the fee; the observership starts when the office order is uploaded.":""}</p>
+ <div class="grid2"><label class="f">Title <span class="h">optional</span><select name="title">${opt([["",""],["Dr.","Dr."],["Mr.","Mr."],["Ms.","Ms."],["Mrs.","Mrs."]],v.title||"")}</select></label><label class="f">Full name<input name="name" value="${esc(v.name)}"></label></div>
+ <div class="grid2"><label class="f">Father's name<input name="father" value="${esc(v.father||"")}"></label><label class="f">Gender<select name="gender">${opt(["","Female","Male"],v.gender||"")}</select></label></div>
+ <div class="grid2"><label class="f">CNIC<input name="cnic" value="${esc(v.cnic||"")}"></label><label class="f">Mobile<input name="mobile" value="${esc(v.mobile||"")}" placeholder="03xx-xxxxxxx"></label></div>
+ <label class="f">Email <span class="h">optional</span><input name="email" value="${esc(v.email||"")}"></label>
+ <div class="grid2"><label class="f">Category<select name="cat">${opt(["",...new Set([...(c.cats||OBS_CATS),v.cat].filter(Boolean))],v.cat||"")}</select></label><label class="f">Degree programme<input name="degree" value="${esc(v.degree||v.qual||"")}" placeholder="e.g. MBBS, BS Cardiac Perfusion"></label></div>
+ <label class="f">Institution / university<input name="inst" value="${esc(v.inst||"")}"></label>
+ <div class="grid2"><label class="f">Year of study / passing<input name="yearStudy" value="${esc(v.yearStudy||"")}"></label><label class="f">Current semester / status<input name="status2" value="${esc(v.status2||"")}" placeholder="e.g. 7th semester, graduated, working"></label></div>
+ <div class="grid2"><label class="f">Department at RIC<input name="unit" list="obs-units" value="${esc(v.unit||"")}"></label>${n?`<label class="f">Duration<select name="blocks">${opt(obsDurOpts(c),"1")}</select></label>`:`<label class="f">Supervisor <span class="h">optional</span><select name="sup"><option value="">Not assigned</option>${DB.faculty.filter(f=>f.active!==false).sort((a,b)=>a.name.localeCompare(b.name)).map(f=>`<option value="${f.id}" ${v.sup===f.id?"selected":""}>${esc(facName(f))}</option>`).join("")}</select></label>`}</div><datalist id="obs-units">${(c.units||ROT_UNITS).map(u=>`<option value="${esc(u)}">`).join("")}</datalist>
+ <label class="f">Reason / purpose<textarea name="reason" rows="2">${esc(v.reason||"")}</textarea></label>
+ ${n?`<label class="f">Degree, or letter that they study / work somewhere <span class="h">photo or PDF</span><input type="file" name="degreeDoc" accept="image/*,application/pdf"></label><label class="f">CNIC <span class="h">photo or PDF</span><input type="file" name="cnicDoc" accept="image/*,application/pdf"></label>`:
+  `${v.start?`<div class="grid2"><label class="f">Started<input type="date" name="start" value="${v.start}"></label><label class="f">Ends<input type="date" name="end" value="${v.end}"></label></div><label class="f">Left early on <span class="h">only if they stopped before the end date</span><input type="date" name="left" value="${v.left||""}"></label>`:""}`}
+ <label class="f">Notes<textarea name="notes" rows="2">${esc(v.notes||"")}</textarea></label>`,async()=>{
+  const name=fv("name").replace(/^((dr|mr|ms|mrs)\.?\s+)+/i,"");if(name.length<3)return fail("Enter the full name.");if(!fv("inst"))return fail("Enter the institution.");if(!fv("unit"))return fail("Enter the department at RIC.");
+  let mob=fv("mobile").replace(/\D/g,"");if(mob.startsWith("92"))mob="0"+mob.slice(2);if(mob&&mob.length!==11)return fail("Enter the mobile as 03xx-xxxxxxx.");const cn=fv("cnic").replace(/\D/g,"");
+  const rec={title:fv("title"),name,father:fv("father"),gender:fv("gender"),cnic:cn.length===13?cn.slice(0,5)+"-"+cn.slice(5,12)+"-"+cn.slice(12):fv("cnic"),mobile:mob?mob.slice(0,4)+"-"+mob.slice(4):"",email:fv("email").toLowerCase(),cat:fv("cat"),degree:fv("degree"),inst:fv("inst"),yearStudy:fv("yearStudy"),status2:fv("status2"),unit:fv("unit"),reason:fv("reason"),notes:fv("notes")};
+  if(n){const b=+fv("blocks")||1,id=uid("V"),docs={};
+   try{const dd=document.querySelector('#sheetform [name="degreeDoc"]')?.files?.[0],cd=document.querySelector('#sheetform [name="cnicDoc"]')?.files?.[0];if(dd)docs.degree=await obsSaveFile(dd,`observers/${id}`);if(cd)docs.cnic=await obsSaveFile(cd,`observers/${id}`)}catch(e){return fail(e.message||"A document could not be uploaded.")}
+   const fee={id:uid("F"),kind:"first",blocks:b,amt:obsFee(c,b),challan:obsNextChallan(),at:new Date().toISOString(),by:ME,status:"unpaid"};
+   const nv={id,kind:"obs",...rec,blocks:b,pin:rotPin(),att:{},fees:[fee],docs,src:"hand",regAt:new Date().toISOString()};visList().push(nv);
+   log(`Observership applicant added: ${visName(nv)}, ${rec.inst}, ${rec.unit}, ${obsWeeks(b*c.block)}; challan ${fee.challan} ${money(fee.amt)}`,"obs-"+id);persist();go("obs-"+id);
+   toast(`Added. Challan ${fee.challan}`);setTimeout(()=>obsChallanPdf(nv,fee,c).catch(e=>toast(e.message)),300);return true}
+  rec.sup=fv("sup");if(v.start){const s=fv("start"),e=fv("end");if(!s||!e||e<s)return fail("Check the dates.");if(days(P(e),P(s))+1>c.maxDays)return fail(`An observership can be at most ${obsWeeks(c.maxDays)}.`);rec.start=s;rec.end=e;const l=fv("left");if(l&&(l<s||l>e))return fail("The leaving date must be within the observership.");rec.left=l||null}
+  Object.assign(v,rec);if(!v.left)delete v.left;log(`Observer edited: ${visName(v)}`,"obs-"+v.id);toast("Saved");return true},n?"Add and make challan":"Save")}
+/* async save: openSheet expects a sync return, so the handler closes the sheet itself */
+function obsAsyncSave(){const S=SHEET;if(!S)return;const f=S.onSave;S.onSave=()=>{if(S.busy)return false;const p=f();if(p&&typeof p.then==="function"){S.busy=1;const b=document.querySelector('.sheet [data-act="save"]'),t=b&&b.textContent;if(b){b.disabled=true;b.textContent="Saving…"}
+ p.then(r=>{S.busy=0;if(r===true){if(SHEET===S){persist();closeSheet();render()}}else if(b&&b.isConnected){b.disabled=false;b.textContent=t}}).catch(e=>{S.busy=0;if(b&&b.isConnected){b.disabled=false;b.textContent=t}fail(e.message||"Could not save")});return false}return p}}
+function sheetObsPaid(v,f){openSheet(`Fee paid · ${visName(v)}`,`<p style="margin:0">Challan <b class="code">${esc(f.challan||"")}</b> · ${money(f.amt)}</p>
+ <div class="grid2"><label class="f">Paid on<input type="date" name="on" value="${iso(TODAY)}"></label><label class="f">Bank reference / transaction no. <span class="h">optional</span><input name="ref"></label></div>
+ <label class="f">Bank-stamped challan <span class="h">photo or PDF</span><input type="file" name="doc" accept="image/*,application/pdf"></label>`,async()=>{
+  const file=document.querySelector('#sheetform [name="doc"]')?.files?.[0];let doc=null;try{doc=await obsSaveFile(file,`observers/${v.id}`)}catch(e){return fail(e.message||"The file could not be uploaded.")}
+  Object.assign(f,{status:"verified",paidOn:fv("on")||iso(TODAY),ref:fv("ref"),vBy:ME,vAt:new Date().toISOString()});if(doc)f.doc=doc;if(v.src==="form"&&f.kind==="first")v.checked=v.checked||false;
+  log(`Observership fee paid: ${visName(v)}, challan ${f.challan}, ${money(f.amt)}`,"obs-"+v.id);toast("Fee recorded as paid");return true},"Save")}
+function sheetObsStart(v){const c=obsCfg(),b=obsBlocks(v);
+ openSheet(`Office order received · ${visName(v)}`,`<p class="subt" style="margin:0">Upload the hospital's office order and set the start date. The end date follows the ${obsWeeks(c.block*b)} paid for; change it if the order says otherwise.</p>
+ <label class="f">Office order <span class="h">photo or PDF</span><input type="file" name="doc" accept="image/*,application/pdf"></label>
+ <div class="grid2"><label class="f">Order no. <span class="h">optional</span><input name="no"></label><label class="f">Order date <span class="h">optional</span><input type="date" name="od"></label></div>
+ <div class="grid2"><label class="f">Starts<input type="date" name="start" value="${iso(TODAY)}"></label><label class="f">Ends<input type="date" name="end" value="${obsEndOf(iso(TODAY),c.block*b)}"></label></div>
+ <label class="f">Supervisor at RIC <span class="h">optional</span><select name="sup"><option value="">Not assigned</option>${DB.faculty.filter(f=>f.active!==false).sort((a,b2)=>a.name.localeCompare(b2.name)).map(f=>`<option value="${f.id}">${esc(facName(f))} · ${esc(f.spec)}</option>`).join("")}</select></label>`,async()=>{
+  const file=document.querySelector('#sheetform [name="doc"]')?.files?.[0];if(!file&&LIVE)return fail("Upload the office order.");const s=fv("start"),e=fv("end");if(!s||!e||e<s)return fail("Check the dates.");if(days(P(e),P(s))+1>c.maxDays)return fail(`An observership can be at most ${obsWeeks(c.maxDays)}.`);
+  let doc=null;try{doc=await obsSaveFile(file,`observers/${v.id}`)}catch(er){return fail(er.message||"The file could not be uploaded.")}
+  v.docs=v.docs||{};if(doc)v.docs.order=doc;v.order={no:fv("no"),date:fv("od")};v.start=s;v.end=e;v.sup=fv("sup");v.pin=v.pin||rotPin();v.att=v.att||{};
+  log(`Observership started: ${visName(v)}, ${v.unit}, ${fd(s)} – ${fd(e)}${v.order.no?` (office order ${v.order.no})`:""}`,"obs-"+v.id);toast(`Started. PIN ${v.pin}`);return true},"Start observership")}
+document.addEventListener("change",e=>{const f=e.target.closest&&e.target.closest("#sheetform");if(!f||e.target.name!=="start"||!f.querySelector('[name="end"]')||!document.querySelector('aside.sheet[aria-label^="Office order received"]'))return;
+ const v=obsList().find(x=>x.id===route.id);if(!v)return;f.querySelector('[name="end"]').value=obsEndOf(e.target.value,obsCfg().block*obsBlocks(v))});
+function sheetObsExt(v){const c=obsCfg(),rem=obsBlocksLeft(v,c);if(!rem){toast(`Already at the ${obsWeeks(c.maxDays)} limit`);return}const from=obsEndOf(v.end,2);
+ openSheet(`Extend · ${visName(v)}`,`<p style="margin:0">Now ${fd(v.start)} – ${fd(v.end)} (${obsWeeks(obsLen(v))}). Up to ${obsWeeks(c.maxDays)} in all.</p>
+ <label class="f">Extend by<select name="b">${opt(Array.from({length:rem},(_,i)=>[String(i+1),`${obsWeeks(c.block*(i+1))} · until ${fd(obsEndOf(from,c.block*(i+1)))} · ${money(c.fee2*(i+1))}`]),"1")}</select></label>
+ <label class="f">Extension office order <span class="h">optional, photo or PDF</span><input type="file" name="doc" accept="image/*,application/pdf"></label>
+ <p class="subt" style="margin:0">A challan for the extension fee is made; record it as paid when they bring the stamped copy.</p>`,async()=>{
+  const b=+fv("b")||1,to=obsEndOf(from,c.block*b),f={id:uid("F"),kind:"ext",blocks:b,amt:c.fee2*b,challan:obsNextChallan(),from,to,at:new Date().toISOString(),by:ME,status:"unpaid"};
+  const file=document.querySelector('#sheetform [name="doc"]')?.files?.[0];let doc=null;try{doc=await obsSaveFile(file,`observers/${v.id}`)}catch(er){return fail(er.message)}if(doc){v.docs=v.docs||{};v.docs["order"+((v.fees||[]).length)]=doc}
+  v.fees=[...(v.fees||[]),f];const old=v.end;v.end=to;if(v.told)delete v.told[old];delete v.left;
+  log(`Observership extended: ${visName(v)} until ${fd(to)} (${obsWeeks(c.block*b)}); challan ${f.challan} ${money(f.amt)}`,"obs-"+v.id);setTimeout(()=>obsChallanPdf(v,f,c).catch(er=>toast(er.message)),300);toast(`Extended until ${fd(to)}. Challan ${f.challan}`);return true},"Extend and make challan")}
+function sheetObsCfg(){const c=obsCfg();
+ openSheet("Observership: fees, bank and form",`<div class="grid2"><label class="f">First period (PKR)<input type="number" name="fee1" min="0" step="500" value="${c.fee1}"></label><label class="f">Each extension (PKR)<input type="number" name="fee2" min="0" step="500" value="${c.fee2}"></label></div>
+ <div class="grid2"><label class="f">Length of each period (days)<input type="number" name="block" min="1" value="${c.block}"></label><label class="f">Longest observership (days)<input type="number" name="maxDays" min="1" value="${c.maxDays}"></label></div>
+ <h4 style="margin:6px 0 0">Printed on the challan</h4>
+ <div class="grid2"><label class="f">Bank<input name="bank" value="${esc(c.bank||"")}" placeholder="e.g. The Bank of Punjab"></label><label class="f">Branch<input name="branch" value="${esc(c.branch||"")}" placeholder="e.g. RIC Branch, Rawal Road"></label></div>
+ <div class="grid2"><label class="f">Account title<input name="acctTitle" value="${esc(c.acctTitle||"")}"></label><label class="f">Account no.<input name="acctNo" value="${esc(c.acctNo||"")}"></label></div>
+ <label class="f">Days to pay after the challan is issued<input type="number" name="dueDays" min="1" value="${c.dueDays}"></label>
+ <h4 style="margin:6px 0 0">Application form</h4>
+ <label class="f">Status<select name="open">${opt([["1","Open: accepting applications"],["0","Closed"]],c.open===false?"0":"1")}</select></label>
+ <label class="f">Close automatically after <span class="h">optional</span><input type="date" name="close" value="${esc(c.close||"")}"></label>
+ <label class="f">Message at the top of the form <span class="h">optional</span><textarea name="msg" rows="3">${esc(c.msg||"")}</textarea></label>
+ <label class="f">Contact for questions<input name="contact" value="${esc(c.contact||"")}" placeholder="e.g. DME office, 051-xxxxxxx"></label>
+ <label class="f">Departments offered <span class="h">one per line</span><textarea name="units" rows="6">${esc((c.units||[]).join("\n"))}</textarea></label>
+ <label class="f">Categories <span class="h">one per line</span><textarea name="cats" rows="6">${esc((c.cats||OBS_CATS).join("\n"))}</textarea></label>`,()=>{
+  const n={...c,fee1:+fv("fee1"),fee2:+fv("fee2"),block:+fv("block"),maxDays:+fv("maxDays"),dueDays:+fv("dueDays")||7,bank:fv("bank"),branch:fv("branch"),acctTitle:fv("acctTitle"),acctNo:fv("acctNo"),open:fv("open")==="1",close:fv("close"),msg:fv("msg"),contact:fv("contact"),units:fv("units").split("\n").map(s=>s.trim()).filter(Boolean),cats:fv("cats").split("\n").map(s=>s.trim()).filter(Boolean)};
+  delete n.acct;if(!(n.block>0&&n.maxDays>=n.block))return fail("Check the period lengths.");if(!n.units.length||!n.cats.length)return fail("List at least one department and one category.");
+  DB.settings.forms=DB.settings.forms||{};DB.settings.forms.obs=n;log(`Observership settings: ${money(n.fee1)} for ${obsWeeks(n.block)}, ${money(n.fee2)} per extension, up to ${obsWeeks(n.maxDays)}; challan account ${n.acctNo||"not set"}; form ${n.open?"open":"closed"}`);toast("Saved");return true})}
+
+/* ---------- staff actions ---------- */
+document.addEventListener("click",e=>{const r=e.target.closest("[data-obstab],[data-obstold],[data-act^='obs-']");if(!r||!DB)return;
+ if(r.dataset.obstab){UI.obsTab=r.dataset.obstab;render();return}
+ if(r.dataset.obstold){const[id,k]=r.dataset.obstold.split("|"),v=obsList().find(x=>x.id===id);if(v){v.told={...(v.told||{}),[v.end]:{at:new Date().toISOString(),by:ME,what:k}};log(`Observer ${visName(v)}: ${k==="ext"?"extension offered":"told the observership is ending"} (WhatsApp)`,"obs-"+v.id);persist();setTimeout(render,300)}return}
+ const a=r.dataset.act;if(a==="obs-add"){sheetObs();obsAsyncSave();return}if(a==="obs-cfg")return sheetObsCfg();if(a==="obs-copy")return copyText(obsLink(),r);
+ if(a==="obs-qr"){const url=obsLink();document.getElementById("overlay").innerHTML=`<div class="scrim" data-act="close"></div><div class="qrfull" role="dialog" aria-modal="true" aria-label="QR code"><div class="code">Scan to apply</div><h2>Observership application</h2><div class="qrbig">${qrSvg(url,10)}</div><div class="code" style="font-size:13px;word-break:break-all">${esc(url)}</div><button class="btn" data-act="close">Close</button></div>`;return}
+ const v=obsList().find(x=>x.id===r.dataset.id);if(!v)return;const f=r.dataset.f&&(v.fees||[]).find(z=>z.id===r.dataset.f);
+ if(a==="obs-edit"){sheetObs(v);obsAsyncSave();return}if(a==="obs-ext"){sheetObsExt(v);obsAsyncSave();return}if(a==="obs-start"){sheetObsStart(v);obsAsyncSave();return}if(a==="obs-paid"&&f){sheetObsPaid(v,f);obsAsyncSave();return}
+ if(a==="obs-challan"&&f){obsChallanPdf(v,f,obsCfg()).catch(er=>toast(er.message||"Could not make the challan"));return}
+ if(a==="obs-app"){obsAppPdf(v).catch(er=>toast(er.message||"Could not make the PDF"));return}
+ if(a==="obs-checked"){v.checked=true;v.checkedBy=ME;log(`Observership documents checked: ${visName(v)}`,"obs-"+v.id);persist();render();return}
+ if(a==="obs-told"){v.told={...(v.told||{}),[v.end]:{at:new Date().toISOString(),by:ME,what:"done"}};log(`Observer ${visName(v)}: end-of-observership reminder cleared`,"obs-"+v.id);persist();render();return}
+ if(a==="obs-close")return openSheet(`Close · ${visName(v)}`,`<label class="f">Reason<select name="w">${opt(["Withdrawn by the applicant","Not approved by the hospital","Did not pay the fee","Other"])}</select></label><label class="f">Note <span class="h">optional</span><input name="n"></label>`,()=>{v.closed={why:fv("w")+(fv("n")?": "+fv("n"):""),at:new Date().toISOString(),by:ME};log(`Observership closed: ${visName(v)} (${v.closed.why})`,"obs-"+v.id);return true},"Close");
+ if(a==="obs-reopen"){delete v.closed;log(`Observership reopened: ${visName(v)}`,"obs-"+v.id);persist();render();return}
+ if(a==="obs-del"){if(r.dataset.armed!=="1"){r.dataset.armed="1";r.textContent="Tap again to delete";return}DB.visitors=visList().filter(x=>x!==v);log(`Observership record deleted: ${visName(v)} (${v.inst})`);toast("Deleted");go("observers")}});
+document.addEventListener("input",e=>{if(e.target.id==="obsq"){UI.obsQ=e.target.value;const p=e.target.selectionStart;render();const n=document.getElementById("obsq");if(n){n.focus();n.setSelectionRange(p,p)}}});
+VIEW_ACTS.add("obs-qr");VIEW_ACTS.add("obs-copy");VIEW_ACTS.add("obs-challan");VIEW_ACTS.add("obs-app");
+
+/* ---------- menu, dashboard, download ---------- */
+{const i=NAVG.findIndex(n=>n[1]==="rotating");if(i>=0&&!NAVG.some(n=>n[1]==="observers"))NAVG.splice(i+1,0,[NAVG[i][0],"observers","Observership"])}
+if(typeof NAV_ICON==="object"&&NAV_ICON)NAV_ICON.observers=NAV_ICON.rotating||"";
+{const _d=rotDashCard;rotDashCard=function(){const a=_d()||"",L=obsList(),cur=L.filter(v=>obsStage(v)==="Current"),end=L.filter(obsEnding),fp=L.filter(v=>obsStage(v)==="Fee pending"),ao=L.filter(v=>obsStage(v)==="Awaiting office order");if(!cur.length&&!end.length&&!fp.length&&!ao.length)return a;
+ return a+card("Observership",cur.length,"observers",olist([...end.map(v=>oli("obs-"+v.id,esc(visName(v)),esc(v.unit)+" · ends "+fd(v.end).slice(0,6),'<span class="pill p-pend">extend or end</span>')),...(ao.length?[oli("observers",`${ao.length} waiting for the office order`,"fee paid","")]:[]),...(fp.length?[oli("observers",`${fp.length} challan${fp.length>1?"s":""} not yet paid`,"","")]:[]),...cur.filter(v=>!obsEnding(v)).slice(0,4).map(v=>oli("obs-"+v.id,esc(visName(v)),esc(v.unit)+" · until "+fd(v.end).slice(0,6),(m=>m?.s==="P"?`<span class="pill p-ric">${m.t||"present"}</span>`:'<span class="pill p-pause">not marked</span>')(v.att?.[iso(TODAY)])))],"No observers at RIC."))}}
+EXPORTS.observers=()=>({file:"Observership",sheets:[sheetFrom("Observership",obsList().map(v=>{const s=v.start?rotStats(v):{};return{"Name":visName(v),"Father's name":v.father||"","Gender":v.gender||"","CNIC":v.cnic||"","Mobile":v.mobile||"","Category":v.cat||"","Degree":v.degree||v.qual||"","Institution":v.inst||"","Department":v.unit||"","Stage":obsStage(v),"Applied":(v.regAt||"").slice(0,10),"Start":v.start||"","End":v.left||v.end||"","Weeks":v.start?Math.round(obsLen(v)/7*10)/10:"","Present":s.P??"","Working days":s.work??"","Attendance %":s.pct??"","Fees paid (PKR)":obsPaid(v),"Outstanding (PKR)":obsUnpaid(v).reduce((a,f)=>a+(+f.amt||0),0),"Challans":(v.fees||[]).map(f=>f.challan).filter(Boolean).join(", "),"Office order":v.order?.no||""}}))]});
+{const _v=vRot;vRot=function(){const v=visList().find(x=>x.id===route.id);if(v&&v.kind==="obs"){setTimeout(()=>go("obs-"+v.id),0);return""}return _v()}}
+
+/* ---------- the public application form (?obs=1) ---------- */
+let OBSPUB={cfg:null};
+async function obsPublicPage(){document.body.classList.add("public");
+ try{const{data}=await SYNC.sb.rpc("dme_public_lists");OBSPUB.cfg={...FORM_DEF.obs,...((data&&data.forms&&data.forms.obs)||{})}}catch(e){OBSPUB.cfg={...FORM_DEF.obs}}
+ obsPubRender()}
+const obsPubCfg=()=>{const C={...FORM_DEF.obs,...(OBSPUB.cfg||{})};return{...C,fee1:+C.fee1,fee2:+C.fee2,block:+C.block||14,maxDays:+C.maxDays||91,dueDays:+C.dueDays||7}};
+function obsPubRender(done){const c=obsPubCfg();
+ if(done){OBSPUB.done=done;return pubShell(`<div class="panel fbform">${formHead(null,"Application received","Observership · Department of Medical Education")}
+  <p>Thank you, ${esc(visName(done.v))}. Your application for an observership in <b>${esc(done.v.unit)}</b> (${obsWeeks(c.block*done.v.blocks)}) has reached the DME office.</p>
+  <div class="flag ok" style="display:grid;gap:6px"><b>What happens next</b><span>1. Download your fee challan (${esc(done.f.challan)}, ${money(done.f.amt)}) and pay at ${esc(c.bank||"the bank")} within ${c.dueDays} days.</span><span>2. Bring the bank-stamped DME office copy of the challan to the Medical Education Department.</span><span>3. Your application goes to the hospital for approval. When you receive the office order, bring it to the DME office: your observership starts then.</span></div>
+  <div class="actions" style="justify-content:flex-start"><button class="btn primary" data-act="op-challan">Download fee challan (PDF)</button><button class="btn" data-act="op-app">Download application form (PDF)</button></div>
+  <p class="subt">Keep your challan number: ${esc(done.f.challan)}.</p></div>`)}
+ if(!formIsOpen(c))return pubShell(`<div class="panel fbform">${formHead(null,"Observership application","Department of Medical Education")}<p>Online applications for observership are closed at the moment.</p>${c.msg?`<p style="white-space:pre-line">${esc(c.msg)}</p>`:""}${c.contact?`<p class="subt">Contact: ${esc(c.contact)}</p>`:""}</div>`);
+ const f=(n,l,o={})=>`<label class="f"><span class="${o.opt?"":"req"}">${l}${o.h?` <span class="h">${o.h}</span>`:o.opt?` <span class="h">optional</span>`:""}</span><input name="${n}" ${o.type?`type="${o.type}"`:""} ${o.ph?`placeholder="${o.ph}"`:""} ${o.mode?`inputmode="${o.mode}"`:""} ${o.list?`list="${o.list}"`:""}></label>`;
+ const file=(n,l,o={})=>`<label class="f"><span class="${o.opt?"":"req"}">${l}${o.h?` <span class="h">${o.h}</span>`:""}</span><input type="file" name="${n}" accept="image/jpeg,image/png,image/webp,application/pdf"></label>`;
+ pubShell(`<form class="panel fbform" id="obsform" novalidate>${formHead(null,"Observership application form","To the Medical Superintendent, Rawalpindi Institute of Cardiology, Rawalpindi")}${c.msg?`<div class="flag info" style="white-space:pre-line">${esc(c.msg)}</div>`:""}
+  <div class="flag info">Fee: <b>${money(c.fee1)}</b> for the first ${obsWeeks(c.block)}; <b>${money(c.fee2)}</b> for each further ${obsWeeks(c.block)}; up to ${obsWeeks(c.maxDays)} in all. After you submit, download the fee challan and pay at the bank. The observership starts once the hospital issues your office order.</div>
+  <fieldset class="pfsec"><legend>1. Personal & contact details</legend><div class="grid2"><label class="f"><span>Title <span class="h">optional</span></span><select name="title">${opt([["",""],["Dr.","Dr."],["Mr.","Mr."],["Ms.","Ms."],["Mrs.","Mrs."]],"")}</select></label>${f("name","Full name",{ph:"e.g. Ayesha Khan"})}</div>
+   <div class="grid2">${f("father","Father's name")}<label class="f"><span class="req">Gender</span><select name="gender">${opt(["","Female","Male"],"")}</select></label></div>
+   <div class="grid2">${f("cnic","CNIC",{ph:"37405-1234567-1",mode:"numeric"})}${f("mobile","Contact no.",{ph:"03xx-xxxxxxx",type:"tel",mode:"numeric"})}</div>${f("email","Email address",{type:"email"})}</fieldset>
+  <fieldset class="pfsec"><legend>2. Educational details</legend><label class="f"><span class="req">You are a</span><select name="cat">${opt(["",...(c.cats&&c.cats.length?c.cats:OBS_CATS)],"")}</select></label>
+   ${f("degree","Degree programme",{ph:"e.g. MBBS, BDS, BS Cardiac Perfusion, BS Nursing",list:"obs-deg"})}<datalist id="obs-deg">${["MBBS","BDS","BS Nursing","BS Cardiac Perfusion","BS Medical Imaging Technology","BS Medical Laboratory Technology","BS Cardiology Technology","DAE / Diploma","Pharm-D","DPT"].map(x=>`<option value="${x}">`).join("")}</datalist>
+   ${f("inst","Institution / university",{ph:"e.g. Rawalpindi Medical University"})}<div class="grid2">${f("yearStudy","Year of study / passing",{ph:"e.g. 4th year, 2025"})}${f("status2","Current semester / status",{ph:"e.g. 7th semester, graduated, working"})}</div></fieldset>
+  <fieldset class="pfsec"><legend>3. Observership details</legend><label class="f"><span class="req">Department applied for</span><select name="unit">${opt(["",...(c.units&&c.units.length?c.units:ROT_UNITS)],"")}</select></label>
+   <label class="f"><span class="req">Duration requested</span><select name="blocks">${opt(obsDurOpts(c),"1")}</select></label>
+   <label class="f"><span class="req">Reason / purpose of observership</span><textarea name="reason" rows="3"></textarea></label></fieldset>
+  <fieldset class="pfsec"><legend>4. Documents</legend><p class="qd" style="margin:0">Photo or PDF, up to 5 MB each.</p>
+   ${file("degreeDoc","Degree, or a letter from your university or employer",{h:"confirming that you study or work there"})}${file("cnicDoc","CNIC (front)")}${file("cnic2Doc","CNIC (back)",{opt:1,h:"optional"})}</fieldset>
+  <fieldset class="pfsec"><legend>Declaration</legend><label class="check2"><input type="checkbox" id="op-decl"> I hereby declare that the information provided above is true and correct to the best of my knowledge. I understand that I will not be entitled to any remuneration, certification of employment, or clinical privileges during this observership, and I will strictly adhere to the code of conduct and policies of Rawalpindi Institute of Cardiology.</label></fieldset>
+  <div class="err" id="operr" role="alert"></div><button class="btn primary" type="button" data-act="op-submit" style="justify-self:start">Submit application</button>${c.contact?`<p class="subt" style="margin:0">Questions? ${esc(c.contact)}</p>`:""}</form>`)}
+document.addEventListener("click",async e=>{const dl=e.target.closest('[data-act="op-challan"],[data-act="op-app"]');if(dl&&OBSPUB.done){const D=OBSPUB.done;dl.disabled=true;try{if(dl.dataset.act==="op-challan")await obsChallanPdf(D.v,D.f,obsPubCfg());else await obsAppPdf(D.v,true,obsPubCfg())}catch(x){console.error(x)}dl.disabled=false;return}
+ const b=e.target.closest('[data-act="op-submit"]');if(!b)return;const fm=document.getElementById("obsform"),er=document.getElementById("operr"),g=n=>(fm[n]?.value||"").trim(),bad=m=>{er.textContent=m;er.scrollIntoView({block:"center"})};
+ const name=g("name").replace(/^((dr|mr|ms|mrs)\.?\s+)+/i,"");if(name.length<3)return bad("Enter your full name.");if(g("father").length<3)return bad("Enter your father's name.");if(!g("gender"))return bad("Choose your gender.");
+ const cn=g("cnic").replace(/\D/g,"");if(cn.length!==13)return bad("Enter your 13-digit CNIC number.");
+ let mob=g("mobile").replace(/\D/g,"");if(mob.startsWith("92"))mob="0"+mob.slice(2);if(!/^03\d{9}$/.test(mob))return bad("Enter your contact number as 03xx-xxxxxxx.");
+ if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(g("email")))return bad("Enter a valid email address.");
+ if(!g("cat"))return bad("Choose what you are (doctor, student, nurse…).");if(!g("degree"))return bad("Enter your degree programme.");if(!g("inst"))return bad("Enter your institution or university.");if(!g("yearStudy"))return bad("Enter your year of study or passing.");if(!g("status2"))return bad("Enter your current semester or status.");
+ if(!g("unit"))return bad("Choose the department.");if(g("reason").length<5)return bad("Write the reason or purpose of your observership.");
+ const fl=n=>{const i=fm.querySelector(`input[type=file][name="${n}"]`);return i&&i.files&&i.files[0]},dg=fl("degreeDoc"),c1=fl("cnicDoc"),c2=fl("cnic2Doc");
+ if(!dg)return bad("Attach your degree, or a letter from your university or employer.");if(!c1)return bad("Attach a photo of your CNIC.");
+ for(const x of [dg,c1,c2].filter(Boolean)){if(x.size>5*1024*1024)return bad(`${x.name} is larger than 5 MB.`);if(!/^(image\/(jpeg|png|webp)|application\/pdf)$/.test(x.type))return bad(`${x.name}: use a photo (JPG, PNG) or a PDF.`)}
+ if(!document.getElementById("op-decl").checked)return bad("Tick the declaration to submit.");
+ er.textContent="";b.disabled=true;b.textContent="Uploading…";const folder=`observers/${Date.now()}-${Math.random().toString(36).slice(2,8)}`,docs={};
+ try{for(const[k,x] of [["degree",dg],["cnic",c1],["cnic2",c2]]){if(!x)continue;const path=`${folder}/${k}.${(x.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")}`;
+   const{error}=await SYNC.sb.storage.from("dme-uploads").upload(path,x,{contentType:x.type||undefined});if(error)throw new Error("upload");docs[k]=path}
+  b.textContent="Sending…";const p={title:g("title"),name,father:g("father"),gender:g("gender"),cnic:cn,mobile:mob.slice(0,4)+"-"+mob.slice(4),email:g("email").toLowerCase(),cat:g("cat"),degree:g("degree"),inst:g("inst"),yearStudy:g("yearStudy"),status2:g("status2"),unit:g("unit"),blocks:+g("blocks")||1,reason:g("reason"),docs};
+  const{data,error}=await SYNC.sb.rpc("dme_submit_obs",{p});if(error||!data)throw new Error("send");
+  if(data.error){b.disabled=false;b.textContent="Submit application";return bad(data.error==="duplicate"?"You already have an observership application with RIC. Contact the DME office.":data.error==="closed"?"Applications have just closed. Contact the DME office.":"Some details are missing or not valid. Check the form.")}
+  const v={...p,kind:"obs",cnic:cn.slice(0,5)+"-"+cn.slice(5,12)+"-"+cn.slice(12),regAt:new Date().toISOString(),src:"form"},fee={id:"F",kind:"first",blocks:p.blocks,amt:data.amt,challan:data.challan,at:new Date().toISOString(),status:"unpaid"};v.fees=[fee];
+  obsPubRender({v,f:fee});window.scrollTo(0,0);obsChallanPdf(v,fee,obsPubCfg()).catch(()=>{})}
+ catch(x){b.disabled=false;b.textContent="Submit application";bad(x.message==="upload"?"A file could not be uploaded. Check the connection and try again.":"Could not send. Check the connection and try again.")}});
 
 /* ---------- events ---------- */
 document.addEventListener("click",e=>{
