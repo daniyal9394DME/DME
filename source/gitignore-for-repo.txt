@@ -1,0 +1,12 @@
+# Never commit personal data or build leftovers (this repository is public)
+source/private/
+source/dist/
+source/app/src2.html
+source/tests/node_modules/
+source/tests/out/
+dme-initial-data.json
+*-update*.json
+data*.json
+sample_results.json
+*.pdf
+.DS_Store

@@ -1,0 +1,11 @@
+const path=require('path');const N=path.join(__dirname,'node_modules')+'/';const U='file://'+path.join(__dirname,'..','dist','ric-dme-office.html');const FIX=path.join(__dirname,'fixtures')+'/';const OUT=path.join(__dirname,'out')+'/';require('fs').mkdirSync(OUT,{recursive:true});
+const {chromium}=require('playwright');
+(async()=>{const b=await chromium.launch();const ctx=await b.newContext({viewport:{width:1366,height:900},acceptDownloads:true});
+const R={'qrcode-generator@1.4.4/qrcode.js':'qrcode-generator/qrcode.js','jspdf.umd.min.js':'jspdf/dist/jspdf.umd.min.js','xlsx/0.18.5/xlsx.full.min.js':'xlsx/dist/xlsx.full.min.js'};
+for(const[k,v] of Object.entries(R))await ctx.route('**/'+k,r=>r.fulfill({path:N+v,contentType:'application/javascript'}));
+const d=await ctx.newPage();d.on('pageerror',e=>console.log('ERR',e.message));
+await d.goto(U+'#exam-EX1');await d.waitForTimeout(800);
+const tabs=await d.$$eval('[data-extab],[data-tab]',a=>a.map(x=>x.dataset.extab||x.dataset.tab));console.log('tabs',tabs.slice(0,10));
+await d.evaluate(()=>{const b=document.querySelector('[data-extab="papers"]')||[...document.querySelectorAll('button')].find(x=>/^Papers/.test(x.textContent.trim()));b&&b.click()});await d.waitForTimeout(400);
+const [dl]=await Promise.all([d.waitForEvent('download',{timeout:30000}),d.click('[data-act="ex-att"]')]);await dl.saveAs(OUT+'att.pdf');console.log('file',dl.suggestedFilename());
+await b.close()})();

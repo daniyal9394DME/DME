@@ -1,0 +1,14 @@
+{
+  "name": "ric-dme-office-tests",
+  "private": true,
+  "description": "Browser tests for the RIC DME Office prototype (source/dist/ric-dme-office.html). Build first: python3 source/build.py",
+  "scripts": { "test": "node run-all.js" },
+  "devDependencies": {
+    "playwright": "^1.48.0",
+    "qrcode-generator": "1.4.4",
+    "jspdf": "2.5.1",
+    "xlsx": "0.18.5",
+    "html2canvas": "1.4.1",
+    "jszip": "3.10.1"
+  }
+}

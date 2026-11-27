@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DME Office · connection check</title>
+<script src="config.js"></script>
+<style>
+body{font:15px/1.5 "Segoe UI",Roboto,Arial,sans-serif;background:#F3F5F8;color:#1F2933;margin:0;padding:24px 16px}
+.card{max-width:640px;margin:0 auto;background:#fff;border:1px solid #E1E6EC;border-top:3px solid #8A2D3B;border-radius:10px;padding:20px 22px}
+h1{font-size:20px;margin:0 0 4px;color:#8A2D3B}p{margin:6px 0}ol{padding-left:0;list-style:none;margin:16px 0 0}
+li{display:grid;grid-template-columns:28px 1fr;gap:6px;padding:10px 0;border-top:1px solid #E1E6EC}
+.ok{color:#2E7D4F}.bad{color:#B3261E}.wait{color:#5B6776}b.i{font-size:18px;line-height:1}small{color:#5B6776;display:block}
+a{color:#8A2D3B}
+</style></head><body><div class="card">
+<h1>DME Office · connection check</h1><p>This page checks each part of the setup and says what to fix. It changes nothing.</p>
+<ol id="list"></ol><p id="end" style="margin-top:14px"></p></div>
+<div class="card" style="margin-top:16px"><h1>Install as an app</h1><p>Checks the files a phone needs to install the DME Office with its logo.</p><ol id="inst"></ol>
+<div id="how" style="margin-top:12px"><p><b>Android (Chrome):</b> open the app link in <b>Chrome</b> itself (not inside WhatsApp or Gmail; tap ⋮ › <i>Open in Chrome</i>). Tap ⋮ › <b>Install app</b> (or <i>Add to home screen › Install</i>). If it only offers <i>Create shortcut</i>, one of the checks above is ✗.</p>
+<p><b>iPhone (Safari):</b> open the link in <b>Safari</b>, tap the Share button › <b>Add to Home Screen</b> › Add.</p>
+<p>If you added it before these files were in place, delete the old home-screen icon first, then add it again.</p></div></div>
+<script>
+const L=document.getElementById("list");
+function row(t){const li=document.createElement("li");li.innerHTML=`<b class="i wait">…</b><div><b>${t}</b><small>checking</small></div>`;L.append(li);
+ return(ok,msg)=>{li.querySelector(".i").className="i "+(ok?"ok":"bad");li.querySelector(".i").textContent=ok?"✓":"✗";li.querySelector("small").innerHTML=msg}}
+(async()=>{
+ const c=window.DME_SUPABASE;let r=row("config.js is on the site");
+ if(!c){r(false,"config.js was not found next to this page. Upload it to the same GitHub repository as index.html.");return done(false)}r(true,"Found.");
+ const url=String(c.url||"").trim().replace(/\/+$/,""),key=String(c.anonKey||c.key||"").trim();
+ r=row("Project URL");if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)){r(false,url?`"${url}" does not look right. It should be like https://abcdefgh.supabase.co (Supabase → Project Settings → Data API).`:"Empty. Paste it into config.js between the quotes.");return done(false)}r(true,url);
+ r=row("Key");if(!key){r(false,"Empty. Paste the publishable key (sb_publishable_…) or the anon public key (eyJ…) into config.js.");return done(false)}
+ if(/^sb_secret_/i.test(key)||/service_role/.test((()=>{try{return atob(key.split(".")[1].replace(/-/g,"+").replace(/_/g,"/"))}catch(e){return""}})())){r(false,"This is the SECRET key. Replace it with the publishable (anon) key now, and in Supabase create a new secret key, because this one has been exposed.");return done(false)}
+ r(true,key.slice(0,18)+"…");
+ r=row("Supabase answers");let res;
+ try{res=await fetch(url+"/rest/v1/rpc/dme_public_lists",{method:"POST",headers:{apikey:key,"Content-Type":"application/json",...(key.startsWith("eyJ")?{Authorization:"Bearer "+key}:{})},body:"{}"})}catch(e){r(false,"No answer from Supabase. Check the URL, the internet connection, and that the project is not paused (Supabase dashboard → Restore project).");return done(false)}
+ if(res.status===401||res.status===403){const t=await res.text();r(false,"Supabase refused the key ("+res.status+"). Copy the publishable key again from Project Settings → API Keys. "+t.slice(0,140));return done(false)}
+ if(res.status===404){r(true,"Connected.");r=row("Database set up (02_pilot_setup.sql)");r(false,"The DME functions are missing. In Supabase open SQL Editor → New query, paste all of 02_pilot_setup.sql and click Run.");return done(false)}
+ if(!res.ok){r(false,"Unexpected answer "+res.status+": "+(await res.text()).slice(0,160));return done(false)}
+ r(true,"Connected.");const j=await res.json();
+ r=row("Database set up (02_pilot_setup.sql)");r(true,"Tables and functions are there.");
+ r=row("RIC records loaded");if(!(j.faculty||[]).length){r(false,"Not yet. Open index.html, sign in as the Director and load dme-initial-data.json on the setup screen.");return done(true,true)}
+ r(true,`${j.faculty.length} faculty, ${(j.specs||[]).length} specialties.`);done(true)})();
+(async()=>{const I=document.getElementById("inst");const r2=t=>{const li=document.createElement("li");li.innerHTML=`<b class="i wait">…</b><div><b>${t}</b><small>checking</small></div>`;I.append(li);return(ok,msg)=>{li.querySelector(".i").className="i "+(ok?"ok":"bad");li.querySelector(".i").textContent=ok?"✓":"✗";li.querySelector("small").innerHTML=msg}};
+ let r=r2("Secure address (https)");r(location.protocol==="https:","");if(location.protocol!=="https:")r(false,"Open this page through its https:// address on GitHub Pages.");else r(true,location.origin);
+ const ok=async u=>{try{const x=await fetch(u,{cache:"no-store"});return x.ok?x:null}catch(e){return null}};
+ r=r2("manifest.webmanifest");const m=await ok("manifest.webmanifest");let man=null;if(m){try{man=await m.json()}catch(e){}}
+ if(!man)r(false,"Missing or unreadable. Upload <b>manifest.webmanifest</b> from the 2-GitHub folder.");else r(true,`Found: "${man.name}"`);
+ for(const f of["icon-192.png","icon-512.png","icon-maskable-512.png","apple-touch-icon.png"]){r=r2(f);const x=await ok(f);r(!!x,x?"Found.":`Missing. Upload <b>${f}</b> from the 2-GitHub folder${f.startsWith("apple")?" (the iPhone home-screen logo)":" (the app logo)"}.`)}
+ r=r2("sw.js (lets the phone install it)");const w=await ok("sw.js");r(!!w,w?"Found.":"Missing. Upload <b>sw.js</b> from the 2-GitHub folder.")})();
+function done(ok,partial){document.getElementById("end").innerHTML=ok?(partial?`Almost there. <a href="index.html">Open the app</a> and sign in.`:`Everything is connected. <a href="index.html">Open the app</a>.`):"Fix the item marked ✗, wait a minute for GitHub to update, then reload this page."}
+</script></body></html>

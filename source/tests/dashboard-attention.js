@@ -1,0 +1,12 @@
+const path=require('path');const N=path.join(__dirname,'node_modules')+'/';const U='file://'+path.join(__dirname,'..','dist','ric-dme-office.html');const FIX=path.join(__dirname,'fixtures')+'/';const OUT=path.join(__dirname,'out')+'/';require('fs').mkdirSync(OUT,{recursive:true});
+const {chromium}=require('playwright');
+(async()=>{const b=await chromium.launch();const ctx=await b.newContext({viewport:{width:1366,height:900}});
+const R={'qrcode-generator@1.4.4/qrcode.js':'qrcode-generator/qrcode.js','jspdf.umd.min.js':'jspdf/dist/jspdf.umd.min.js','xlsx/0.18.5/xlsx.full.min.js':'xlsx/dist/xlsx.full.min.js'};
+for(const[k,v] of Object.entries(R))await ctx.route('**/'+k,r=>r.fulfill({path:N+v,contentType:'application/javascript'}));
+const d=await ctx.newPage();d.on('pageerror',e=>console.log('ERR',e.message));
+await d.goto(U);await d.waitForTimeout(800);
+await d.evaluate(()=>{const ago=n=>{const x=new Date(TODAY);x.setDate(x.getDate()-n);return iso(x)};visList().push({id:'VA1',kind:'obs',name:'Test Forward',inst:'X',unit:'CCU',blocks:1,att:{},fees:[{id:'F',kind:'first',blocks:1,amt:5000,challan:'OBS-26-0101',status:'verified'}],recv:{at:new Date().toISOString()}},{id:'VA2',kind:'obs',name:'Test Late',inst:'X',unit:'CCU',blocks:1,att:{},fees:[{id:'F',kind:'first',blocks:1,amt:5000,challan:'OBS-26-0102',status:'verified'}],fwd:{on:ago(18)}});persist();render()});
+await d.goto(U+'#overview');await d.waitForTimeout(400);
+console.log(await d.$$eval('.acard',a=>a.map(x=>x.innerText.replace(/\s+/g,' '))));
+await d.click('.acard[data-go-filter="observers:With the MS"]');await d.waitForTimeout(400);console.log('tab:',await d.evaluate(()=>location.hash+' '+UI.obsTab),await d.$$eval('main tbody tr',a=>a.map(x=>x.innerText.replace(/\s+/g,' ').slice(0,80))));
+await b.close()})();
