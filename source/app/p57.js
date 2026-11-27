@@ -48,20 +48,35 @@ function acCell(x){x=x||null;if(!x)return acPill(null);const bits=[x.ref?esc(x.r
  return`${acPill(x)}${bits.length?`<div class="subt">${bits.join(" · ")}</div>`:""}${x.doc?`<div>${docBtn(x.doc,"Letter")}</div>`:""}`}
 const AC_TABS=["All","Missing","In progress","Renew","Complete"];
 const AC_TABL={All:"All",Missing:"Missing",["In progress"]:"In progress",Renew:"Renew soon or expired",Complete:"Complete"};
+/* one card per specialty; its programmes (FCPS · CPSP, MS/MD · UHS) side by side, stacked on a phone. No table, no sideways scrolling. */
+function acLine(label,x){return`<div class="ac-line"><span class="ac-lab">${label}</span><span>${acCell(x)}</span></div>`}
+function acProgBox(r,can){const B=acBody(r.prog),a=r.a||{},nx=acNext(r);
+ return`<div class="ac-prog" data-acrow="${esc(r.spec)}|${esc(r.prog)}"><div class="ac-ph"><span><b>${esc(acProgL(r.prog))}</b> <span class="subt">· ${esc(B)}</span></span>${can?`<button class="btn small" data-act="ac-edit" data-spec="${esc(r.spec)}" data-prog="${esc(r.prog)}">Update</button>`:""}</div>
+  ${acLine(`1. ${B} recognition`,a.body)}${acLine("2. PMDC accreditation",a.pmdc)}
+  <div class="ac-next">${nx==="Done"?'<span class="d-ok">Complete</span>':`<b>Next:</b> ${esc(nx)}`}${a.upd?`<div class="subt">updated ${fd(dDay(a.upd.at))}${a.upd.by?" by "+esc(a.upd.by):""}</div>`:""}</div></div>`}
 function vAccr(){const R=acRows(),can=!isViewer(),tab=AC_TABS.includes(UI.acTab)?UI.acTab:"All",G={};AC_TABS.forEach(k=>G[k]=k==="All"?R:R.filter(r=>acGroup(r)===k));
- const q=(UI.acQ||"").toLowerCase(),rows=G[tab].filter(r=>!q||[r.spec,acProgL(r.prog),acBody(r.prog)].join(" ").toLowerCase().includes(q));
+ const q=(UI.acQ||"").toLowerCase(),specs=[...new Set(G[tab].map(r=>r.spec))];
  const noProg=DB.specs.filter(s=>s.active&&s.teaching&&!R.some(r=>r.spec===s.name));
- return`<div class="head"><div><h2>Accreditation</h2><p>Each training programme needs recognition by its awarding body (CPSP for FCPS, UHS for MS and MD) and then accreditation by the PMDC.</p></div>
+ return`<div class="head"><div><h2>Accreditation</h2><p>Each training programme needs recognition by its awarding body (CPSP for FCPS, UHS for MS and MD), then accreditation by the PMDC.</p></div>
   <div class="actions">${xbtn("accr")}${can?`<button class="btn primary" data-act="ac-add">Add programme</button>`:""}</div></div>
- <div class="kpis">${[["Missing","nothing applied for yet"],["In progress","applied or inspected"],["Renew","ends within 6 months or expired"],["Complete","awarding body and PMDC approved"]].map(([k,s])=>`<button class="kpi" data-actab="${k}"><span class="n">${G[k].length}</span><span class="l">${AC_TABL[k]}</span><span class="sub">${s}</span></button>`).join("")}</div>
- <div class="panel flush"><div style="padding:12px 16px 0;display:grid;gap:8px"><div class="toolbar"><div class="chips">${AC_TABS.map(k=>`<button class="chip" data-actab="${k}" aria-pressed="${tab===k}">${AC_TABL[k]} · ${G[k].length}</button>`).join("")}</div>
-  <input type="search" id="ac-q" placeholder="Search specialty" value="${esc(UI.acQ||"")}" style="flex:1;min-width:160px"></div></div>
- ${rows.length?`<div class="tablewrap"><table><thead><tr><th>Specialty</th><th>Programme</th><th>Awarding body</th><th>PMDC</th><th>Next step</th>${can?"<th></th>":""}</tr></thead><tbody>
-  ${rows.map(r=>`<tr data-acrow="${esc(r.spec)}|${esc(r.prog)}"><td><b>${esc(r.spec)}</b>${specOf(r.spec)&&specOf(r.spec).title?`<div class="subt">${esc(specOf(r.spec).title)}</div>`:""}</td><td>${esc(acProgL(r.prog))}<div class="subt">${esc(acBody(r.prog))}</div></td>
-   <td>${acCell(r.a&&r.a.body)}</td><td>${acCell(r.a&&r.a.pmdc)}</td><td>${esc(acNext(r))}${r.a&&r.a.upd?`<div class="subt">updated ${fd(dDay(r.a.upd.at))}${r.a.upd.by?" by "+esc(r.a.upd.by):""}</div>`:""}</td>
-   ${can?`<td><button class="btn small" data-act="ac-edit" data-spec="${esc(r.spec)}" data-prog="${esc(r.prog)}">Update</button></td>`:""}</tr>`).join("")}</tbody></table></div>`:`<p class="empty" style="padding:16px">Nothing here.</p>`}</div>
+ <div class="panel ac-bar"><div class="chips">${AC_TABS.map(k=>`<button class="chip" data-actab="${k}" aria-pressed="${tab===k}">${AC_TABL[k]} · ${G[k].length}</button>`).join("")}</div>
+  <input type="search" id="ac-q" placeholder="Search specialty" value="${esc(UI.acQ||"")}" autocomplete="off"></div>
+ <div class="ac-list">${specs.length?specs.map(sn=>{const sp=specOf(sn),P=G[tab].filter(r=>r.spec===sn);
+  return`<section class="panel ac-card" data-acspec="${esc(sn.toLowerCase())}" ${q&&!sn.toLowerCase().includes(q)?"hidden":""}><div class="ac-h"><h3>${esc(sn)}</h3>${sp&&sp.title?`<span class="subt">${esc(sp.title)}</span>`:""}</div>
+   <div class="ac-progs">${P.map(r=>acProgBox(r,can)).join("")}</div></section>`}).join(""):`<p class="empty panel">Nothing here.</p>`}
+  <p class="empty panel" id="ac-none" ${specs.some(sn=>!q||sn.toLowerCase().includes(q))?"hidden":""}>No specialty matches the search.</p></div>
  ${noProg.length?`<p class="subt">No programme set for ${noProg.map(s=>esc(s.name)).join(", ")}. Add the programme durations in Settings → Specialties, or use "Add programme".</p>`:""}`}
-
+if(!document.getElementById("ac-css"))document.head.insertAdjacentHTML("beforeend",`<style id="ac-css">
+.ac-bar{display:grid;gap:10px;padding:12px}.ac-bar .chips{display:flex;flex-wrap:wrap;gap:6px}.ac-bar input{width:100%;min-width:0;box-sizing:border-box}
+.ac-list{display:grid;gap:12px;margin-top:12px}.ac-card{display:grid;gap:10px;padding:14px;min-width:0}.ac-card[hidden],#ac-none[hidden]{display:none}
+.ac-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}.ac-h h3{margin:0}
+.ac-progs{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.ac-prog{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;gap:8px;background:var(--sunk);min-width:0}
+.ac-ph{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ac-line{display:grid;grid-template-columns:minmax(0,9.5em) minmax(0,1fr);gap:8px;align-items:start}.ac-lab{color:var(--muted);font-size:13px;padding-top:2px}
+.ac-line .subt{overflow-wrap:anywhere}.ac-next{border-top:1px dashed var(--line2);padding-top:6px;font-size:14px}.d-ok{color:var(--ok);font-weight:600}
+@media (max-width:420px){.ac-line{grid-template-columns:1fr;gap:2px}}
+</style>`);
 /* the update form: both approvals of one programme */
 function acSec(k,title,x){x=x||acEmpty();const d=v=>v?esc(v):"";
  return`<fieldset class="pfsec"><legend>${title}</legend>
@@ -103,7 +118,9 @@ document.addEventListener("click",e=>{const r=e.target.closest("[data-actab],[da
  if(a==="ac-edit")return sheetAccr(r.dataset.spec,r.dataset.prog);
  if(a==="ac-del"){if(r.dataset.armed!=="1"){r.dataset.armed="1";r.textContent="Tap again to remove";return}
   const x=acFind(r.dataset.spec,r.dataset.prog);if(x){DB.accr=acList().filter(y=>y!==x);log(`Accreditation: removed ${acProgL(x.prog)} ${x.spec}`,"accr");persist()}closeSheet();toast("Removed");render()}});
-document.addEventListener("input",e=>{if(e.target.id!=="ac-q")return;UI.acQ=e.target.value;const p=e.target.selectionStart;render();const i=document.getElementById("ac-q");if(i){i.focus();try{i.setSelectionRange(p,p)}catch(x){}}});
+/* search: hide cards in place (no redraw, so the phone keyboard stays open) */
+document.addEventListener("input",e=>{if(e.target.id!=="ac-q")return;UI.acQ=e.target.value;const q=UI.acQ.trim().toLowerCase();let n=0;
+ document.querySelectorAll("main .ac-card").forEach(c=>{const ok=!q||c.dataset.acspec.includes(q);c.hidden=!ok;if(ok)n++});const none=document.getElementById("ac-none");if(none)none.hidden=n>0});
 
 /* a specialty renamed in Settings keeps its accreditation records */
 {const _s=sheetSpec;sheetSpec=function(s){_s(s);const S=SHEET;if(!S||!s)return;const old=s.name,save=S.onSave;S.onSave=function(){const r=save.apply(this,arguments);if(r!==false&&s.name!==old)acList().forEach(a=>{if(a.spec===old)a.spec=s.name});return r}}}

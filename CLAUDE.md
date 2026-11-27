@@ -67,6 +67,7 @@ Answer-sheet (OMR) reading in `source/omr/omrread.js` was tuned on real scans th
   - Records: `DB.visitors` with `kind:"obs"`; fees `{challan:"OBS-YY-####", status, acc}`. Cash goes to the Accounts Office; `f.acc` records the handover.
   - Settings: `DB.settings.forms.obs`.
 - Accreditation of training programmes (CPSP or UHS recognition, then PMDC): `p57.js`. One record per specialty and programme in `DB.accr` (its own collection, no SQL needed). Programmes come from each specialty's durations in Settings.
+- Install as an app: `p15.js` (button, service worker) and `p58.js` (install notice on the sign-in screen and dashboard). The manifest and icon links must stay in the page head (`pwa` in `build.py`); browsers ignore them in the body.
 - Search, day change, update notice, dashboard attention items: `p56.js`. Recently opened: `p38.js`.
 
 ## Before you change anything the first time

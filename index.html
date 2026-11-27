@@ -1,5 +1,8 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#FFFFFF">
+<link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="DME Office"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>RIC DME Office</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Great+Vibes&family=Montserrat:wght@600&display=swap">
@@ -753,9 +756,6 @@ details.rowmenu>summary{list-style:none;cursor:pointer}details.rowmenu>summary::
 
 <!-- Supabase settings live in config.js, next to this file -->
 <script src="config.js"></script>
-<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#FFFFFF">
-<link rel="apple-touch-icon" href="apple-touch-icon.png"><link rel="icon" href="icon-192.png">
-<meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="DME Office"><meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
@@ -7501,7 +7501,7 @@ setInterval(dayCheck,60000);document.addEventListener("visibilitychange",()=>{if
 {const _c=closeSheet;closeSheet=function(){_c();if(UI.dayStale){UI.dayStale=0;setTimeout(render,0)}}}
 
 /* 3 · new version available */
-const APP_BUILD="cca97b2952a3";
+const APP_BUILD="dceed734b753";
 let VER={seen:0,shown:0};
 function verCheck(force){if(typeof LIVE==="undefined"||!LIVE||APP_BUILD.indexOf("_")===0||VER.shown)return;const t=Date.now();if(!force&&t-VER.seen<10*60000)return;VER.seen=t;
  fetch("index.html?vc="+t,{cache:"no-store"}).then(r=>r.ok?r.text():"").then(h=>{const m=h.match(/const APP_BUILD="([0-9a-f]{8,})"/);if(m&&m[1]!==APP_BUILD)verNew()}).catch(()=>{})}
@@ -7607,20 +7607,35 @@ function acCell(x){x=x||null;if(!x)return acPill(null);const bits=[x.ref?esc(x.r
  return`${acPill(x)}${bits.length?`<div class="subt">${bits.join(" · ")}</div>`:""}${x.doc?`<div>${docBtn(x.doc,"Letter")}</div>`:""}`}
 const AC_TABS=["All","Missing","In progress","Renew","Complete"];
 const AC_TABL={All:"All",Missing:"Missing",["In progress"]:"In progress",Renew:"Renew soon or expired",Complete:"Complete"};
+/* one card per specialty; its programmes (FCPS · CPSP, MS/MD · UHS) side by side, stacked on a phone. No table, no sideways scrolling. */
+function acLine(label,x){return`<div class="ac-line"><span class="ac-lab">${label}</span><span>${acCell(x)}</span></div>`}
+function acProgBox(r,can){const B=acBody(r.prog),a=r.a||{},nx=acNext(r);
+ return`<div class="ac-prog" data-acrow="${esc(r.spec)}|${esc(r.prog)}"><div class="ac-ph"><span><b>${esc(acProgL(r.prog))}</b> <span class="subt">· ${esc(B)}</span></span>${can?`<button class="btn small" data-act="ac-edit" data-spec="${esc(r.spec)}" data-prog="${esc(r.prog)}">Update</button>`:""}</div>
+  ${acLine(`1. ${B} recognition`,a.body)}${acLine("2. PMDC accreditation",a.pmdc)}
+  <div class="ac-next">${nx==="Done"?'<span class="d-ok">Complete</span>':`<b>Next:</b> ${esc(nx)}`}${a.upd?`<div class="subt">updated ${fd(dDay(a.upd.at))}${a.upd.by?" by "+esc(a.upd.by):""}</div>`:""}</div></div>`}
 function vAccr(){const R=acRows(),can=!isViewer(),tab=AC_TABS.includes(UI.acTab)?UI.acTab:"All",G={};AC_TABS.forEach(k=>G[k]=k==="All"?R:R.filter(r=>acGroup(r)===k));
- const q=(UI.acQ||"").toLowerCase(),rows=G[tab].filter(r=>!q||[r.spec,acProgL(r.prog),acBody(r.prog)].join(" ").toLowerCase().includes(q));
+ const q=(UI.acQ||"").toLowerCase(),specs=[...new Set(G[tab].map(r=>r.spec))];
  const noProg=DB.specs.filter(s=>s.active&&s.teaching&&!R.some(r=>r.spec===s.name));
- return`<div class="head"><div><h2>Accreditation</h2><p>Each training programme needs recognition by its awarding body (CPSP for FCPS, UHS for MS and MD) and then accreditation by the PMDC.</p></div>
+ return`<div class="head"><div><h2>Accreditation</h2><p>Each training programme needs recognition by its awarding body (CPSP for FCPS, UHS for MS and MD), then accreditation by the PMDC.</p></div>
   <div class="actions">${xbtn("accr")}${can?`<button class="btn primary" data-act="ac-add">Add programme</button>`:""}</div></div>
- <div class="kpis">${[["Missing","nothing applied for yet"],["In progress","applied or inspected"],["Renew","ends within 6 months or expired"],["Complete","awarding body and PMDC approved"]].map(([k,s])=>`<button class="kpi" data-actab="${k}"><span class="n">${G[k].length}</span><span class="l">${AC_TABL[k]}</span><span class="sub">${s}</span></button>`).join("")}</div>
- <div class="panel flush"><div style="padding:12px 16px 0;display:grid;gap:8px"><div class="toolbar"><div class="chips">${AC_TABS.map(k=>`<button class="chip" data-actab="${k}" aria-pressed="${tab===k}">${AC_TABL[k]} · ${G[k].length}</button>`).join("")}</div>
-  <input type="search" id="ac-q" placeholder="Search specialty" value="${esc(UI.acQ||"")}" style="flex:1;min-width:160px"></div></div>
- ${rows.length?`<div class="tablewrap"><table><thead><tr><th>Specialty</th><th>Programme</th><th>Awarding body</th><th>PMDC</th><th>Next step</th>${can?"<th></th>":""}</tr></thead><tbody>
-  ${rows.map(r=>`<tr data-acrow="${esc(r.spec)}|${esc(r.prog)}"><td><b>${esc(r.spec)}</b>${specOf(r.spec)&&specOf(r.spec).title?`<div class="subt">${esc(specOf(r.spec).title)}</div>`:""}</td><td>${esc(acProgL(r.prog))}<div class="subt">${esc(acBody(r.prog))}</div></td>
-   <td>${acCell(r.a&&r.a.body)}</td><td>${acCell(r.a&&r.a.pmdc)}</td><td>${esc(acNext(r))}${r.a&&r.a.upd?`<div class="subt">updated ${fd(dDay(r.a.upd.at))}${r.a.upd.by?" by "+esc(r.a.upd.by):""}</div>`:""}</td>
-   ${can?`<td><button class="btn small" data-act="ac-edit" data-spec="${esc(r.spec)}" data-prog="${esc(r.prog)}">Update</button></td>`:""}</tr>`).join("")}</tbody></table></div>`:`<p class="empty" style="padding:16px">Nothing here.</p>`}</div>
+ <div class="panel ac-bar"><div class="chips">${AC_TABS.map(k=>`<button class="chip" data-actab="${k}" aria-pressed="${tab===k}">${AC_TABL[k]} · ${G[k].length}</button>`).join("")}</div>
+  <input type="search" id="ac-q" placeholder="Search specialty" value="${esc(UI.acQ||"")}" autocomplete="off"></div>
+ <div class="ac-list">${specs.length?specs.map(sn=>{const sp=specOf(sn),P=G[tab].filter(r=>r.spec===sn);
+  return`<section class="panel ac-card" data-acspec="${esc(sn.toLowerCase())}" ${q&&!sn.toLowerCase().includes(q)?"hidden":""}><div class="ac-h"><h3>${esc(sn)}</h3>${sp&&sp.title?`<span class="subt">${esc(sp.title)}</span>`:""}</div>
+   <div class="ac-progs">${P.map(r=>acProgBox(r,can)).join("")}</div></section>`}).join(""):`<p class="empty panel">Nothing here.</p>`}
+  <p class="empty panel" id="ac-none" ${specs.some(sn=>!q||sn.toLowerCase().includes(q))?"hidden":""}>No specialty matches the search.</p></div>
  ${noProg.length?`<p class="subt">No programme set for ${noProg.map(s=>esc(s.name)).join(", ")}. Add the programme durations in Settings → Specialties, or use "Add programme".</p>`:""}`}
-
+if(!document.getElementById("ac-css"))document.head.insertAdjacentHTML("beforeend",`<style id="ac-css">
+.ac-bar{display:grid;gap:10px;padding:12px}.ac-bar .chips{display:flex;flex-wrap:wrap;gap:6px}.ac-bar input{width:100%;min-width:0;box-sizing:border-box}
+.ac-list{display:grid;gap:12px;margin-top:12px}.ac-card{display:grid;gap:10px;padding:14px;min-width:0}.ac-card[hidden],#ac-none[hidden]{display:none}
+.ac-h{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}.ac-h h3{margin:0}
+.ac-progs{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}
+.ac-prog{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:grid;gap:8px;background:var(--sunk);min-width:0}
+.ac-ph{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ac-line{display:grid;grid-template-columns:minmax(0,9.5em) minmax(0,1fr);gap:8px;align-items:start}.ac-lab{color:var(--muted);font-size:13px;padding-top:2px}
+.ac-line .subt{overflow-wrap:anywhere}.ac-next{border-top:1px dashed var(--line2);padding-top:6px;font-size:14px}.d-ok{color:var(--ok);font-weight:600}
+@media (max-width:420px){.ac-line{grid-template-columns:1fr;gap:2px}}
+</style>`);
 /* the update form: both approvals of one programme */
 function acSec(k,title,x){x=x||acEmpty();const d=v=>v?esc(v):"";
  return`<fieldset class="pfsec"><legend>${title}</legend>
@@ -7662,7 +7677,9 @@ document.addEventListener("click",e=>{const r=e.target.closest("[data-actab],[da
  if(a==="ac-edit")return sheetAccr(r.dataset.spec,r.dataset.prog);
  if(a==="ac-del"){if(r.dataset.armed!=="1"){r.dataset.armed="1";r.textContent="Tap again to remove";return}
   const x=acFind(r.dataset.spec,r.dataset.prog);if(x){DB.accr=acList().filter(y=>y!==x);log(`Accreditation: removed ${acProgL(x.prog)} ${x.spec}`,"accr");persist()}closeSheet();toast("Removed");render()}});
-document.addEventListener("input",e=>{if(e.target.id!=="ac-q")return;UI.acQ=e.target.value;const p=e.target.selectionStart;render();const i=document.getElementById("ac-q");if(i){i.focus();try{i.setSelectionRange(p,p)}catch(x){}}});
+/* search: hide cards in place (no redraw, so the phone keyboard stays open) */
+document.addEventListener("input",e=>{if(e.target.id!=="ac-q")return;UI.acQ=e.target.value;const q=UI.acQ.trim().toLowerCase();let n=0;
+ document.querySelectorAll("main .ac-card").forEach(c=>{const ok=!q||c.dataset.acspec.includes(q);c.hidden=!ok;if(ok)n++});const none=document.getElementById("ac-none");if(none)none.hidden=n>0});
 
 /* a specialty renamed in Settings keeps its accreditation records */
 {const _s=sheetSpec;sheetSpec=function(s){_s(s);const S=SHEET;if(!S||!s)return;const old=s.name,save=S.onSave;S.onSave=function(){const r=save.apply(this,arguments);if(r!==false&&s.name!==old)acList().forEach(a=>{if(a.spec===old)a.spec=s.name});return r}}}
@@ -7679,6 +7696,30 @@ document.addEventListener("click",e=>{const a=e.target.closest("a[data-go-filter
 EXPORTS.accr=()=>({file:"Accreditation",sheets:[sheetFrom("Accreditation",acRows().map(r=>{const a=r.a||{},b=a.body||{},m=a.pmdc||{};return{"Specialty":r.spec,"Programme":acProgL(r.prog),"Awarding body":acBody(r.prog),
  "Awarding body status":acState(a.body),"Awarding body letter no.":b.ref||"","Awarding body date":b.on||"","Awarding body valid until":b.to||"","Awarding body seats":b.seats||"","Awarding body notes":b.notes||"",
  "PMDC status":acState(a.pmdc),"PMDC letter no.":m.ref||"","PMDC date":m.on||"","PMDC valid until":m.to||"","PMDC seats":m.seats||"","PMDC notes":m.notes||"","Next step":acNext(r)}}))]});
+
+/* =====================================================================
+   P58 · INSTALL AS AN APP: EASY TO FIND
+   The "Install app" button sat only at the foot of the side menu,
+   which is hidden on phones and absent on the sign-in screen. Now the
+   sign-in screen and the top of the dashboard also offer it:
+   - Android / computer Chrome or Edge: an "Install app" button;
+   - iPhone / iPad: Share → Add to Home Screen;
+   - other browsers: the browser menu → Install app / Add to Home screen.
+   Hidden once installed, in the prototype, or after "Not now".
+   ===================================================================== */
+const INST_K="dme-install-later";
+const instLater=()=>{try{return(+localStorage.getItem(INST_K)||0)>Date.now()}catch(e){return false}};
+function instHint(dash){const live=typeof LIVE!=="undefined"&&LIVE;if(!live||isStandalone())return"";if(dash&&instLater())return"";
+ const later=dash?`<button class="btn small link" data-act="inst-later">Not now</button>`:"";
+ if(installEvt)return`<div class="flag info inst-hint"><span><b>Install DME Office</b> on this ${/android|iphone|ipad|mobile/i.test(navigator.userAgent)?"phone":"computer"}: it opens like an app, from its own icon.</span><span class="actions"><button class="btn small primary" data-act="app-install">Install app</button>${later}</span></div>`;
+ if(isIOS())return`<div class="flag info inst-hint"><span><b>Install DME Office on this iPhone or iPad:</b> open this page in Safari, tap the Share button <span aria-hidden="true">(□↑)</span>, then <b>Add to Home Screen</b>.</span>${later}</div>`;
+ return`<div class="flag info inst-hint"><span><b>Install DME Office:</b> open the browser menu <span aria-hidden="true">(⋮)</span> and choose <b>Install app</b> or <b>Add to Home screen</b>. Use Chrome or Edge if you do not see it.</span>${later}</div>`}
+function instSlots(){document.querySelectorAll(".inst-slot").forEach(s=>{s.innerHTML=instHint(s.dataset.dash==="1")})}
+{const _b=installBtn;installBtn=function(){_b();instSlots()}}
+{const _l=loginScreen;loginScreen=function(){const r=_l.apply(this,arguments);const c=document.querySelector("#main .solo-card");if(c&&!c.querySelector(".inst-slot"))c.insertAdjacentHTML("beforeend",`<div class="inst-slot" style="margin-top:14px"></div>`);instSlots();return r}}
+{const _o=vOverview;vOverview=function(){const h=_o();setTimeout(instSlots,0);return`<div class="inst-slot" data-dash="1"></div>`+h}}
+document.addEventListener("click",e=>{if(!e.target.closest('[data-act="inst-later"]'))return;try{localStorage.setItem(INST_K,String(Date.now()+30*864e5))}catch(x){}instSlots()});
+if(!document.getElementById("inst-css"))document.head.insertAdjacentHTML("beforeend",`<style id="inst-css">.inst-slot:empty{display:none}.inst-slot[data-dash="1"]{margin-bottom:12px}.inst-hint{display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;justify-content:space-between}.inst-hint .actions{display:flex;gap:6px;flex-wrap:wrap}</style>`);
 
 /* ---------- events ---------- */
 document.addEventListener("click",e=>{
