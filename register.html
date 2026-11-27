@@ -266,7 +266,7 @@ const session=d=>(d.getMonth()<6?"Jan ":"Jul ")+String(d.getFullYear()).slice(2)
 
 /* ---- views ---- */
 function v0(){return`<section class="card"><h2>Personal details</h2><p class="lede">Write your name exactly as on your PMDC certificate. Do not add "Dr." These details also fill your RIC bio data form.</p>
-${fld("name","Full name",{ph:"e.g. Ayesha Javaid",ac:"name"})}
+${fld("name","Full name",{ph:"e.g. Ayesha Khan",ac:"name"})}
 ${fld("father","Father's name")}
 <div class="grid two">${fld("dob","Date of birth",{type:"date"})}${sel("marital","Marital status",BIO_MARITAL)}</div>
 <div class="grid two">${fld("cnic","CNIC",{mode:"numeric",ph:"37405-1234567-1",mono:1})}${fld("pmdc","PMDC number",{ph:"93232-P",mono:1})}</div>
