@@ -16,6 +16,8 @@ const acBody=k=>/^UHS/.test(k)?"UHS":"CPSP";
 const acProgL=k=>k==="UHS (MS)"?"MS":k==="UHS (MD)"?"MD":k;
 const AC_ST=["Not applied","Applied","Inspection done","Approved","Refused","Not needed"];
 const AC_SOON=180;
+const acSoon=()=>typeof stN==="function"?stN("ac_soon"):AC_SOON;
+const acSoonTxt=()=>{const d=acSoon();return d%30===0&&d>=60?`${d/30} months`:`${d} days`};
 const acList=()=>{if(!DB.accr)DB.accr=[];return DB.accr};
 const acFind=(spec,prog)=>acList().find(a=>a.spec===spec&&a.prog===prog);
 const acEmpty=()=>({st:"Not applied",ref:"",on:"",to:"",seats:"",notes:""});
@@ -26,7 +28,7 @@ function acRows(){const out=[],seen=new Set();
  acList().forEach(a=>{if(!seen.has(a.spec+"|"+a.prog))out.push({spec:a.spec,prog:a.prog,a})});return out}
 /* one approval's state, with dates applied: Approved past its end is Expired; within 6 months it is Renew soon */
 function acState(x){x=x||acEmpty();const st=x.st||"Not applied";if(st!=="Approved")return st;if(!x.to)return"Approved";const t=iso(TODAY);
- if(x.to<t)return"Expired";if(days(P(x.to),TODAY)<=AC_SOON)return"Renew soon";return"Approved"}
+ if(x.to<t)return"Expired";if(days(P(x.to),TODAY)<=acSoon())return"Renew soon";return"Approved"}
 const acOk=s=>s==="Approved"||s==="Renew soon"||s==="Not needed";
 const AC_PILL={"Not applied":"p-bad","Refused":"p-bad","Expired":"p-bad","Applied":"p-pend","Inspection done":"p-pend","Renew soon":"p-pause","Approved":"p-ric","Not needed":"p-done"};
 function acPill(x){const s=acState(x);return`<span class="pill ${AC_PILL[s]||"p-done"}">${esc(s)}</span>`}
@@ -131,7 +133,7 @@ if(typeof NAV_ICON==="object"&&NAV_ICON)NAV_ICON.accr=NAV_ICON.credentials||NAV_
 {const _e=extraAttn;extraAttn=function(){const o=_e();const R=acRows(),nm=a=>a.slice(0,3).map(r=>`${r.spec} ${acProgL(r.prog)}`).join(", ")+(a.length>3?` and ${a.length-3} more`:"");
  const ex=R.filter(r=>r.a&&(acState(r.a.body)==="Expired"||acState(r.a.pmdc)==="Expired")),soon=R.filter(r=>r.a&&!ex.includes(r)&&(acState(r.a.body)==="Renew soon"||acState(r.a.pmdc)==="Renew soon"));
  if(ex.length)o.push([ex.length,"pause",`programme accreditation${ex.length>1?"s":""} expired`,nm(ex),"accr","Renew"]);
- if(soon.length)o.push([soon.length,"pend",`programme accreditation${soon.length>1?"s":""} ending within 6 months`,nm(soon),"accr","Renew"]);
+ if(soon.length)o.push([soon.length,"pend",`programme accreditation${soon.length>1?"s":""} ending within ${acSoonTxt()}`,nm(soon),"accr","Renew"]);
  return o}}
 document.addEventListener("click",e=>{const a=e.target.closest("a[data-go-filter]");if(!a)return;const[v,f]=a.dataset.goFilter.split(":");if(v==="accr"&&f)UI.acTab=f},true);
 EXPORTS.accr=()=>({file:"Accreditation",sheets:[sheetFrom("Accreditation",acRows().map(r=>{const a=r.a||{},b=a.body||{},m=a.pmdc||{};return{"Specialty":r.spec,"Programme":acProgL(r.prog),"Awarding body":acBody(r.prog),
