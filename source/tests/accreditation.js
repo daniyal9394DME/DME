@@ -8,16 +8,22 @@ for(const[k,v] of Object.entries(R))await ctx.route('**/'+k,r=>r.fulfill({path:N
 await ctx.route('https://fonts.googleapis.com/**',r=>r.fulfill({body:'',contentType:'text/css'}));
 const d=await ctx.newPage();d.on('pageerror',e=>console.log('ERR',e.message,(e.stack||'').slice(0,300)));
 const expect=(ok,what)=>{if(!ok)console.log('ERR expected:',what);else console.log('ok:',what)};
-const row=(s,p)=>`main tr[data-acrow="${s}|${p}"]`;
+const row=(s,p)=>`main [data-acrow="${s}|${p}"]`;
+{const h=require('fs').readFileSync(path.join(__dirname,'..','dist','index.html'),'utf8'),head=h.slice(0,h.search(/<div|<body/));
+ expect(/rel="manifest"/.test(head)&&/rel="apple-touch-icon"/.test(head),'live page: install links are in the page head')}
 await d.goto(U);await d.waitForTimeout(800);
 expect(await d.$('#side a[href="#accr"], nav a[href="#accr"], a[href="#accr"]')!==null,'Accreditation is in the menu');
 await d.goto(U+'#accr');await d.waitForTimeout(400);
 expect(/Accreditation/.test(await d.$eval('main h2',e=>e.textContent)),'page opens');
-const rows=await d.$$eval('main tr[data-acrow]',a=>a.map(x=>x.dataset.acrow));
+const rows=await d.$$eval('main [data-acrow]',a=>a.map(x=>x.dataset.acrow));
 expect(rows.includes('Cardiac Surgery|FCPS')&&rows.includes('Cardiac Surgery|UHS (MS)')&&rows.includes('General Cardiology|UHS (MD)')&&rows.includes('Radiology|FCPS'),'programmes come from the specialty settings: '+rows.length+' rows');
 expect(!rows.some(r=>/^Nephrology/.test(r)),'non-training specialties are not listed');
 expect(/Apply to CPSP/.test(await d.textContent(row('Cardiac Surgery','FCPS')))&&/Apply to UHS/.test(await d.textContent(row('Cardiac Surgery','UHS (MS)'))),'nothing saved yet: next step is to apply to the awarding body');
 expect(await d.evaluate(()=>acRows().every(r=>acGroup(r)==='Missing')),'all missing at the start');
+expect(await d.$$eval('main .ac-card[data-acspec="cardiac surgery"] [data-acrow]',a=>a.map(x=>x.dataset.acrow).join())==='Cardiac Surgery|FCPS,Cardiac Surgery|UHS (MS)','FCPS and MS of one specialty in the same card');
+await d.fill('#ac-q','paed');await d.waitForTimeout(150);
+expect((await d.$$eval('main .ac-card:not([hidden])',a=>a.map(x=>x.dataset.acspec))).join()==='paediatric cardiology,paediatric cardiac surgery'&&await d.evaluate(()=>document.activeElement.id==='ac-q'),'search filters the cards and keeps the cursor');
+await d.fill('#ac-q','');await d.waitForTimeout(100);
 // update Cardiac Surgery MS: UHS approved, PMDC applied, with a letter
 await d.click(`${row('Cardiac Surgery','UHS (MS)')} [data-act="ac-edit"]`);await d.waitForTimeout(300);
 expect(/UHS recognition/.test(await d.textContent('#sheetform')),'form names UHS for MS');
@@ -39,7 +45,7 @@ await d.evaluate(()=>{const t=iso(TODAY),add=n=>{const x=new Date(TODAY);x.setDa
 await d.waitForTimeout(200);
 expect(await d.evaluate(()=>[acGroup({a:acFind('Cardiac Surgery','UHS (MS)'),prog:'UHS (MS)'}),acState(acFind('Radiology','FCPS').body),acState(acFind('Anaesthesiology','FCPS').pmdc)].join())==='Complete,Renew soon,Expired','complete, renew soon, expired');
 await d.click('main .chip[data-actab="Renew"]');await d.waitForTimeout(200);
-const rn=await d.$$eval('main tr[data-acrow]',a=>a.map(x=>x.dataset.acrow));expect(rn.length===2&&rn.includes('Radiology|FCPS')&&rn.includes('Anaesthesiology|FCPS'),'Renew filter: '+rn.join(', '));
+const rn=await d.$$eval('main [data-acrow]',a=>a.map(x=>x.dataset.acrow));expect(rn.length===2&&rn.includes('Radiology|FCPS')&&rn.includes('Anaesthesiology|FCPS'),'Renew filter: '+rn.join(', '));
 expect(/Renew PMDC accreditation/.test(await d.textContent(row('Anaesthesiology','FCPS'))),'expired PMDC: renew');
 await d.screenshot({path:OUT+'accreditation.png',fullPage:true});
 // dashboard
@@ -63,6 +69,7 @@ expect(await d.evaluate(()=>!!acFind('Diagnostic Radiology','FCPS')&&!acFind('Ra
 await d.goto(U+'#accr');await d.waitForTimeout(300);
 const [x]=await Promise.all([d.waitForEvent('download',{timeout:30000}),d.click('[data-export="accr"]')]);expect(/Accreditation/.test(x.suggestedFilename()),'Excel download: '+x.suggestedFilename());
 await d.setViewportSize({width:390,height:844});await d.waitForTimeout(300);
+expect(await d.evaluate(()=>[...document.querySelectorAll('main [data-act="ac-edit"]')].every(b=>{const r=b.getBoundingClientRect();return r.right<=innerWidth})),'every Update button is on screen on a phone');
 expect(await d.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1),'no sideways scroll on a phone');
 await d.screenshot({path:OUT+'accreditation-phone.png',fullPage:false});
 await b.close()})();
