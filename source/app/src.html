@@ -1,4 +1,4 @@
-<title>RIC DME Office</title>
+<title>RIC DME&T Office</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600&family=Source+Sans+3:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
@@ -155,7 +155,7 @@ label.f .h{font-weight:400;color:var(--muted);font-size:13px}
 
 <div class="appbar"><div class="wrap">
   <img src="__RIC__" alt="RIC logo">
-  <div class="t"><h1>DME Office</h1><div class="s">Rawalpindi Institute of Cardiology · Medical Education &amp; Training</div></div>
+  <div class="t"><h1>DME&T Office</h1><div class="s">Rawalpindi Institute of Cardiology · Medical Education and Training</div></div>
   <div class="user">Signed in as<br><b>Dr. Daniyal Ahmad Kamal</b> · Admin</div>
 </div></div>
 <nav class="tabs" aria-label="Sections"><div class="wrap" id="nav"></div></nav>
@@ -188,7 +188,7 @@ function seed(){const d=JSON.parse(JSON.stringify(SEED));
  d.rots.push({id:"RX2",pid:"X002",site:"HFH",start:"2026-01-28",ret:"2027-07-28",notes:"Declared at registration",by:"Registration form"});
  const mo=d.faculty.find(f=>f.name==="Muhammad Mohsin"),cs=d.faculty.find(f=>f.name==="Musfireh Siddiqeh");
  if(cs)d.sups.push({id:"VX1",pid:"X001",fid:cs.id,from:"2026-07-28",to:null});if(mo)d.sups.push({id:"VX2",pid:"X002",fid:mo.id,from:"2025-07-28",to:null});
- d.audit=[{at:new Date().toISOString(),by:"Import",what:"Imported 127 PGTs, 63 faculty and 44 credentials from DME Live Database",ref:""}];
+ d.audit=[{at:new Date().toISOString(),by:"Import",what:"Imported 127 PGTs, 63 faculty and 44 credentials from DME&T Live Database",ref:""}];
  return d}
 let DB;try{DB=JSON.parse(localStorage.getItem(KEY))}catch(e){}
 if(!DB||!DB.pgts)DB=seed();
@@ -366,7 +366,7 @@ function vPgt(){
   <div style="display:grid;gap:18px;align-content:start">
    <div class="panel"><h3>Training</h3><dl class="kv">
     <dt>Start</dt><dd>${fd(p.start)}</dd><dt>Duration</dt><dd>${p.dur?p.dur+" years":"<b style='color:var(--bad)'>Missing</b>"}</dd>
-    <dt>Expected completion</dt><dd>${fd(c.comp)}${p.override?' <span class="pill p-pause">Set by DME</span>':""}</dd>
+    <dt>Expected completion</dt><dd>${fd(c.comp)}${p.override?' <span class="pill p-pause">Set by DME&T</span>':""}</dd>
     <dt>Days to completion</dt><dd>${c.toComp??"—"}</dd>
     ${c.rotational?`<dt>Rotation</dt><dd>${fd(c.rotStart)} – ${fd(c.ret)}</dd><dt>Days to return</dt><dd>${c.toRet??"—"}</dd>`:`<dt>Rotation</dt><dd>None, entire training at RIC</dd>`}
     <dt>Supervisor</dt><dd>${c.sup?`<a href="#fac-${c.sup.id}">${esc(facName(c.sup))}</a>`:"—"}</dd>

@@ -43,7 +43,7 @@ function regPanel(w){if(w.stage<3)return"";const R=regsOf(w),pay=w.fee&&w.payMod
   <td><select data-rgmove="${r.id}" aria-label="Move ${nm(r)}"><option value="">${r.status}</option>${REG_ST.filter(s=>s!==r.status&&(pay||!["Payment to verify","Awaiting payment"].includes(s))).map(s=>`<option>${s}</option>`).join("")}</select></td></tr>`).join("")||`<tr><td colspan="8" class="empty">Nobody here.</td></tr>`}
  </tbody></table></div></div>`}
 function regMove(w,r,to){const from=r.status;if(to==="Confirmed"&&!holdsSeat(r)&&seatsLeft(w)<=0&&!confirmOver){confirmOver=true;toast(`All ${w.seats} seats are taken. Choose again to confirm anyway.`);return false}confirmOver=false;
- r.status=to;if(to==="Confirmed"&&w.fee&&w.payMode!=="free"&&!r.paid)r.note="Confirmed by DME before payment";if(to!=="Awaiting payment")delete r.holdUntil;else r.holdUntil=new Date(Date.now()+(w.holdHours||48)*3600e3).toISOString();
+ r.status=to;if(to==="Confirmed"&&w.fee&&w.payMode!=="free"&&!r.paid)r.note="Confirmed by DME&T before payment";if(to!=="Awaiting payment")delete r.holdUntil;else r.holdUntil=new Date(Date.now()+(w.holdHours||48)*3600e3).toISOString();
  let msg=`${stripOther(r.a.name)}: ${from} → ${to}`;if(holdsSeat({status:from})&&!holdsSeat(r)){const m=promote(w);if(m.length)msg+=`; moved up from the waiting list: ${m.map(x=>stripOther(x.a.name)).join(", ")}`}
  wlog(w,msg);regSync(w);return true}
 let confirmOver=false;
@@ -60,7 +60,7 @@ UI.rgDone=null;
 function vReg(){const w=DB.workshops.find(x=>x.id===route.id);if(!w)return`<div class="panel">Not found.</div>`;const pay=w.fee&&w.payMode!=="free";
  const back=`<div class="flag info">Participant view. This is what opens from the registration link or QR code. <a href="#ws-${w.id}">Back to the workshop</a></div>`;
  if(UI.rgDone&&UI.rgDone.w===w.id){const r=regsOf(w).find(x=>x.id===UI.rgDone.r);return back+`<div class="panel fbform"><h2>${r.status==="Waiting list"?"You are on the waiting list":r.status==="Confirmed"?"Registration confirmed":"Registration received"}</h2>
-  <p>${r.status==="Waiting list"?`All seats for <b>${esc(w.title)}</b> are taken. You are number ${regsOf(w).filter(x=>x.status==="Waiting list"&&x.at<=r.at).length} on the waiting list; we will contact you if a seat opens.`:r.status==="Confirmed"?`Your seat for <b>${esc(w.title)}</b> on ${fd(w.date)} is confirmed.`:r.status==="Payment to verify"?`Your seat is held while the DME office verifies your payment (transaction ${esc(r.txn)}). You will receive a confirmation.`:`Your seat is held until ${fdt(r.holdUntil)}. Please pay ${money(w.fee)} before then or the seat will go to the next person.`}</p>
+  <p>${r.status==="Waiting list"?`All seats for <b>${esc(w.title)}</b> are taken. You are number ${regsOf(w).filter(x=>x.status==="Waiting list"&&x.at<=r.at).length} on the waiting list; we will contact you if a seat opens.`:r.status==="Confirmed"?`Your seat for <b>${esc(w.title)}</b> on ${fd(w.date)} is confirmed.`:r.status==="Payment to verify"?`Your seat is held while the DME&T office verifies your payment (transaction ${esc(r.txn)}). You will receive a confirmation.`:`Your seat is held until ${fdt(r.holdUntil)}. Please pay ${money(w.fee)} before then or the seat will go to the next person.`}</p>
   <div class="actions"><button class="btn" data-act="rg-again">Register another person (testing)</button><a class="btn" href="#ws-${w.id}">Back to the workshop</a></div></div>`}
  if(!w.regOpen)return back+`<div class="panel fbform"><h2>${esc(w.title)}</h2><p>Registration is not open.</p></div>`;
  const full=seatsLeft(w)<=0;
@@ -71,7 +71,7 @@ function vReg(){const w=DB.workshops.find(x=>x.id===route.id);if(!w)return`<div 
  ${pay&&!full&&w.payMode==="proof"?`<fieldset class="pfsec"><legend>Payment</legend><p class="qd" style="margin:0">Pay ${money(w.fee)} first, then enter the details below. ${w.payInfo?`<br><b>${esc(w.payInfo)}</b>`:""}</p>
   <div class="q"><div class="qt"><span class="req">Transaction ID / reference number</span></div><input name="rg-txn" placeholder="From your bank or wallet receipt"></div>
   <div class="q"><div class="qt"><span class="req">Photo or screenshot of the receipt</span></div><input type="file" name="rg-rcpt" accept="image/*,application/pdf"></div></fieldset>`:""}
- ${pay&&!full&&w.payMode==="hold"?`<div class="flag info">Your seat will be held for ${w.holdHours||48} hours. Pay ${money(w.fee)}${w.payInfo?` to ${esc(w.payInfo)}`:""} and send the receipt to the DME office before then.</div>`:""}
+ ${pay&&!full&&w.payMode==="hold"?`<div class="flag info">Your seat will be held for ${w.holdHours||48} hours. Pay ${money(w.fee)}${w.payInfo?` to ${esc(w.payInfo)}`:""} and send the receipt to the DME&T office before then.</div>`:""}
  <div class="err" id="rgerr" role="alert"></div><button class="btn primary" type="button" data-act="rg-submit" style="justify-self:start">${full?"Join the waiting list":"Register"}</button></form>`}
 function submitReg(){const w=DB.workshops.find(x=>x.id===route.id),fm=document.getElementById("rgform"),er=document.getElementById("rgerr");const{vals:v,missing}=formRead(fm,w.rgq,"rg-");
  if(missing.length){er.textContent="Please answer: "+missing.map(q=>q.t).join("; ");return}

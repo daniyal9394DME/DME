@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>DME Office · connection check</title>
+<title>DME&T Office · connection check</title>
 <script src="config.js"></script>
 <style>
 body{font:15px/1.5 "Segoe UI",Roboto,Arial,sans-serif;background:#F3F5F8;color:#1F2933;margin:0;padding:24px 16px}
@@ -10,9 +10,9 @@ li{display:grid;grid-template-columns:28px 1fr;gap:6px;padding:10px 0;border-top
 .ok{color:#2E7D4F}.bad{color:#B3261E}.wait{color:#5B6776}b.i{font-size:18px;line-height:1}small{color:#5B6776;display:block}
 a{color:#8A2D3B}
 </style></head><body><div class="card">
-<h1>DME Office · connection check</h1><p>This page checks each part of the setup and says what to fix. It changes nothing.</p>
+<h1>DME&T Office · connection check</h1><p>This page checks each part of the setup and says what to fix. It changes nothing.</p>
 <ol id="list"></ol><p id="end" style="margin-top:14px"></p></div>
-<div class="card" style="margin-top:16px"><h1>Install as an app</h1><p>Checks the files a phone needs to install the DME Office with its logo.</p><ol id="inst"></ol>
+<div class="card" style="margin-top:16px"><h1>Install as an app</h1><p>Checks the files a phone needs to install the DME&T Office with its logo.</p><ol id="inst"></ol>
 <div id="how" style="margin-top:12px"><p><b>Android (Chrome):</b> open the app link in <b>Chrome</b> itself (not inside WhatsApp or Gmail; tap ⋮ › <i>Open in Chrome</i>). Tap ⋮ › <b>Install app</b> (or <i>Add to home screen › Install</i>). If it only offers <i>Create shortcut</i>, one of the checks above is ✗.</p>
 <p><b>iPhone (Safari):</b> open the link in <b>Safari</b>, tap the Share button › <b>Add to Home Screen</b> › Add.</p>
 <p>If you added it before these files were in place, delete the old home-screen icon first, then add it again.</p></div></div>
@@ -31,7 +31,7 @@ function row(t){const li=document.createElement("li");li.innerHTML=`<b class="i 
  r=row("Supabase answers");let res;
  try{res=await fetch(url+"/rest/v1/rpc/dme_public_lists",{method:"POST",headers:{apikey:key,"Content-Type":"application/json",...(key.startsWith("eyJ")?{Authorization:"Bearer "+key}:{})},body:"{}"})}catch(e){r(false,"No answer from Supabase. Check the URL, the internet connection, and that the project is not paused (Supabase dashboard → Restore project).");return done(false)}
  if(res.status===401||res.status===403){const t=await res.text();r(false,"Supabase refused the key ("+res.status+"). Copy the publishable key again from Project Settings → API Keys. "+t.slice(0,140));return done(false)}
- if(res.status===404){r(true,"Connected.");r=row("Database set up (02_pilot_setup.sql)");r(false,"The DME functions are missing. In Supabase open SQL Editor → New query, paste all of 02_pilot_setup.sql and click Run.");return done(false)}
+ if(res.status===404){r(true,"Connected.");r=row("Database set up (02_pilot_setup.sql)");r(false,"The DME&T functions are missing. In Supabase open SQL Editor → New query, paste all of 02_pilot_setup.sql and click Run.");return done(false)}
  if(!res.ok){r(false,"Unexpected answer "+res.status+": "+(await res.text()).slice(0,160));return done(false)}
  r(true,"Connected.");const j=await res.json();
  r=row("Database set up (02_pilot_setup.sql)");r(true,"Tables and functions are there.");

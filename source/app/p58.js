@@ -13,9 +13,9 @@ const INST_K="dme-install-later";
 const instLater=()=>{try{return(+localStorage.getItem(INST_K)||0)>Date.now()}catch(e){return false}};
 function instHint(dash){const live=typeof LIVE!=="undefined"&&LIVE;if(!live||isStandalone())return"";if(dash&&instLater())return"";
  const later=dash?`<button class="btn small link" data-act="inst-later">Not now</button>`:"";
- if(installEvt)return`<div class="flag info inst-hint"><span><b>Install DME Office</b> on this ${/android|iphone|ipad|mobile/i.test(navigator.userAgent)?"phone":"computer"}: it opens like an app, from its own icon.</span><span class="actions"><button class="btn small primary" data-act="app-install">Install app</button>${later}</span></div>`;
- if(isIOS())return`<div class="flag info inst-hint"><span><b>Install DME Office on this iPhone or iPad:</b> open this page in Safari, tap the Share button <span aria-hidden="true">(□↑)</span>, then <b>Add to Home Screen</b>.</span>${later}</div>`;
- return`<div class="flag info inst-hint"><span><b>Install DME Office:</b> open the browser menu <span aria-hidden="true">(⋮)</span> and choose <b>Install app</b> or <b>Add to Home screen</b>. Use Chrome or Edge if you do not see it.</span>${later}</div>`}
+ if(installEvt)return`<div class="flag info inst-hint"><span><b>Install DME&T Office</b> on this ${/android|iphone|ipad|mobile/i.test(navigator.userAgent)?"phone":"computer"}: it opens like an app, from its own icon.</span><span class="actions"><button class="btn small primary" data-act="app-install">Install app</button>${later}</span></div>`;
+ if(isIOS())return`<div class="flag info inst-hint"><span><b>Install DME&T Office on this iPhone or iPad:</b> open this page in Safari, tap the Share button <span aria-hidden="true">(□↑)</span>, then <b>Add to Home Screen</b>.</span>${later}</div>`;
+ return`<div class="flag info inst-hint"><span><b>Install DME&T Office:</b> open the browser menu <span aria-hidden="true">(⋮)</span> and choose <b>Install app</b> or <b>Add to Home screen</b>. Use Chrome or Edge if you do not see it.</span>${later}</div>`}
 function instSlots(){document.querySelectorAll(".inst-slot").forEach(s=>{s.innerHTML=instHint(s.dataset.dash==="1")})}
 {const _b=installBtn;installBtn=function(){_b();instSlots()}}
 {const _l=loginScreen;loginScreen=function(){const r=_l.apply(this,arguments);const c=document.querySelector("#main .solo-card");if(c&&!c.querySelector(".inst-slot"))c.insertAdjacentHTML("beforeend",`<div class="inst-slot" style="margin-top:14px"></div>`);instSlots();return r}}

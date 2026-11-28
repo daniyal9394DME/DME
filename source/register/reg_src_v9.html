@@ -2,7 +2,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,600&family=Source+Sans+3:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: maroon letterhead (matches the existing DME dashboard), step rail, one card per step, fixed action bar */
+/* Layout: maroon letterhead (matches the existing DME&T dashboard), step rail, one card per step, fixed action bar */
 :root{
   --bg:#F6F1E7; --surface:#FFFFFF; --sunk:#FBF8F2; --ink:#231A17; --muted:#6E625A; --line:#E2D8C8;
   --brand:#6D1F2B; --brand-deep:#521521; --brand-soft:#F3E4E1; --gold:#B08D57;
@@ -91,7 +91,7 @@ dl.sum dd{margin:0;min-width:0;overflow-wrap:anywhere}
 
 <header class="lh"><div class="wrap">
   <img src="__RIC__" alt="RIC logo">
-  <div class="t"><div class="inst">Rawalpindi Institute of Cardiology</div><h1>PGT Registration</h1><div class="sub">Medical Education &amp; Training · fill once when you join RIC</div></div>
+  <div class="t"><div class="inst">Rawalpindi Institute of Cardiology</div><h1>PGT Registration</h1><div class="sub">Medical Education and Training · fill once when you join RIC</div></div>
 </div></header>
 <nav class="rail" aria-label="Steps"><div class="wrap"><ol id="rail"></ol></div></nav>
 <main class="wrap" id="app"></main>
@@ -184,7 +184,7 @@ ${S.spec&&avail.length<3?`<span class="hint">${S.spec} at RIC is offered as ${av
 <select id="sup" data-k="sup" ${!S.spec||!S.program?"disabled":""}><option value="">${!S.spec||!S.program?"Choose specialty and programme first":"Choose supervisor"}</option>
 ${sups.map(s=>`<option ${s.n===S.sup?"selected":""}>${esc(s.n)}</option>`).join("")}<option value="other" ${S.sup==="other"?"selected":""}>My supervisor is not listed</option></select>
 <span class="hint">Shows ${S.program==="FCPS"?"CPSP":S.program?"UHS":"approved"} supervisors in your specialty.</span><span class="err">${showErr("sup")||""}</span></div>
-${S.sup==="other"?`<label class="f"><span class="req">Supervisor's name</span><input id="supOther" data-k="supOther" value="${esc(S.supOther)}" placeholder="The DME office will confirm"></label>`:""}
+${S.sup==="other"?`<label class="f"><span class="req">Supervisor's name</span><input id="supOther" data-k="supOther" value="${esc(S.supOther)}" placeholder="The DME&T office will confirm"></label>`:""}
 <div class="grid two">${fld("start","Training start date",{type:"date",hint:"as on your RTMC / enrolment letter"})}
 <div class="f"><span class="lbl req">Duration</span><select id="dur" data-k="dur" ${!S.program?"disabled":""}><option value="">—</option>${[2,3,4,5].map(y=>`<option value="${y}" ${+S.dur===y?"selected":""}>${y} years</option>`).join("")}</select>
 <span class="hint">${S.spec&&S.program&&DUR[S.spec]?.[S.program]?`Standard for this programme: ${DUR[S.spec][S.program]} years`:"Set automatically"}</span></div></div>
@@ -201,7 +201,7 @@ ${S.duty==="RIC"?`<div class="note ok">Place of duty: Rawalpindi Institute of Ca
 ${r?`<div class="f"><span class="lbl req">Place of duty</span><select id="site" data-k="site"><option value="">Choose hospital</option>${SITES.map(([k,l])=>`<option value="${k}" ${S.site===k?"selected":""}>${l}${k!=="Other"?" ("+k+")":""}</option>`).join("")}</select><span class="err">${showErr("site")||""}</span></div>
 ${S.site==="Other"?`<label class="f"><span class="req">Hospital name</span><input id="siteOther" data-k="siteOther" value="${esc(S.siteOther)}"></label>`:""}
 <div class="grid two">${fld("rotStart","Rotation started on",{type:"date"})}${fld("ret","Expected return to RIC",{type:"date"})}</div>`:""}
-${S.duty==="Frozen"?`${fld("frozenSince","Frozen since",{type:"date"})}<div class="note warn">The DME office will contact you to record the reason and the expected resumption date.</div>`:""}
+${S.duty==="Frozen"?`${fld("frozenSince","Frozen since",{type:"date"})}<div class="note warn">The DME&T office will contact you to record the reason and the expected resumption date.</div>`:""}
 </section>`}
 
 function docCard(d){const f=FILES[d.k];return`<div class="doc ${d.img?"photo":""} ${f?"has":""}">
@@ -228,19 +228,19 @@ ${S.email?`<dt>Email</dt><dd>${esc(S.email)}</dd>`:""}<dt>Domicile</dt><dd>${esc
 <dt>Expected completion</dt><dd>${S.comp?dfmt(new Date(S.comp+"T00:00")):"—"}</dd>
 <dt>Posting</dt><dd>${S.duty==="RIC"?"Posted at RIC":S.duty==="Rotation"?`On rotation at ${esc(S.site==="Other"?S.siteOther:(SITES.find(x=>x[0]===S.site)||["",""])[1])}${S.rotStart?" since "+dfmt(new Date(S.rotStart+"T00:00")):""}${S.ret?", returning "+dfmt(new Date(S.ret+"T00:00")):""}`:S.duty==="Frozen"?`Training frozen${S.frozenSince?" since "+dfmt(new Date(S.frozenSince+"T00:00")):""}`:"—"}</dd>
 <dt>Documents</dt><dd>${DOCS.filter(d=>FILES[d.k]).length} of 4</dd></dl>
-<label class="check"><input type="checkbox" id="ok" ${S.ok?"checked":""}><span>The information and documents I have given are correct. I will inform the DME office of any change in my training, rotation or contact details.</span></label>
+<label class="check"><input type="checkbox" id="ok" ${S.ok?"checked":""}><span>The information and documents I have given are correct. I will inform the DME&T office of any change in my training, rotation or contact details.</span></label>
 <button class="btn primary" data-act="submit" ${miss.length||!S.ok?"disabled":""} style="justify-self:start">Submit registration</button></section>`}
 
 function vDone(){return`<section class="card"><h2>Registration received</h2>
-<p class="lede">Thank you, Dr. ${esc(S.name)}. The DME office will verify your details and documents.</p>
-<div><span class="hint">${LIVE?"Your RIC PGT ID (confirmed once the DME office verifies your registration)":"Your reference"}</span><br><span class="ref">${esc(S.done.ref)}</span></div>
-<span class="hint">Submitted ${esc(S.done.at)}. Keep this reference; quote it if you contact the DME office.</span>
-<ol class="steps"><li>The DME office checks your details against your documents.</li><li>Once verified, you get your RIC PGT number.</li><li>If anything needs correcting, the office will contact you on ${esc(S.mobile)}.</li></ol>
-${LIVE?"":`<div class="note warn">Prototype: nothing was sent. In the live version this goes into the DME app's "Pending verification" list.</div>`}
+<p class="lede">Thank you, Dr. ${esc(S.name)}. The DME&T office will verify your details and documents.</p>
+<div><span class="hint">${LIVE?"Your RIC PGT ID (confirmed once the DME&T office verifies your registration)":"Your reference"}</span><br><span class="ref">${esc(S.done.ref)}</span></div>
+<span class="hint">Submitted ${esc(S.done.at)}. Keep this reference; quote it if you contact the DME&T office.</span>
+<ol class="steps"><li>The DME&T office checks your details against your documents.</li><li>Once verified, you get your RIC PGT number.</li><li>If anything needs correcting, the office will contact you on ${esc(S.mobile)}.</li></ol>
+${LIVE?"":`<div class="note warn">Prototype: nothing was sent. In the live version this goes into the DME&T app's "Pending verification" list.</div>`}
 <button class="btn" data-act="reset" style="justify-self:start">Start a new registration</button></section>`}
 
 
-/* ---------- live: lists from the DME database, submission to Supabase ---------- */
+/* ---------- live: lists from the DME&T database, submission to Supabase ---------- */
 const SUPA=(window.DME_SUPABASE&&window.DME_SUPABASE.url&&window.DME_SUPABASE.anonKey)?window.DME_SUPABASE:null,LIVE=!!SUPA;let SB=null;
 function sbReady(){if(SB)return Promise.resolve(SB);return new Promise((ok,no)=>{const s=document.createElement("script");s.src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/dist/umd/supabase.js";s.onload=()=>{SB=window.supabase.createClient(SUPA.url,SUPA.anonKey,{auth:{persistSession:false}});ok(SB)};s.onerror=()=>no(new Error("Could not connect"));document.head.append(s)})}
 if(LIVE)sbReady().then(sb=>sb.rpc("dme_public_lists")).then(({data})=>{if(!data)return;
@@ -256,7 +256,7 @@ async function liveSubmit(b){b.disabled=true;const old=b.textContent;b.textConte
    const{error}=await sb.storage.from("dme-uploads").upload(path,f.file,{contentType:f.type||undefined});if(error)return fail("A document could not be uploaded. Check the connection and try again.");docs[d.k]=path}
   b.textContent="Sending…";const p={...S,docs,sup:S.sup==="other"?"":S.sup,supOther:S.sup==="other"?S.supOther:""};delete p.done;delete p.step;delete p.ok;
   const{data,error}=await sb.rpc("dme_submit_pgt",{p});if(error||!data)return fail("Could not send. Check the connection and try again.");
-  if(data.error)return fail(data.error==="duplicate"?"A registration with this CNIC already exists. Contact the DME office.":"Some details are missing or not valid. Check each step.");
+  if(data.error)return fail(data.error==="duplicate"?"A registration with this CNIC already exists. Contact the DME&T office.":"Some details are missing or not valid. Check each step.");
   S.done={ref:data.ref,at:new Date().toLocaleString("en-GB",{dateStyle:"medium",timeStyle:"short"})};save();render()}catch(e){fail("Could not send. Check the connection and try again.")}}
 const V=[v0,v1,v2,v3,v4];
 function render(){

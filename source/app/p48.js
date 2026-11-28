@@ -5,7 +5,7 @@
    signature lines, or an Excel workbook with the same content.
    ===================================================================== */
 const RS_PUNJAB="__PUNJAB__";
-const RS_SIG="Director Medical Education & Training\nHead of Department\nExecutive Director",RS_SIG_OLD="Head of Department\nDirector Medical Education & Training";
+const RS_SIG="Director Medical Education and Training\nHead of Department\nExecutive Director",RS_SIG_OLD="Head of Department\nDirector Medical Education and Training";
 const rs1=v=>v==null||isNaN(v)?"":Math.round(v*10)/10;
 /* the pass mark as it reads on a formal sheet */
 function rsPass(x,k,T){const r=(x.passPaper||{})[k];if(r&&r.mode==="marks"&&T)return`${r.marks} of ${T} marks (${(r.marks/T*100).toFixed(1)}%)`;
@@ -68,7 +68,7 @@ async function rsPdf(x,o){try{await bioLoadPdf()}catch(e){toast(e.message);retur
  const full=u=>{if(ric&&ric.startsWith("data:"))try{doc.addImage(ric,"JPEG",M,9,23,23)}catch(e){}
   if(pun)try{doc.addImage(pun,"JPEG",W-M-25.8,9,25.8,23)}catch(e){}
   T("RAWALPINDI INSTITUTE OF CARDIOLOGY",W/2,16.5,{f:"times",b:1,s:16,c:BR,a:"center"});T("RAWAL ROAD, RAWALPINDI",W/2,22,{s:8.2,c:GR,a:"center",cs:.6});
-  T("Department of Medical Education & Training",W/2,27.8,{f:"times",i:1,s:11.5,a:"center"});
+  T("Department of Medical Education and Training",W/2,27.8,{f:"times",i:1,s:11.5,a:"center"});
   doc.setDrawColor(...BR);doc.setLineWidth(.7);doc.line(M,35,W-M,35);doc.setDrawColor(...GOLD);doc.setLineWidth(.3);doc.line(M,36.3,W-M,36.3);
   T("RESULT",W/2,45.5,{f:"times",b:1,s:18,a:"center",cs:2.2});T(`${x.title}  ·  ${x.session}`,W/2,52,{s:10.5,c:GR,a:"center"});
   if(o.ref)T(`Ref. No.: ${o.ref}`,M,59,{s:8.5});T(`Date of issue: ${issued}`,W-M,59,{s:8.5,a:"right"});
@@ -104,14 +104,14 @@ async function rsPdf(x,o){try{await bioLoadPdf()}catch(e){toast(e.message);retur
    d.notes.forEach(n=>{T(n,M,y,{i:1,s:7.8,c:GR});y+=4.5});y+=5});
   /* closing: status line and signatures */
   if(!room(44))page(u,false);
-  if(o.prov){T("This result is provisional and subject to verification by the Department of Medical Education & Training.",M,y+2,{i:1,s:8,c:GR});y+=6}
-  else{T("This result has been verified by the Department of Medical Education & Training.",M,y+2,{i:1,s:8,c:GR});y+=6}
+  if(o.prov){T("This result is provisional and subject to verification by the Department of Medical Education and Training.",M,y+2,{i:1,s:8,c:GR});y+=6}
+  else{T("This result has been verified by the Department of Medical Education and Training.",M,y+2,{i:1,s:8,c:GR});y+=6}
   if(u.sig.length){y+=19;const sw=CW/u.sig.length;u.sig.forEach((s,i)=>{const cx=M+sw*i+sw/2;doc.setDrawColor(70,70,70);doc.setLineWidth(.3);doc.line(cx-Math.min(28,sw/2-4),y,cx+Math.min(28,sw/2-4),y);
    doc.setFont("helvetica","bold");doc.setFontSize(8.6);const tl=doc.splitTextToSize(s,sw-5);tl.forEach((t,j)=>T(t,cx,y+4.8+j*3.7,{b:1,s:8.6,a:"center"}));
    const sub=/^head of department$/i.test(s)?(u.kind==="Specialty"?`Department of ${u.title}`:""):/^(director medical education|executive director)/i.test(s)?"Rawalpindi Institute of Cardiology":"";if(sub)T(sub,cx,y+4.8+tl.length*3.7+.4,{s:7.4,c:GR,a:"center"})});y+=16}}
  /* page furniture: footer, page numbers, provisional mark */
  const n=doc.getNumberOfPages();for(let i=1;i<=n;i++){doc.setPage(i);doc.setDrawColor(200,190,180);doc.setLineWidth(.2);doc.line(M,H-12.5,W-M,H-12.5);
-  T("Rawalpindi Institute of Cardiology · Department of Medical Education & Training",M,H-8.3,{s:7,c:GR});T(`Confidential  ·  Page ${i} of ${n}`,W-M,H-8.3,{s:7,c:GR,a:"right"});
+  T("Rawalpindi Institute of Cardiology · Department of Medical Education and Training",M,H-8.3,{s:7,c:GR});T(`Confidential  ·  Page ${i} of ${n}`,W-M,H-8.3,{s:7,c:GR,a:"right"});
   if(o.prov)try{doc.saveGraphicsState();doc.setGState(new doc.GState({opacity:.07}));doc.setFont("helvetica","bold");doc.setFontSize(78);doc.setTextColor(...BR);const t="PROVISIONAL",w=doc.getTextWidth(t),a=32*Math.PI/180;
    doc.text(t,W/2-w/2*Math.cos(a),H/2+w/2*Math.sin(a)+8,{angle:32});doc.restoreGraphicsState()}catch(e){}}
  const blob=doc.output("blob"),file=rsFile(x,o,".pdf");
@@ -122,7 +122,7 @@ async function rsXlsx(x,o,btn){if(!window.XLSX){toast("The Excel library did not
  const U=rsUnits(x,o);if(!U.length){toast("No candidates on this result");return}
  const dt=x.date?P(x.date).toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long",year:"numeric"}):"";
  const wb=XLSX.utils.book_new(),used=new Set(),nm=s=>{let b=s.replace(/[\\\/?*\[\]:]/g,"").slice(0,31),t=b,i=2;while(used.has(t.toLowerCase()))t=b.slice(0,28)+" "+i++;used.add(t.toLowerCase());return t};
- const top=["Rawalpindi Institute of Cardiology · Department of Medical Education & Training",`Result · ${x.title} · ${x.session}${o.prov?" · PROVISIONAL":""}`];
+ const top=["Rawalpindi Institute of Cardiology · Department of Medical Education and Training",`Result · ${x.title} · ${x.session}${o.prov?" · PROVISIONAL":""}`];
  const sum=[[top[0]],[top[1]],[dt?`Date of examination: ${dt}`:""],[],["Result for","Paper","Total marks","Pass marks","Candidates","Appeared","Absent","Passed","Failed","Pass rate %","Highest %","Average %","Lowest %"]];
  U.forEach(u=>u.papers.forEach(d=>sum.push([u.title,d.k+(d.com&&d.spec?` (${d.spec} candidates)`:""),d.T??"",d.pass,d.st.reg,d.st.sat,d.st.abs,d.st.pass,d.st.fail,rs1(d.st.rate),rs1(d.st.hi),rs1(d.st.avg),rs1(d.st.lo)])));
  const ws0=XLSX.utils.aoa_to_sheet(sum);ws0["!cols"]=[26,40,11,26,11,10,9,9,9,11,10,10,10].map(w=>({wch:w}));ws0["!merges"]=[0,1,2].map(r=>({s:{r,c:0},e:{r,c:12}}));XLSX.utils.book_append_sheet(wb,ws0,nm("Summary"));

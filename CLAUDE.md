@@ -1,7 +1,7 @@
 # RIC DME Office: notes for Claude
 
 ## Who you work for
-- Dr. Daniyal Ahmad Kamal, Director of Medical Education & Training, Rawalpindi Institute of Cardiology (RIC), Rawalpindi, Pakistan. He is a cardiac surgeon, not a developer.
+- Dr. Daniyal Ahmad Kamal, Director of Medical Education and Training, Rawalpindi Institute of Cardiology (RIC), Rawalpindi, Pakistan. He is a cardiac surgeon, not a developer.
 - Reply in short, plain, factual language. No jargon, no long recaps. Times are Asia/Karachi; money is PKR.
 - When something needs him (SQL to run, a setting to fill, a choice), say so clearly at the end of the pull request description.
 
@@ -34,7 +34,7 @@
   - `source/dist/ric-dme-office.html`: the stand-alone prototype with data built in. On the Director's computer it uses `source/private/` (real names, never committed); everywhere else it uses the made-up `source/sample/` data. Tests run on it.
 - `index.html` carries `APP_BUILD` (a hash added by the build). Open screens compare it with the server copy and show "A new version is ready: Reload".
 - Dates: `TODAY` is local midnight and is moved forward when the day changes. Use `iso(d)` for local dates and `dDay(timestamp)` to turn a saved ISO timestamp into a local date. Never use `timestamp.slice(0,10)` (that is UTC and is a day early between midnight and 5 a.m.).
-- Wording in the app: plain English, short sentences, sentence case. Say "PGTs" or "trainees", "the DME office", "the MS".
+- Wording in the app: plain English, short sentences, sentence case. Say "PGTs" or "trainees", "the DME&T office", "the MS". The department is the "Department of Medical Education and Training" (DME&T). Saved values such as "Exempted by DME" and reference numbers RIC/DME/... stay as they are (`p62.js`).
 
 ## Tests
 After `python3 source/build.py`:

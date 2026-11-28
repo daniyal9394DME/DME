@@ -9,7 +9,7 @@ function seedTasks(){const t=(o)=>({id:uid("T"),details:"",by:"Dr. Daniyal Ahmad
  const add=n=>iso(new Date(TODAY.getTime()+n*864e5));
  return[
   t({title:"Send the Basics of CPB proposal link to Dr. Muhammad Azam",assignee:"Dr. Daniyal Ahmad Kamal",due:add(3),priority:"High",link:"ws-W06",details:"Workshop is in May 2027. Send the proposal link at least 8 weeks before."}),
-  t({title:"Get HoD signatures on the DME Annual Academic Calendar",assignee:"Data Entry Operator",due:add(7),priority:"High",status:"In progress",link:"workshops",
+  t({title:"Get HoD signatures on the DME&T Annual Academic Calendar",assignee:"Data Entry Operator",due:add(7),priority:"High",status:"In progress",link:"workshops",
     check:[["Cardiac Surgery",1],["General Cardiology",1],["Anaesthesiology",0],["Paediatric Cardiology",0],["Interventional Cardiology",0],["Research Cell",0],["Infection Prevention & Control",0]].map(([t,d])=>({t,done:!!d}))}),
   t({title:"Collect PMDC faculty registration certificates",assignee:"Training Officer",due:add(30),status:"In progress",progress:20,link:"credentials",details:"Most faculty have no PMDC faculty registration on file. Upload each one in Faculty updates."}),
   t({title:"Correct missing training durations for two PGTs",assignee:"Training Officer",due:add(-2),link:"pgts",details:"Also check one PGT's start date, which was entered with the year 0026."}),
@@ -32,7 +32,7 @@ function vTasks(){
  const T=visibleTasks(),open=T.filter(t=>t.status!=="Done");
  const cnt=k=>{const s=UI.tf;UI.tf=k;const n=T.filter(tFilter).length;UI.tf=s;return n};
  const rows=T.filter(tFilter).sort((a,b)=>(a.status==="Done")-(b.status==="Done")||(tDue(a)??9999)-(tDue(b)??9999)||T_PRI.indexOf(a.priority)-T_PRI.indexOf(b.priority));
- LAST.tasks=rows;return`<div class="head"><div><h2>Tasks</h2><p>Work handed to the DME team. Overdue and due-soon tasks also show on the Overview.</p></div>${xbtn("tasks")}<button class="btn primary" data-act="t-new">New task</button></div>
+ LAST.tasks=rows;return`<div class="head"><div><h2>Tasks</h2><p>Work handed to the DME&T team. Overdue and due-soon tasks also show on the Overview.</p></div>${xbtn("tasks")}<button class="btn primary" data-act="t-new">New task</button></div>
  <div class="kpis">
   <button class="kpi" data-tf="open"><span class="n">${open.length}</span><span class="l">Open</span></button>
   <button class="kpi ${open.some(tOverdue)?"attn":""}" data-tf="overdue"><span class="n">${open.filter(tOverdue).length}</span><span class="l">Overdue</span></button>

@@ -16,7 +16,7 @@ async function exAttPdf(x,keys){try{await bioLoadPdf()}catch(e){toast(e.message)
   if(chunks.length&&chunks[chunks.length-1].length>cap-4)chunks.push([]);
   let sr=0;chunks.forEach((chunk,pi)=>{if(!first)doc.addPage();first=false;
    if(logo&&logo.startsWith("data:"))try{doc.addImage(logo,"JPEG",M,10,18,18)}catch(e){}
-   T("RAWALPINDI INSTITUTE OF CARDIOLOGY",W/2,15,{a:"center",b:1,s:13,c:brand});T("Department of Medical Education & Training",W/2,20.5,{a:"center",s:9.5,c:[110,110,110]});
+   T("RAWALPINDI INSTITUTE OF CARDIOLOGY",W/2,15,{a:"center",b:1,s:13,c:brand});T("Department of Medical Education and Training",W/2,20.5,{a:"center",s:9.5,c:[110,110,110]});
    T("ATTENDANCE SHEET",W/2,28,{a:"center",b:1,s:12});doc.setDrawColor(...brand);doc.setLineWidth(.5);doc.line(M,31.5,W-M,31.5);
    T(`${x.title}  |  ${x.session}`,M,37.5,{b:1,s:10});T(`Paper: ${k}`,M,43,{b:1,s:10.5,c:brand});
    T(`Date: ${dt||"______________"}`,W-M,37.5,{a:"right",s:9.5});T(`Venue: ${x.venue||"______________"}`,W-M,43,{a:"right",s:9.5});
@@ -27,7 +27,7 @@ async function exAttPdf(x,keys){try{await bioLoadPdf()}catch(e){toast(e.message)
     cols.forEach(([,w],c)=>{doc.rect(cx,y,w,RH);if(vals[c]){let t=vals[c],fs=c===1||c===3?9:9.5;if(c===2){fs=9.2;doc.setFont("helvetica","normal");doc.setFontSize(fs);while(fs>7.6&&doc.getTextWidth(t)>w-3.5){fs-=.2;doc.setFontSize(fs)}if(doc.getTextWidth(t)>w-3.5){let n=t.length;while(n>4&&doc.getTextWidth(t.slice(0,n)+"...")>w-3.5)n--;t=t.slice(0,n).trim()+"..."}}T(t,cx+2,y+5.9,{s:fs,b:c===1})}cx+=w});y+=RH});
    if(pi===chunks.length-1){y+=8;T("Present: ________     Absent: ________     Papers submitted: ________     Total on list: "+C.length,M,y,{s:9.5});y+=11;
     T("Invigilator name: ______________________________",M,y,{s:9.5});T("Signature: ____________________",W-M,y,{a:"right",s:9.5});y+=9;
-    T("Blank rows at the end are for candidates not on the list: write the name and PGT ID and inform the DME office.",M,y,{s:7.5,c:[120,120,120]})}})}
+    T("Blank rows at the end are for candidates not on the list: write the name and PGT ID and inform the DME&T office.",M,y,{s:7.5,c:[120,120,120]})}})}
  if(!total){toast("No candidates on these papers");return}
  doc.save(`Attendance ${keys.length===1?keys[0]:"all papers"} ${x.session}`.replace(/[\\/:*?"<>|·]+/g," ").replace(/\s+/g," ")+".pdf");xlog(x,`Attendance sheet downloaded: ${keys.length===1?keys[0]:keys.length+" papers"}`);persist();toast("Attendance sheet ready")}
 /* buttons: one per paper on the Papers tab, and one for all papers */

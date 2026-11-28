@@ -1,7 +1,7 @@
 {
- "name": "RIC DME Office",
- "short_name": "DME Office",
- "description": "Department of Medical Education, Rawalpindi Institute of Cardiology",
+ "name": "RIC DME&T Office",
+ "short_name": "DME&T Office",
+ "description": "Department of Medical Education and Training, Rawalpindi Institute of Cardiology",
  "start_url": "./index.html",
  "scope": "./",
  "display": "standalone",

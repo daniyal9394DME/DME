@@ -61,7 +61,7 @@ let installEvt=null;
 const isStandalone=()=>matchMedia("(display-mode: standalone)").matches||navigator.standalone===true;
 const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();installEvt=e;installBtn()});
-window.addEventListener("appinstalled",()=>{installEvt=null;installBtn();toast("DME Office installed")});
+window.addEventListener("appinstalled",()=>{installEvt=null;installBtn();toast("DME&T Office installed")});
 function installBtn(){const box=document.getElementById("installbox");if(!box)return;const live=typeof LIVE!=="undefined"&&LIVE;
  if(isStandalone()||!live){box.innerHTML="";return}
  box.innerHTML=installEvt?`<button class="btn small" data-act="app-install">${NAV_ICON.overview.replace('width="18" height="18"','width="15" height="15"')} Install app</button>`:isIOS()?`<span class="subt">To install on iPhone or iPad: tap Share, then <b>Add to Home Screen</b>.</span>`:""}

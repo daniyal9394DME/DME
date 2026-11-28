@@ -12,7 +12,7 @@ function wsAnchor(w){return w.date||(w.month?w.month+"-15":null)}
 function wsTimelineRows(w){const d=wsAnchor(w);if(!d)return[];const wk=DB.settings.proposal_weeks||8,C=w.cert?.issued||[],s=w.stage;
  return[
   ["Proposal from focal person",addD(d,-wk*7),s>=2,"Send the proposal link"],
-  ["Proposal approved by DME",addD(d,-42),s>=3,"Review and affirm the proposal"],
+  ["Proposal approved by DME&T",addD(d,-42),s>=3,"Review and affirm the proposal"],
   ["Registration open, publicity sent",addD(d,-28),s>=4||!!w.regOpen,"Open registration and send publicity"],
   ["Registration closes",addD(d,-2),s>=5||(s>=4&&!w.regOpen),"Close the form; check payments"],
   [w.date?"Workshop day":"Workshop (date not set)",d,s>=5,"Mark as conducted and tick attendance"],
@@ -116,7 +116,7 @@ function vAttend(){const w=DB.workshops.find(x=>x.id===route.id);if(!w)return`<d
  const L=regsOf(w).filter(r=>r.status==="Confirmed").sort((a,b)=>stripOther(a.a.name).localeCompare(stripOther(b.a.name)));
  return`<div class="noprint"><a href="#ws-${w.id}" class="btn link" style="padding-left:0">← ${esc(w.title)}</a></div>
  <div class="head noprint"><div><h2>Attendance sheet</h2><p>${L.length} confirmed participants, in alphabetical order. Print it for signatures on the day, then tick attendance in the registration list.</p></div><div class="actions"><button class="btn primary" data-act="att-print">Print</button></div></div>
- <div class="panel attsheet"><div class="fbhead"><img src="${document.querySelector(".appbar img")?.src||""}" alt=""><div><div class="subt">Rawalpindi Institute of Cardiology · Department of Medical Education</div><h2>${esc(w.title)}</h2><div class="subt">${w.date?fd(w.date):"Date not set"} · ${esc(w.venue||"RIC")} · Attendance</div></div></div>
+ <div class="panel attsheet"><div class="fbhead"><img src="${document.querySelector(".appbar img")?.src||""}" alt=""><div><div class="subt">Rawalpindi Institute of Cardiology · Department of Medical Education and Training</div><h2>${esc(w.title)}</h2><div class="subt">${w.date?fd(w.date):"Date not set"} · ${esc(w.venue||"RIC")} · Attendance</div></div></div>
  <table><thead><tr><th class="num">#</th><th>Name</th><th>Category · where they work</th><th>Mobile</th><th style="width:28%">Signature</th></tr></thead><tbody>
  ${L.map((r,i)=>`<tr><td class="num">${i+1}</td><td>${esc(stripOther(r.a.name))}</td><td>${esc(stripOther(r.a.cat||""))}<div class="subt">${esc(regWhere(r))}</div></td><td class="code">${esc(r.a.mobile||"")}</td><td></td></tr>`).join("")}
  ${[1,2,3,4,5].map(i=>`<tr><td class="num">${L.length+i}</td><td></td><td></td><td></td><td></td></tr>`).join("")}</tbody></table></div>`}

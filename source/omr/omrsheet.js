@@ -1,4 +1,4 @@
-/* RIC DME OMR answer sheet (A4, mm). Same code will run in the app.
+/* RIC DME&T OMR answer sheet (A4, mm). Same code will run in the app.
    cfg: {exam, session, date, spec, n, opts, sections:[{name,from,to}], cand:{name,code,year,program}|null, qr, logo} */
 function omrSheet(doc, cfg, qrcode){
   const W=210,H=297,OPT="ABCDE".slice(0,cfg.opts||5).split("");
@@ -11,7 +11,7 @@ function omrSheet(doc, cfg, qrcode){
   /* 2. header */
   if(cfg.logo)doc.addImage(cfg.logo,"JPEG",18,10,22,22);
   T("RAWALPINDI INSTITUTE OF CARDIOLOGY",105,15.5,{a:"center",b:1,s:13.5,c:brand});
-  T("Department of Medical Education & Training",105,21,{a:"center",s:9.5,c:mid});
+  T("Department of Medical Education and Training",105,21,{a:"center",s:9.5,c:mid});
   T(`${cfg.exam}  |  ${cfg.session}`,105,28,{a:"center",b:1,s:11.5});
   T(["MCQ answer sheet",cfg.spec,cfg.n+" questions",cfg.date].filter(Boolean).join("  |  "),105,33.5,{a:"center",s:9});
   /* QR: exam + paper (+ candidate on personalised sheets) */

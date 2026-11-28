@@ -3,7 +3,7 @@
    V9 · CERTIFICATES (workshops and exam merit), from the RIC Certificate Generator
    ===================================================================== */
 const CERT_TPL={
- participant:{title:"CERTIFICATE",sub:"OF PARTICIPATION",pres:"This certificate is proudly presented to",desc:"for active participation in the workshop on {{Workshop}}, organised by the Department of {{Department}} with the Department of Medical Education and held on {{Date}} at the Rawalpindi Institute of Cardiology."},
+ participant:{title:"CERTIFICATE",sub:"OF PARTICIPATION",pres:"This certificate is proudly presented to",desc:"for active participation in the workshop on {{Workshop}}, organised by the Department of {{Department}} with the Department of Medical Education and Training and held on {{Date}} at the Rawalpindi Institute of Cardiology."},
  faculty:{title:"CERTIFICATE",sub:"OF APPRECIATION",pres:"This certificate is gratefully presented to",desc:"in recognition of valuable services as {{Role}} in the workshop on {{Workshop}}, held on {{Date}} at the Rawalpindi Institute of Cardiology."},
  organiser:{title:"CERTIFICATE",sub:"OF APPRECIATION",pres:"This certificate is gratefully presented to",desc:"in recognition of outstanding efforts as {{Role}} of the workshop on {{Workshop}}, organised by the Department of {{Department}} and held on {{Date}} at the Rawalpindi Institute of Cardiology."},
  merit:{title:"CERTIFICATE",sub:"OF MERIT",pres:"This certificate is proudly presented to",desc:"for securing {{Position}} Position in {{Specialty}} ({{Year}}) in the {{Exam}}, {{Session}}, held on {{Date}} at the Rawalpindi Institute of Cardiology, with {{Marks}} marks."}};
@@ -152,7 +152,7 @@ EXPORTS.certreg=(kind,id)=>{const o=kind==="ws"?DB.workshops.find(x=>x.id===id):
  return{file:`Certificate register ${kind==="ws"?o.title:o.title+" "+o.session}`,sheets:[sheetFrom("Register",C.issued.map((z,i)=>({"S. No":i+1,"Serial No":z.serial,"Name":z.name,"Certificate":CERT_GRP[z.group],"Role / position":z.role,...(kind==="ex"?{"Specialty":z.spec||"","Year at RIC":z.year?"RIC year "+z.year:"","Marks %":z.marks??""}:{}),"Date of issue":z.date||"","Made on":z.at.slice(0,10),"Made by":z.by})))]}};
 EXPORTS.certall=()=>{const rows=[];DB.workshops.forEach(w=>(w.cert?.issued||[]).forEach(z=>rows.push({"Serial No":z.serial,"Name":z.name,"Certificate":CERT_GRP[z.group],"Role / position":z.role,"Programme":w.title,"Held on":w.date||"","Date of issue":z.date||"","Made by":z.by})));
  DB.exams.forEach(x=>(x.cert?.issued||[]).forEach(z=>rows.push({"Serial No":z.serial,"Name":z.name,"Certificate":"Merit","Role / position":z.role+(z.spec?` · ${z.spec}${z.year?" · RIC year "+z.year:""}`:""),"Programme":`${x.title} ${x.session}`,"Held on":x.date||"","Date of issue":z.date||"","Made by":z.by})));
- rows.sort((a,b)=>a["Serial No"]<b["Serial No"]?-1:1);return{file:`RIC DME certificate register ${iso(TODAY)}`,sheets:[sheetFrom("All certificates",rows)]}};
+ rows.sort((a,b)=>a["Serial No"]<b["Serial No"]?-1:1);return{file:`RIC DME&T certificate register ${iso(TODAY)}`,sheets:[sheetFrom("All certificates",rows)]}};
 
 /* ---------- events ---------- */
 function certObj(){return route.v==="cert"?DB.workshops.find(x=>x.id===route.id):route.v==="certx"?DB.exams.find(x=>x.id===route.id):null}
