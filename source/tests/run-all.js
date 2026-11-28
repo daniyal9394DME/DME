@@ -1,7 +1,7 @@
 /* Runs every browser test on source/dist/ric-dme-office.html and prints a short summary.
    A test fails if it crashes, prints a line starting with "ERR", or (click-everything) reports errors above 0. */
 const {spawnSync}=require('child_process'),path=require('path'),fs=require('fs');
-const tests=['pages-and-layout.js','observership.js','accreditation.js','settings.js','public-form.js','results-to-supervisors.js','search-and-day-change.js','attendance-sheet.js','dashboard-attention.js','click-everything.js'];
+const tests=['pages-and-layout.js','observership.js','accreditation.js','settings.js','qr-codes.js','public-form.js','results-to-supervisors.js','search-and-day-change.js','attendance-sheet.js','dashboard-attention.js','click-everything.js'];
 if(!fs.existsSync(path.join(__dirname,'..','dist','ric-dme-office.html'))){console.log('Build first: python3 source/build.py');process.exit(1)}
 let bad=0;
 for(const t of tests){const r=spawnSync(process.execPath,[path.join(__dirname,t)],{encoding:'utf8',timeout:15*60*1000});
