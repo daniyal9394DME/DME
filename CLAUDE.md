@@ -16,7 +16,7 @@
 ## Golden rules
 1. **This repository is public. No personal data in it, ever.** No real trainee, faculty, applicant or patient details: names lists, CNIC, mobile numbers, emails, scans, answer sheets, result files, `dme-initial-data.json`, `data*.json`, `*-update*.json`, `source/private/`. Test data must be made up (see `source/sample/`).
 2. **Never touch `config.js`.** Only the publishable (anon) key belongs there. A service_role key must never appear anywhere.
-3. **Never change the live database yourself.** A database change goes in a new numbered file in `source/sql/` (next is `07_...sql`), written so it is safe to run twice. Also append it to `02_pilot_setup.sql` and `03_update_biodata.sql` as earlier files were, and add any `drop function` to `00_reset.sql`. Record it in `source/sql/APPLIED.md` and ask the Director to run it in the Supabase SQL editor. Never ask him to run `00_reset.sql` or `02_pilot_setup.sql` on the live database.
+3. **Never change the live database yourself.** A database change goes in a new numbered file in `source/sql/` (next is `09_...sql`), written so it is safe to run twice. Also append it to `02_pilot_setup.sql` and `03_update_biodata.sql` as earlier files were, and add any `drop function` to `00_reset.sql`. Record it in `source/sql/APPLIED.md` and ask the Director to run it in the Supabase SQL editor. Never ask him to run `00_reset.sql` or `02_pilot_setup.sql` on the live database.
 4. **Never lose what already works.** Changes are additive. Records saved by older versions must keep working: read old shapes, don't break them.
 5. **Every release:**
    1. bump `const V="dme-vNN"` in `source/hosting/sw.js`;
@@ -70,6 +70,7 @@ Answer-sheet (OMR) reading in `source/omr/omrread.js` was tuned on real scans th
 - Install as an app: `p15.js` (button, service worker) and `p58.js` (install notice on the sign-in screen and dashboard). The manifest and icon links must stay in the page head (`pwa` in `build.py`); browsers ignore them in the body.
 - Settings page layout (groups, side menu, "Find a setting") and adjustable reminder days: `p59.js`. Read numbers with `stN(key)` (defaults in `ST_DEF`). A new Settings section needs an `id` and an entry in `ST_GROUPS`; otherwise it appears under "Other".
 - QR codes: `qrSvg` (`ws2.js`) draws them; `p60.js` tags each with its link (`data-qr`) and adds Copy QR picture / Download QR / Download poster / Share to every full-screen QR, and a "QR picture" button to small ones on a page.
+- Workshop registration closing date (`w.regClose`, Pakistan time) and "when full" (`w.whenFull`: `close` default, or `wait` for a waiting list); seats filled shown on the form: `p61.js`, enforced in the database by `08_ws_reg_close.sql`. `wsRegState(w)` says whether the form is open and why not.
 - Search, day change, update notice, dashboard attention items: `p56.js`. Recently opened: `p38.js`.
 
 ## Before you change anything the first time
