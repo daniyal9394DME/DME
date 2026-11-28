@@ -15,6 +15,7 @@ const {chromium}=require('playwright');
  await ctx.route('https://test.supabase.co/**',async r=>{const u=new URL(r.request().url()),m=r.request().method();
   if(m==='OPTIONS')return r.fulfill({status:200,headers:{'access-control-allow-origin':'*','access-control-allow-headers':'*','access-control-allow-methods':'*'}});
   const H={'content-type':'application/json','access-control-allow-origin':'*'};
+  if(u.pathname==='/rest/v1/rpc/dme_public_form'){const q=JSON.parse(r.request().postData());return r.fulfill({status:200,headers:H,body:sql(`select dme_public_form('${q.p_kind}','${q.p_id}')`)})}
   if(u.pathname==='/rest/v1/rpc/dme_public_lists')return r.fulfill({status:200,headers:H,body:sql('select dme_public_lists()')||'{}'});
   if(u.pathname==='/rest/v1/rpc/dme_submit_obs'){sent=JSON.parse(r.request().postData()).p;return r.fulfill({status:200,headers:H,body:sql("select dme_submit_obs(:'p'::jsonb)",JSON.stringify(sent))})}
   if(u.pathname.startsWith('/storage/v1/object/dme-uploads/')){const k=decodeURIComponent(u.pathname.slice('/storage/v1/object/dme-uploads/'.length));uploads.push(k);return r.fulfill({status:200,headers:H,body:JSON.stringify({Key:'dme-uploads/'+k,Id:'x'})})}
@@ -44,4 +45,14 @@ const {chromium}=require('playwright');
  await p.click('[data-act="op-submit"]');await p.waitForTimeout(200);expect(/Attach your degree/.test(await p.$eval('#operr',e=>e.textContent)),'degree required when not attached');
  await p.setInputFiles('#obsform [name=degreeDoc]',FIX+'blank.jpg');await Promise.all([p.waitForEvent('download',{timeout:30000}),p.click('[data-act="op-submit"]')]);await p.waitForTimeout(500);
  const row2=JSON.parse(sql("select data from dme_records where coll='visitors' and data->>'cnic'='37405-1234598-8'")||'null');expect(row2&&row2.attached===false&&row2.docs.degree&&!row2.docs.letter,'not attached: degree saved');
+ /* workshop registration link: seats filled, closes when full, closing date (08_ws_reg_close.sql) */
+ const wsrow=(extra)=>sql(`delete from dme_records where coll='workshops' and id='WTP';insert into dme_records(coll,id,ord,data) values('workshops','WTP',0,'${JSON.stringify({id:'WTP',title:'Test workshop',month:'2099-01',date:'2099-01-20',venue:'RIC',seats:3,fee:0,payMode:'free',regOpen:true,stage:4,rgq:[{id:'name',t:'Full name',type:'text',req:true}],regs:[],...extra})}'::jsonb)`);
+ const conf=n=>Array.from({length:n},(_,i)=>({id:'R'+i,at:'2026-01-01T00:00:00Z',a:{name:'T'+i},status:'Confirmed'}));
+ wsrow({regs:conf(1),regClose:'2099-01-10T17:00'});await p.goto('file://'+site+'/index.html?reg=WTP');await p.waitForTimeout(2000);
+ const sb=await p.$eval('.seatbox',e=>e.textContent).catch(()=>'');expect(/1 of 3 seats filled/.test(sb)&&/2 seats left/.test(sb)&&/closes on/.test(sb),'workshop link: 1 of 3 seats filled, closing date shown');
+ wsrow({regs:conf(3)});await p.goto('file://'+site+'/index.html?reg=WTP');await p.waitForTimeout(2000);
+ expect(/All 3 seats are filled/.test(await p.textContent('body'))&&!(await p.$('#rgform')),'workshop link: closed when full');
+ wsrow({regClose:'2000-01-01T09:00'});await p.goto('file://'+site+'/index.html?reg=WTP');await p.waitForTimeout(2000);
+ expect(/Registration closed on/.test(await p.textContent('body')),'workshop link: closed after the closing date');
+ sql("delete from dme_records where coll='workshops' and id='WTP'");
  await b.close()})();

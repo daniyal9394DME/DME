@@ -11,5 +11,6 @@ Never run `00_reset.sql` or `02_pilot_setup.sql` on the live database: they are 
 | 05_ws_pgts.sql | Workshop registration links to PGTs | To be confirmed by the Director |
 | 06_observers.sql | Observership application form, challan numbers, 10 MB upload limit | To be confirmed by the Director |
 | 07_observers_docs.sql | Observership form: photograph, institute ID card and letter (or degree); challan issued by the office. Repeats 06, so it can be run on its own | No |
+| 08_ws_reg_close.sql | Workshop registration: closing date, and the form closes when all seats are taken (unless a waiting list is chosen) | No |
 
 When you add a script, add a row here and set it to "No" until the Director confirms he has run it.
