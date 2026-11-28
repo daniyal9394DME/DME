@@ -2,7 +2,7 @@
 /* =====================================================================
    V17 · SIGNED ANNUAL ACADEMIC CALENDAR (Oct 2026 – Dec 2027)
    One-click update of the workshop list to the calendar signed by the
-   HoDs, the Executive Director and the DME. TTE moved to Dec 2026 on
+   HoDs, the Executive Director and the DME&T. TTE moved to Dec 2026 on
    the Director's instruction (3 Nov 2026).
    ===================================================================== */
 const CAL_ID="2026-27";

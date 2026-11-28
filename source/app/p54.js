@@ -6,16 +6,16 @@
      endorsing them for the observership, or (if not attached to an
      institute) their degree. They get only the filled application form.
    2 The Head of Department signs the application and they bring it to the
-     DME office. The Director ME&T signs it and the office hands over the
+     DME&T office. The Director ME&T signs it and the office hands over the
      fee challan (four copies: Accounts, Admin, Applicant, ME&T). Applicants
      cannot download the challan themselves.
-   3 They pay the fee in cash and bring the paid challan back; the DME
+   3 They pay the fee in cash and bring the paid challan back; the DME&T
      office collects the cash for the Accounts Office and hands it over
      later. The Director ME&T sends the application to the MS with the
      Admin copy of the challan.
    4 The MS approves; the hospital administration issues the office order
      (about 1.5 weeks) and calls the applicant to collect it.
-   5 They bring the office order to the DME office; it is uploaded and the
+   5 They bring the office order to the DME&T office; it is uploaded and the
      observership starts. Attendance begins; each observer can mark it on
      the kiosk only within their attendance time (set per observer).
    6 Three days before the end the office is reminded to offer an
@@ -37,7 +37,7 @@ const obsBlocks=v=>(v.fees||[]).reduce((a,f)=>a+(+f.blocks||0),0)||+v.blocks||1;
 const obsBlocksLeft=(v,c)=>Math.max(0,Math.floor((c.maxDays-(obsLen(v)||obsBlocks(v)*c.block))/c.block));
 const obsUnpaid=v=>(v.fees||[]).filter(f=>f.status!=="verified");
 const obsPaid=v=>(v.fees||[]).filter(f=>f.status==="verified").reduce((a,f)=>a+(+f.amt||0),0);
-/* fees are paid in cash at the DME office and handed to the Accounts Office later */
+/* fees are paid in cash at the DME&T office and handed to the Accounts Office later */
 const obsCashHeld=()=>obsList().flatMap(v=>(v.fees||[]).filter(f=>f.status==="verified"&&!f.acc).map(f=>({v,f})));
 const obsWeeks=d=>d>=89&&d<=92?"3 months":d>=59&&d<=62?"2 months":d%7===0?`${d/7} week${d/7>1?"s":""}`:`${d} days`;
 const obsDurOpts=c=>Array.from({length:Math.max(1,Math.floor(c.maxDays/c.block))},(_,i)=>[String(i+1),`${obsWeeks(c.block*(i+1))} · ${money(obsFee(c,i+1))}`]);
@@ -67,12 +67,12 @@ function obsWords(n){n=Math.round(+n||0);if(!n)return"Zero";const a=["","One","T
  const parts=[];[[1e7,"Crore"],[1e5,"Lakh"],[1e3,"Thousand"]].forEach(([d,w])=>{if(n>=d){parts.push(two(Math.floor(n/d))+" "+w);n%=d}});if(n)parts.push(three(n));return parts.join(" ")}
 /* the WhatsApp messages */
 function obsMsg(v,kind,f){const c=obsCfg(),n=visName(v);
- if(kind==="ext")return`Dear ${n},\nYour observership in ${v.unit} at the Rawalpindi Institute of Cardiology ends on ${fd(v.end)}.\nIf you would like to continue, an extension of ${obsWeeks(c.block)} costs ${money(c.fee2)} (up to ${obsWeeks(c.maxDays)} in all). Please contact the DME office for the fee challan before ${fd(v.end)}.\nDME Office, RIC`;
+ if(kind==="ext")return`Dear ${n},\nYour observership in ${v.unit} at the Rawalpindi Institute of Cardiology ends on ${fd(v.end)}.\nIf you would like to continue, an extension of ${obsWeeks(c.block)} costs ${money(c.fee2)} (up to ${obsWeeks(c.maxDays)} in all). Please contact the DME&T office for the fee challan before ${fd(v.end)}.\nDME Office, RIC`;
  if(kind==="end")return`Dear ${n},\nYour observership in ${v.unit} at the Rawalpindi Institute of Cardiology ends on ${fd(v.end)}.\nThank you for observing with us.\nDME Office, RIC`;
- if(kind==="pin")return`Dear ${n},\nWelcome to the Rawalpindi Institute of Cardiology. Your observership in ${v.unit} runs from ${fd(v.start)} to ${fd(v.end)}.\nPlease mark your attendance every working day between ${obsWinTxt(obsWin(v))} on the attendance computer in the Medical Education Department. Your PIN is ${v.pin}.\nDME Office, RIC`;
- if(kind==="challan")return obsStage(v)==="Challan issued"?`Dear ${n},\nYour observership fee challan ${f?f.challan:""} for ${money(f?f.amt:0)} has been issued. Please pay the fee in cash and bring the paid challan to the Medical Education Department, RIC, so that we can send your application to the Medical Superintendent.\nDME Office, RIC`
-  :`Dear ${n},\nThank you for applying for an observership in ${v.unit} at the Rawalpindi Institute of Cardiology (application ${f?f.challan:""}).\nPlease print your application form, get it signed by the Head of the ${v.unit} department and bring it to the Medical Education Department, RIC. You will receive the fee challan there.\nDME Office, RIC`;
- if(kind==="started")return`Dear ${n},\nYour observership in ${v.unit} at the Rawalpindi Institute of Cardiology runs from ${fd(v.start)} to ${fd(v.end)}.\nPlease mark your attendance every working day between ${obsWinTxt(obsWin(v))} on the attendance computer in the Medical Education Department. Your PIN is ${v.pin}.\nDME Office, RIC`;
+ if(kind==="pin")return`Dear ${n},\nWelcome to the Rawalpindi Institute of Cardiology. Your observership in ${v.unit} runs from ${fd(v.start)} to ${fd(v.end)}.\nPlease mark your attendance every working day between ${obsWinTxt(obsWin(v))} on the attendance computer in the Department of Medical Education and Training. Your PIN is ${v.pin}.\nDME Office, RIC`;
+ if(kind==="challan")return obsStage(v)==="Challan issued"?`Dear ${n},\nYour observership fee challan ${f?f.challan:""} for ${money(f?f.amt:0)} has been issued. Please pay the fee in cash and bring the paid challan to the Department of Medical Education and Training, RIC, so that we can send your application to the Medical Superintendent.\nDME Office, RIC`
+  :`Dear ${n},\nThank you for applying for an observership in ${v.unit} at the Rawalpindi Institute of Cardiology (application ${f?f.challan:""}).\nPlease print your application form, get it signed by the Head of the ${v.unit} department and bring it to the Department of Medical Education and Training, RIC. You will receive the fee challan there.\nDME Office, RIC`;
+ if(kind==="started")return`Dear ${n},\nYour observership in ${v.unit} at the Rawalpindi Institute of Cardiology runs from ${fd(v.start)} to ${fd(v.end)}.\nPlease mark your attendance every working day between ${obsWinTxt(obsWin(v))} on the attendance computer in the Department of Medical Education and Training. Your PIN is ${v.pin}.\nDME Office, RIC`;
  return""}
 const obsWa=(v,kind,label,f)=>waNum(v.mobile)?`<a class="btn small" target="_blank" rel="noopener" ${kind==="ext"||kind==="end"?`data-obstold="${v.id}|${kind}"`:""} href="https://wa.me/${waNum(v.mobile)}?text=${encodeURIComponent(obsMsg(v,kind,f))}">${label}</a>`:"";
 
@@ -115,7 +115,7 @@ function obsDrawChallan(d,v,f,c){const W=210,H=297,M=6,NB=27,N=OBS_COPIES.length
  const ny=M+N*SH+2,wn=122;d.setDrawColor(150);d.setLineWidth(.3);d.roundedRect(M,ny,wn,NB-1,1.5,1.5);d.roundedRect(M+wn+3,ny,CW-wn-3,NB-1,1.5,1.5);
  T("NOTE:",M+3,ny+4.6,{b:1,s:8,c:RED});
  const notes=ext?[["Please deposit the fee in cash with the Accounts Office, RIC."],["Attach this challan with your extension request."],["Fee is non-refundable and non-transferable."],[`This challan is only for the observership extension of ${wk}${f.to?` (until ${fd(f.to)})`:""}.`,1]]
-  :[["Please deposit the fee in cash with the Accounts Office, RIC."],["Bring the paid challan back to the Medical Education Department."],["Attach this challan with your application form."],["Fee is non-refundable and non-transferable."],[`This challan is only for the observership duration of ${wk}.`,1]];
+  :[["Please deposit the fee in cash with the Accounts Office, RIC."],["Bring the paid challan back to the Department of Medical Education and Training."],["Attach this challan with your application form."],["Fee is non-refundable and non-transferable."],[`This challan is only for the observership duration of ${wk}.`,1]];
  notes.forEach(([t,red],k)=>{const yy=ny+8.8+k*3.4;d.setFillColor(...(red?RED:INK));d.circle(M+4.6,yy-.9,.45,"F");fit(t,M+6.8,yy,wn-9,{s:6.8,c:red?RED:INK})});
  const ox=M+wn+3,ow=CW-wn-3;T("FOR OFFICE USE ONLY",ox+ow/2,ny+5,{b:1,s:8.2,a:"center",c:GR});
  [["Received By:",ny+11],["Designation:",ny+17],["Date:",ny+23]].forEach(([l,yy])=>{T(l,ox+3,yy,{b:1,s:7});d.setDrawColor(130);d.line(ox+21,yy+.4,ox+ow-3,yy+.4)})}
@@ -144,7 +144,7 @@ function obsDrawApp(d,v,cfg){const W=210,L=20,R=W-20,BL=[47,84,150];
   const cb=(t,cx,cy)=>{d.setDrawColor(60);d.rect(cx,cy-2.6,2.8,2.8);T(t,cx+4,cy,{s:8.6})};cb(a,x+2.5,y+15);if(b)cb(b,x+2.5,y+20);
   d.setDrawColor(90);d.line(x+2.5,y+bh-9,x+bw-2.5,y+bh-9);T("Signature & stamp",x+2.5,y+bh-5.6,{s:8,c:[90,90,90]});T("Date: ____________",x+2.5,y+bh-1.8,{s:8,c:[90,90,90]})};
  box(0,"Head of Department",`Department of ${v.unit||"________________"}`,"Recommended","Not recommended");
- box(1,"Director, ME & T","Medical Education & Training","Fee challan paid and attached","Forwarded to the MS");
+ box(1,"Director, ME & T","Medical Education and Training","Fee challan paid and attached","Forwarded to the MS");
  box(2,"Medical Superintendent","RIC, Rawalpindi","Approved","Not approved");
  y+=bh+4.5;T(`Attach: Admin copy of the paid fee challan${fee&&fee.challan?` (${fee.challan}, ${money(fee.amt)})`:""} · copies of CNIC and ${v.attached===false?"degree":"institute ID card and letter"}`,W/2,Math.min(y,291),{s:8.4,a:"center",c:[90,90,90]})}
 async function obsAppPdf(v,save=true,cfg){await bioLoadPdf();const{jsPDF}=window.jspdf;const d=new jsPDF({unit:"mm",format:"a4"});obsDrawApp(d,v,cfg);
@@ -190,7 +190,7 @@ function vObservers(){const L=obsList(),t=iso(TODAY),can=!isViewer(),c=obsCfg();
  return`<div class="head"><div><h2>Observership</h2><p>Doctors, students, nurses, technologists and other staff observing at RIC. Apply online → the HOD signs → challan issued here → fee paid → sent to the MS → office order (about 1.5 weeks) → the observership starts. ${money(c.fee1)} for the first ${obsWeeks(c.block)}, ${money(c.fee2)} for each further ${obsWeeks(c.block)}, up to ${obsWeeks(c.maxDays)}.</p></div>
   <div class="actions">${xbtn("observers")}${can?`<a class="btn" href="#kiosk">Open attendance kiosk</a><button class="btn" data-act="obs-cfg">Fees, times and form</button><button class="btn primary" data-act="obs-add">Add applicant</button>`:""}</div></div>
  ${can?obsLinkPanel():""}
- ${can?(H=>H.length?`<div class="panel" style="display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap"><span><b>Cash with the DME office: ${money(H.reduce((a,x)=>a+(+x.f.amt||0),0))}</b> <span class="subt">from ${H.length} paid challan${H.length>1?"s":""}, not yet handed to the Accounts Office</span></span><button class="btn small primary" data-act="obs-acc">Hand over to Accounts…</button></div>`:"")(obsCashHeld()):""}
+ ${can?(H=>H.length?`<div class="panel" style="display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap"><span><b>Cash with the DME&T office: ${money(H.reduce((a,x)=>a+(+x.f.amt||0),0))}</b> <span class="subt">from ${H.length} paid challan${H.length>1?"s":""}, not yet handed to the Accounts Office</span></span><button class="btn small primary" data-act="obs-acc">Hand over to Accounts…</button></div>`:"")(obsCashHeld()):""}
  ${end.length&&can?`<div class="panel" style="display:grid;gap:10px;border-color:var(--warn,#c98a00)"><h3 style="margin:0">Ending soon · ${end.length}</h3><p class="subt" style="margin:0">Offer an extension or tell them it is ending. Sending either message (or pressing <b>Done</b>) clears the reminder.</p>
   ${end.map(v=>{const left=rotDaysLeft(v),rem=obsBlocksLeft(v,c);return`<div class="toolbar" style="justify-content:space-between;border-top:1px solid var(--line);padding-top:8px"><span><a href="#obs-${v.id}"><b>${esc(visName(v))}</b></a> <span class="subt">${esc(v.unit)} · ends ${fd(v.end)} (${left===0?"<b class=\"d-red\">today</b>":left===1?"tomorrow":`in ${left} days`}) · ${obsWeeks(obsLen(v))} so far</span></span>
    <span class="actions">${rem?obsWa(v,"ext","WhatsApp: offer extension"):""}${obsWa(v,"end","WhatsApp: ending")}${rem?`<button class="btn small" data-act="obs-ext" data-id="${v.id}">Extend…</button>`:`<span class="subt">at the ${obsWeeks(c.maxDays)} limit</span>`}<button class="btn small" data-act="obs-told" data-id="${v.id}">Done</button></span></div>`}).join("")}</div>`:""}
@@ -208,7 +208,7 @@ function vObservers(){const L=obsList(),t=iso(TODAY),can=!isViewer(),c=obsCfg();
 function obsLinkPanel(){const c=obsCfg(),open=formIsOpen(c),url=obsLink();
  return`<div class="panel" style="display:grid;gap:10px"><div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap"><button class="qrthumb" data-act="obs-qr" title="Show QR code">${qrSvg(url,2)}</button>
   <div style="flex:1;min-width:240px;display:grid;gap:6px"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b>Observership application form</b><span class="pill ${open?"p-ric":"p-bad"}">${open?"Open":"Closed"}</span>${c.close&&open?`<span class="subt">closes ${fd(c.close)}</span>`:""}</div>
-   <div class="toolbar"><input id="obslink" readonly class="linkbox" value="${esc(url)}" style="flex:1;min-width:200px;font-family:var(--f-mono);font-size:13px"><button class="btn small" data-act="obs-copy">Copy link</button><button class="btn small" data-act="obs-qr">QR code</button><a class="btn small" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(`Observership at the Rawalpindi Institute of Cardiology (Department of Medical Education).\nApply online here; you will get your application form straight away: ${url}`)}">Share on WhatsApp</a></div></div></div></div>`}
+   <div class="toolbar"><input id="obslink" readonly class="linkbox" value="${esc(url)}" style="flex:1;min-width:200px;font-family:var(--f-mono);font-size:13px"><button class="btn small" data-act="obs-copy">Copy link</button><button class="btn small" data-act="obs-qr">QR code</button><a class="btn small" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent(`Observership at the Rawalpindi Institute of Cardiology (Department of Medical Education and Training).\nApply online here; you will get your application form straight away: ${url}`)}">Share on WhatsApp</a></div></div></div></div>`}
 
 /* ---------- photos (live app: signed links, fetched once) ---------- */
 const OBS_PH={};
@@ -256,7 +256,7 @@ function vObs(){const v=obsList().find(x=>x.id===route.id);if(!v)return`<div cla
    <dt>Department</dt><dd>${esc(v.unit||"—")}</dd>${v.sup?`<dt>Supervisor</dt><dd>${esc(rotFac(v))}</dd>`:""}${v.reason?`<dt>Purpose</dt><dd>${esc(v.reason)}</dd>`:""}<dt>Applied</dt><dd>${v.regAt?fd(dDay(v.regAt)):"—"}${v.src==="form"?" · online":""}</dd>${v.recv?`<dt>HOD-signed application received</dt><dd>${fd(dDay(v.recv.at))}${v.recv.by?" · "+esc(v.recv.by):""}</dd>`:""}${v.fwd?`<dt>Sent to the MS</dt><dd>${fd(v.fwd.on)}</dd>`:""}${v.order?`<dt>Office order</dt><dd>${esc(v.order.no||"received")}${v.order.date?` · ${fd(v.order.date)}`:""}</dd>`:""}${v.start?`<dt>Attendance time</dt><dd>${obsWinTxt(obsWin(v))}${v.attWin?"":" (usual time)"}</dd>`:""}${v.notes?`<dt>Notes</dt><dd>${esc(v.notes)}</dd>`:""}</dl></div>
    <div class="panel"><h3>Documents</h3><div class="docs">${obsDocsHtml(v)}</div>
     ${obsNew(v)&&can?`<div style="margin-top:10px"><button class="btn primary small" data-act="obs-checked" data-id="${v.id}">Documents checked</button></div>`:v.checked?`<p class="subt" style="margin:8px 0 0">Checked${v.checkedBy?" by "+esc(v.checkedBy):""}.</p>`:""}</div>
-   ${can&&v.start?`<div class="panel"><h3>Attendance PIN</h3><p style="margin:0"><span class="code" style="font-size:22px;letter-spacing:.2em">${esc(v.pin)}</span></p><p class="subt" style="margin:4px 0 8px">Entered on the attendance kiosk in the DME office, ${obsWinTxt(obsWin(v))}.</p><div style="display:flex;gap:8px;flex-wrap:wrap">${obsWa(v,"pin","Send PIN on WhatsApp")}<button class="btn small" data-act="obs-win" data-id="${v.id}">Attendance time</button><button class="btn small" data-act="rot-pin" data-id="${v.id}">New PIN</button></div></div>`:""}</div></div>`}
+   ${can&&v.start?`<div class="panel"><h3>Attendance PIN</h3><p style="margin:0"><span class="code" style="font-size:22px;letter-spacing:.2em">${esc(v.pin)}</span></p><p class="subt" style="margin:4px 0 8px">Entered on the attendance kiosk in the DME&T office, ${obsWinTxt(obsWin(v))}.</p><div style="display:flex;gap:8px;flex-wrap:wrap">${obsWa(v,"pin","Send PIN on WhatsApp")}<button class="btn small" data-act="obs-win" data-id="${v.id}">Attendance time</button><button class="btn small" data-act="rot-pin" data-id="${v.id}">New PIN</button></div></div>`:""}</div></div>`}
 
 /* ---------- staff sheets ---------- */
 async function obsSaveFile(file,folder){if(!file)return null;const f=typeof docShrink==="function"?await docShrink(file):file;if(f.size>10*1024*1024)throw new Error(`${file.name} is larger than 10 MB`);
@@ -394,7 +394,7 @@ function sheetObsCfg(){const c=obsCfg();
  <label class="f">Status<select name="open">${opt([["1","Open: accepting applications"],["0","Closed"]],c.open===false?"0":"1")}</select></label>
  <label class="f">Close automatically after <span class="h">optional</span><input type="date" name="close" value="${esc(c.close||"")}"></label>
  <label class="f">Message at the top of the form <span class="h">optional</span><textarea name="msg" rows="3">${esc(c.msg||"")}</textarea></label>
- <label class="f">Contact for questions<input name="contact" value="${esc(c.contact||"")}" placeholder="e.g. DME office, 051-xxxxxxx"></label>
+ <label class="f">Contact for questions<input name="contact" value="${esc(c.contact||"")}" placeholder="e.g. DME&T office, 051-xxxxxxx"></label>
  <label class="f">Departments offered <span class="h">one per line</span><textarea name="units" rows="6">${esc((c.units||[]).join("\n"))}</textarea></label>
  <label class="f">Categories <span class="h">one per line</span><textarea name="cats" rows="6">${esc((c.cats||OBS_CATS).join("\n"))}</textarea></label>`,()=>{
   const n={...c,fee1:+fv("fee1"),fee2:+fv("fee2"),block:+fv("block"),maxDays:+fv("maxDays"),dueDays:+fv("dueDays")||14,payTo:fv("payTo")||OBS_PAYTO,attFrom:fv("attFrom")||"08:00",attTo:fv("attTo")||"10:00",open:fv("open")==="1",close:fv("close"),msg:fv("msg"),contact:fv("contact"),units:fv("units").split("\n").map(s=>s.trim()).filter(Boolean),cats:fv("cats").split("\n").map(s=>s.trim()).filter(Boolean)};
@@ -430,7 +430,7 @@ function obsKioskMarks(){if(route.v!=="kiosk")return;const now=new Date();
 document.addEventListener("click",e=>{if(route.v!=="kiosk")return;let v=null;const s=e.target.closest("[data-kio-sel]");
  if(s)v=visList().find(x=>x.id===s.dataset.kioSel);
  else{const b=e.target.closest("[data-kio]");if(b&&/^\d$/.test(b.dataset.kio)&&UI.kio&&UI.kio.sel&&UI.kio.pin.length===3)v=visList().find(x=>x.id===UI.kio.sel)}
- if(v&&!obsWinOpen(v)){e.stopImmediatePropagation();e.preventDefault();const w=obsWin(v);kioMsg(false,`Attendance time: ${obsWinTxt(w)}`,`${visName(v)}, you can mark your attendance only between ${w.from} and ${w.to}. Please ask the DME office.`)}},true);
+ if(v&&!obsWinOpen(v)){e.stopImmediatePropagation();e.preventDefault();const w=obsWin(v);kioMsg(false,`Attendance time: ${obsWinTxt(w)}`,`${visName(v)}, you can mark your attendance only between ${w.from} and ${w.to}. Please ask the DME&T office.`)}},true);
 setInterval(()=>{if(route.v==="kiosk"&&UI.kio&&!UI.kio.sel&&!UI.kio.msg)render()},60000);
 
 /* ---------- menu, dashboard, download ---------- */
@@ -448,22 +448,22 @@ async function obsPublicPage(){document.body.classList.add("public");
  obsPubRender()}
 const obsPubCfg=()=>{const C={...FORM_DEF.obs,...(OBSPUB.cfg||{})};return{...C,fee1:+C.fee1,fee2:+C.fee2,block:+C.block||14,maxDays:+C.maxDays||91,dueDays:+C.dueDays||14}};
 function obsPubRender(done){const c=obsPubCfg();
- if(done){OBSPUB.done=done;const u=esc(done.v.unit);return pubShell(`<div class="panel fbform">${formHead(null,"Application submitted","Observership · Department of Medical Education")}
+ if(done){OBSPUB.done=done;const u=esc(done.v.unit);return pubShell(`<div class="panel fbform">${formHead(null,"Application submitted","Observership · Department of Medical Education and Training")}
   <p>Thank you, ${esc(visName(done.v))}. Your application for an observership in <b>${u}</b> (${obsWeeks(c.block*done.v.blocks)}) is number <b class="code">${esc(done.f.challan)}</b>.</p>
   <div class="actions" style="justify-content:flex-start"><button class="btn primary" data-act="op-app">Download application form (PDF)</button></div>
   <div class="flag ok" style="display:grid;gap:6px"><b>What to do next</b>
    <span>1. Print the application form.</span>
    <span>2. Get it signed by the Head of the ${u} department.</span>
-   <span>3. Bring the signed application to the Medical Education Department, RIC. After the Director signs it, you will be given the fee challan (${money(done.f.amt)}).</span>
-   <span>4. Pay the fee in cash and bring the paid challan back to the Medical Education Department. We then send your application to the Medical Superintendent.</span>
+   <span>3. Bring the signed application to the Department of Medical Education and Training, RIC. After the Director signs it, you will be given the fee challan (${money(done.f.amt)}).</span>
+   <span>4. Pay the fee in cash and bring the paid challan back to the Department of Medical Education and Training. We then send your application to the Medical Superintendent.</span>
    <span>5. The office order usually takes about 1.5 weeks. The hospital administration will call you to collect it.</span>
-   <span>6. Bring the office order to the Medical Education Department. Your observership starts then.</span></div>
+   <span>6. Bring the office order to the Department of Medical Education and Training. Your observership starts then.</span></div>
   ${c.contact?`<p class="subt" style="margin:0">Questions? ${esc(c.contact)}</p>`:""}</div>`)}
- if(!formIsOpen(c))return pubShell(`<div class="panel fbform">${formHead(null,"Observership application","Department of Medical Education")}<p>Online applications for observership are closed at the moment.</p>${c.msg?`<p style="white-space:pre-line">${esc(c.msg)}</p>`:""}${c.contact?`<p class="subt">Contact: ${esc(c.contact)}</p>`:""}</div>`);
+ if(!formIsOpen(c))return pubShell(`<div class="panel fbform">${formHead(null,"Observership application","Department of Medical Education and Training")}<p>Online applications for observership are closed at the moment.</p>${c.msg?`<p style="white-space:pre-line">${esc(c.msg)}</p>`:""}${c.contact?`<p class="subt">Contact: ${esc(c.contact)}</p>`:""}</div>`);
  const f=(n,l,o={})=>`<label class="f"><span class="${o.opt?"":"req"}">${l}${o.h?` <span class="h">${o.h}</span>`:o.opt?` <span class="h">optional</span>`:""}</span><input name="${n}" ${o.type?`type="${o.type}"`:""} ${o.ph?`placeholder="${o.ph}"`:""} ${o.mode?`inputmode="${o.mode}"`:""} ${o.list?`list="${o.list}"`:""}></label>`;
  const file=(n,l,o={})=>`<label class="f"><span class="${o.opt?"":"req"}">${l}${o.h?` <span class="h">${o.h}</span>`:""}</span><input type="file" name="${n}" accept="image/jpeg,image/png,image/webp,application/pdf"></label>`;
  pubShell(`<form class="panel fbform" id="obsform" novalidate>${formHead(null,"Observership application form","To the Medical Superintendent, Rawalpindi Institute of Cardiology, Rawalpindi")}${c.msg?`<div class="flag info" style="white-space:pre-line">${esc(c.msg)}</div>`:""}
-  <div class="flag info" style="display:grid;gap:4px"><span>Fee: <b>${money(c.fee1)}</b> for the first ${obsWeeks(c.block)}; <b>${money(c.fee2)}</b> for each further ${obsWeeks(c.block)}; up to ${obsWeeks(c.maxDays)} in all.</span><span>After you submit you get your application form. Get it signed by the Head of Department and bring it to the Medical Education Department, where you will be given the fee challan. Your observership starts once the hospital issues your office order.</span></div>
+  <div class="flag info" style="display:grid;gap:4px"><span>Fee: <b>${money(c.fee1)}</b> for the first ${obsWeeks(c.block)}; <b>${money(c.fee2)}</b> for each further ${obsWeeks(c.block)}; up to ${obsWeeks(c.maxDays)} in all.</span><span>After you submit you get your application form. Get it signed by the Head of Department and bring it to the Department of Medical Education and Training, where you will be given the fee challan. Your observership starts once the hospital issues your office order.</span></div>
   <fieldset class="pfsec"><legend>1. Personal & contact details</legend><div class="grid2"><label class="f"><span>Title <span class="h">optional</span></span><select name="title">${opt([["",""],["Dr.","Dr."],["Mr.","Mr."],["Ms.","Ms."],["Mrs.","Mrs."]],"")}</select></label>${f("name","Full name",{ph:"e.g. Ayesha Khan"})}</div>
    <div class="grid2">${f("father","Father's name")}<label class="f"><span class="req">Gender</span><select name="gender">${opt(["","Female","Male"],"")}</select></label></div>
    <div class="grid2">${f("cnic","CNIC",{ph:"37405-1234567-1",mode:"numeric"})}${f("mobile","Contact no.",{ph:"03xx-xxxxxxx",type:"tel",mode:"numeric"})}</div>${f("email","Email address",{type:"email"})}</fieldset>
@@ -501,7 +501,7 @@ document.addEventListener("click",async e=>{const dl=e.target.closest('[data-act
    const{error}=await SYNC.sb.storage.from("dme-uploads").upload(path,x,{contentType:x.type||undefined});if(error)throw new Error("upload");docs[k]=path}
   b.textContent="Sending…";const p={title:g("title"),name,father:g("father"),gender:g("gender"),cnic:cn,mobile:mob.slice(0,4)+"-"+mob.slice(4),email:g("email").toLowerCase(),cat:g("cat"),degree:g("degree"),inst:g("inst"),yearStudy:g("yearStudy"),status2:g("status2"),unit:g("unit"),blocks:+g("blocks")||1,reason:g("reason"),attached:att==="1",docs};
   const{data,error}=await SYNC.sb.rpc("dme_submit_obs",{p});if(error||!data)throw new Error("send");
-  if(data.error){b.disabled=false;b.textContent="Submit application";return bad(data.error==="duplicate"?"You already have an observership application with RIC. Contact the DME office.":data.error==="closed"?"Applications have just closed. Contact the DME office.":"Some details are missing or not valid. Check the form.")}
+  if(data.error){b.disabled=false;b.textContent="Submit application";return bad(data.error==="duplicate"?"You already have an observership application with RIC. Contact the DME&T office.":data.error==="closed"?"Applications have just closed. Contact the DME&T office.":"Some details are missing or not valid. Check the form.")}
   const v={...p,kind:"obs",cnic:cn.slice(0,5)+"-"+cn.slice(5,12)+"-"+cn.slice(12),regAt:new Date().toISOString(),src:"form"},fee={id:"F",kind:"first",blocks:p.blocks,amt:data.amt,challan:data.challan,at:new Date().toISOString(),status:"unpaid"};v.fees=[fee];
   obsPubRender({v,f:fee});window.scrollTo(0,0);obsAppPdf(v,true,obsPubCfg()).catch(()=>{})}
  catch(x){b.disabled=false;b.textContent="Submit application";bad(x.message==="upload"?"A file could not be uploaded. Check the connection and try again.":"Could not send. Check the connection and try again.")}});

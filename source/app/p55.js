@@ -28,7 +28,7 @@ function srText(x,s){const ks=[...new Set(s.list.flatMap(t=>t.papers.map(z=>z.k)
  const vals=[...new Set(pm.values())];
  return body+"\n\n"+(vals.length===1?`Pass mark: ${vals[0]}`:`*Pass marks*\n${[...pm].map(([n,v])=>`${n}: ${v}`).join("\n")}`)}
 const srExam=x=>{const t=String(x.title||"").trim(),se=String(x.session||"").trim();return!se||t.includes(se)||/\b(19|20)\d{2}\b/.test(t)?t:`${t} (${se})`};
-const srTpl=x=>`Dear {name},\n\nThe results of the *{exam}*${x.date?", held on {date},":""} have been published. Please find your trainees' results below.\n\n{results}\n\nRegards,\nDepartment of Medical Education & Training\nRawalpindi Institute of Cardiology`;
+const srTpl=x=>`Dear {name},\n\nThe results of the *{exam}*${x.date?", held on {date},":""} have been published. Please find your trainees' results below.\n\n{results}\n\nRegards,\nDepartment of Medical Education and Training\nRawalpindi Institute of Cardiology`;
 const srRec=(x,s)=>{const r=recFac(s.f);return{...r,key:"sr:"+s.f.id,sub:`${s.list.length} trainee${s.list.length>1?"s":""} in this exam`,vars:{...r.vars,exam:srExam(x),date:x.date?fd(x.date):"",results:srText(x,s)}}};
 
 function sheetSupRes(x,spec){spec=spec||"";const{sups,none}=srData(x,spec),noNum=sups.filter(s=>!waNum(s.f.mobile)),n=sups.reduce((a,s)=>a+s.list.length,0),wait=sups.reduce((a,s)=>a+s.list.filter(t=>t.papers.some(z=>!z.r.ab&&z.r.m==null)).length,0);

@@ -66,7 +66,7 @@ function vWorkshops(){
  const closed=W.filter(w=>w.stage>=5),F=closed.map(fin),net=F.reduce((s,f)=>s+f.net,0),fund=F.reduce((s,f)=>s+f.dme,0),att=closed.reduce((s,w)=>s+(+w.reg.attended||0),0);
  const months=[];for(let i=-1;i<14;i++)months.push(mAdd(`${TODAY.getFullYear()}-${String(TODAY.getMonth()+1).padStart(2,"0")}`,i));
  const nowM=months[1],fx=FIXTURES(),cl=clashes(W.filter(w=>w.stage<6));
- return`<div class="head"><div><h2>Workshops</h2><p>DME Annual Academic Calendar · proposals, approval, registration, feedback, finance, certificates</p></div>
+ return`<div class="head"><div><h2>Workshops</h2><p>DME&T Annual Academic Calendar · proposals, approval, registration, feedback, finance, certificates</p></div>
   <div class="actions">${xbtn("workshops")}<button class="btn" data-act="ws-resched">Reschedule</button><button class="btn primary" data-act="ws-add">Add workshop</button></div></div>
  ${calPanel()}${W.some(w=>w.placeholder)&&!calPanel()?`<div class="flag info">Workshop months are a draft spread. Use <b>Reschedule</b> to set the real months for all workshops in one go.</div>`:""}
  <div class="kpis">
@@ -75,13 +75,13 @@ function vWorkshops(){
   <button class="kpi" data-wsf="2"><span class="n">${W.filter(w=>w.stage===2).length}</span><span class="l">Proposals to review</span></button>
   <button class="kpi ${attn.length?"attn":""}" data-wsf="attn"><span class="n">${attn.length}</span><span class="l">Need attention</span></button>
   <button class="kpi" data-wsf="done"><span class="n">${att}</span><span class="l">Participants trained in ${closed.length} workshop${closed.length===1?"":"s"}</span></button>
-  <button class="kpi" data-wsf="done"><span class="n money">${money(fund)}</span><span class="l">To DME fund · net ${money(net)}</span></button>
+  <button class="kpi" data-wsf="done"><span class="n money">${money(fund)}</span><span class="l">To DME&T fund · net ${money(net)}</span></button>
  </div>
  <div class="panel" style="display:grid;gap:10px"><div class="head"><h3 style="margin:0">Calendar</h3>${Object.keys(cl).length?`<span class="pill p-pause">${Object.keys(cl).length} scheduling clashes · see Reschedule</span>`:""}</div>
   <div class="cal">${months.map(m=>{const ws=W.filter(w=>w.month===m),f=fx.filter(x=>x.month===m);return`<div class="month ${m===nowM?"now":""}"><h4><span>${mLabel(m)}</span>${m===nowM?"<span>This month</span>":""}</h4>
    ${ws.map(w=>`<a class="ev" href="#ws-${w.id}"><span class="pill ${STAGE_PILL[w.stage]}" style="padding:0 6px;font-size:11px">${w.stage+1}/7</span> ${esc(w.title)}${wsFlags(w).length||cl[w.id]?' <b class="d-red" title="Needs attention">!</b>':""}</a>`).join("")}
    ${f.map(x=>`<span class="fixture">${esc(x.t)}</span>`).join("")}${!ws.length&&!f.length?`<span class="fixture">Nothing scheduled</span>`:""}</div>`}).join("")}</div>
-  <div class="legend">${STAGES.map((s,i)=>`<span><span class="pill ${STAGE_PILL[i]}" style="padding:0 6px;font-size:11px">${i+1}</span> ${s}</span>`).join("")}<span>Grey text: DME fixtures</span></div>
+  <div class="legend">${STAGES.map((s,i)=>`<span><span class="pill ${STAGE_PILL[i]}" style="padding:0 6px;font-size:11px">${i+1}</span> ${s}</span>`).join("")}<span>Grey text: DME&T fixtures</span></div>
  </div>
  <div class="panel"><div class="chips">${[["all","All"],["attn","Needs attention"],...STAGES.map((s,i)=>[String(i),s])].map(([k,l])=>`<button class="chip" data-wsf="${k}" aria-pressed="${UI.wsf===k}">${l}<span class="c">${W.filter(w=>k==="all"||(k==="attn"?wsFlags(w).length:String(w.stage)===k)).length}</span></button>`).join("")}</div></div>
  <div class="panel flush"><div class="tblwrap"><table><thead><tr><th>Month</th><th>Workshop</th><th>Department</th><th>Focal person</th><th>Progress</th><th>Next step</th><th class="num">Registered</th><th class="num">Feedback</th></tr></thead><tbody>
@@ -113,7 +113,7 @@ function vWs(){
  if(w.stage===1)next=`<p style="margin:0">Waiting for the focal person to submit the proposal. When they submit, it appears here and the workshop moves to review on its own.</p>${w.returned?`<div class="flag">Returned with comments: ${esc(w.returned)}</div>`:""}
   <div class="toolbar"><input id="copysrc" readonly value="${link}" class="linkbox"><button class="btn small" data-act="ws-copy">Copy link again</button></div>
   <div class="actions"><a class="btn primary" href="#pfill-${w.id}">Fill as focal person (prototype)</a><a class="btn" href="#pfedit-${w.id}">Edit proposal form</a></div>`;
- if(w.stage===2)next=`<p style="margin:0">${esc(w.proposal?.submitted?.by||"The focal person")} submitted the proposal${w.proposal?" on "+fdt(w.proposal.submitted.at):""}. Review it, edit anything the DME office wants changed, then approve the affirmed version or return it.</p>
+ if(w.stage===2)next=`<p style="margin:0">${esc(w.proposal?.submitted?.by||"The focal person")} submitted the proposal${w.proposal?" on "+fdt(w.proposal.submitted.at):""}. Review it, edit anything the DME&T office wants changed, then approve the affirmed version or return it.</p>
   <div class="actions"><a class="btn primary" href="#prop-${w.id}">Review and affirm proposal</a><button class="btn danger" data-act="ws-return">Return with comments</button></div>`;
  if(w.stage===3)next=`<p style="margin:0">Before registration opens:</p>
   ${[["cme","CME / accreditation applied"],["pub","Publicity sent to universities and hospitals"],["regpage","Registration page ready"],["fb","Feedback form checked"]].map(([k,l])=>`<label class="check2"><input type="checkbox" data-wscheck="${k}" ${w.check[k]?"checked":""}> ${l}</label>`).join("")}
@@ -155,7 +155,7 @@ function vWs(){
     <tr class="tot"><td>Total expenses</td><td class="num">− ${money(F.totalOut)}</td><td></td></tr>
     <tr class="tot"><td>Net income</td><td class="num"><b class="${F.net<0?"d-red":""}">${money(F.net)}</b></td><td></td></tr>
     <tr><td>Course director (${F.share}%)</td><td class="num">${money(F.dir)}</td><td></td></tr>
-    <tr><td>DME fund (${100-F.share}%)</td><td class="num">${money(F.dme)}</td><td></td></tr></tbody></table></div>
+    <tr><td>DME&T fund (${100-F.share}%)</td><td class="num">${money(F.dme)}</td><td></td></tr></tbody></table></div>
     <div class="actions" style="padding:12px 16px"><button class="btn small" data-act="ws-fee">Registration fees</button><button class="btn small" data-act="ws-exp">Add expense</button><button class="btn small" data-act="ws-inc">Add other income</button></div>
     ${F.net<0?`<p class="code" style="padding:0 16px 12px;margin:0">Net is negative, so there is nothing to distribute.</p>`:""}</div>
   </div>
@@ -201,7 +201,7 @@ function wsAction(a,b){
   <div class="grid2"><label class="f">Venue<select name="venue">${opt(VENUES,w.venue||"Auditorium")}</select></label><label class="f">Seats<input type="number" min="1" name="seats" value="${w.seats||30}"></label></div>
   <label class="f">Registration fee (PKR) <span class="h">0 for free</span><input type="number" min="0" step="100" name="fee" value="${w.fee??0}"></label>
   <label class="f">Course director <span class="h">receives ${DB.settings.director_share??60}% of net income</span><input name="director" list="ws-fac2" value="${esc(w.director||w.focal)}"><datalist id="ws-fac2">${DB.faculty.map(f=>`<option value="${esc(facName(f))}">`).join("")}</datalist></label>
-  <div class="flag info">Fees are charged only where the Office of the Executive Director and the Medical Education Department agree.</div>
+  <div class="flag info">Fees are charged only where the Office of the Executive Director and the Department of Medical Education and Training agree.</div>
   <label class="f">Approval note <span class="h">optional</span><textarea name="note"></textarea></label>`,()=>{
   const d=fv("date");if(!d)return fail("Enter the date.");if(!(+fv("seats")>0))return fail("Enter the number of seats.");
   Object.assign(w,{date:d,month:d.slice(0,7),venue:fv("venue"),seats:+fv("seats"),fee:+fv("fee")||0,director:fv("director")});w.stage=3;wlog(w,`Approved · ${fd(d)}, ${w.seats} seats, ${w.fee?money(w.fee):"free"}${fv("note")?" · "+fv("note"):""}`);toast("Proposal approved");return true},"Approve");

@@ -32,7 +32,7 @@ function verNew(){VER.shown=1;
  if(document.body.classList.contains("kiosk")){const tryK=()=>{if(UI.kio&&!UI.kio.sel&&!UI.kio.msg&&!(typeof SYNC!=="undefined"&&SYNC&&SYNC.pending))verReload();else setTimeout(tryK,30000)};tryK();return}
  const b=document.createElement("div");b.id="verbar";b.setAttribute("role","status");
  b.style.cssText="position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:60;background:var(--ink,#222);color:#fff;padding:10px 12px 10px 16px;border-radius:12px;display:flex;gap:12px;align-items:center;box-shadow:0 6px 24px rgba(0,0,0,.25);font-size:14px;max-width:calc(100vw - 24px)";
- b.innerHTML=`<span>A new version of the DME Office is ready.</span><button class="btn small primary" data-act="ver-reload">Reload</button><button class="btn small" data-act="ver-later" style="background:transparent;color:#fff;border-color:rgba(255,255,255,.4)">Later</button>`;document.body.append(b)}
+ b.innerHTML=`<span>A new version of the DME&T Office is ready.</span><button class="btn small primary" data-act="ver-reload">Reload</button><button class="btn small" data-act="ver-later" style="background:transparent;color:#fff;border-color:rgba(255,255,255,.4)">Later</button>`;document.body.append(b)}
 document.addEventListener("click",e=>{const b=e.target.closest('[data-act="ver-reload"],[data-act="ver-later"]');if(!b)return;if(b.dataset.act==="ver-reload"){b.disabled=true;b.textContent="Saving…";verReload()}else document.getElementById("verbar")?.remove()});
 setTimeout(()=>verCheck(true),15000);setInterval(()=>verCheck(true),30*60000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)verCheck()});
 
@@ -52,7 +52,7 @@ document.addEventListener("keydown",e=>{if(!(e.ctrlKey||e.metaKey)||e.altKey||(e
  const t=document.getElementById("topq");if(t&&t.offsetParent){t.focus();t.select();return}if(route.v!=="search")go("search");setTimeout(()=>{const g=document.getElementById("gq");if(g){g.focus();g.select()}},30)});
 
 /* 5 · results to each trainee */
-const srTplP=x=>`Dear {name},\n\nThe results of the *{exam}*${x.date?", held on {date},":""} have been published. Your result is below.\n\n{results}\n\nRegards,\nDepartment of Medical Education & Training\nRawalpindi Institute of Cardiology`;
+const srTplP=x=>`Dear {name},\n\nThe results of the *{exam}*${x.date?", held on {date},":""} have been published. Your result is below.\n\n{results}\n\nRegards,\nDepartment of Medical Education and Training\nRawalpindi Institute of Cardiology`;
 function srTextP(x,t){const pm=new Map();t.papers.forEach(z=>pm.set(srPaper(x,z.k),srPassTxt(x,z.k)));const vals=[...new Set(pm.values())];
  return t.papers.map(z=>srLine(x,z)).join("\n")+"\n\n"+(vals.length===1?`Pass mark: ${vals[0]}`:`*Pass marks*\n${[...pm].map(([n,v])=>`${n}: ${v}`).join("\n")}`)}
 function srPgtList(x,spec){const cache={},row=(k,p)=>{if(!cache[k])cache[k]=rsData(x,k,null,{});return cache[k].R.find(r=>r.p.id===p.id)};

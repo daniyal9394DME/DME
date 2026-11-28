@@ -15,7 +15,7 @@ const certViewBtn=x=>x.path?`<button class="btn link" data-act="doc-open" data-p
 const newToken=()=>{const a=new Uint8Array(18);crypto.getRandomValues(a);return Array.from(a,b=>b.toString(36).padStart(2,"0")).join("").slice(0,24)};
 const bioLink=p=>(LIVE?pubBase():"https://dme.ric.example/")+"?bio="+p.bioToken;
 function ensureBioToken(p){if(!p.bioToken){p.bioToken=newToken();p.bioSent=iso(TODAY)}return p.bioToken}
-const BIO_MSG="Dear {name},\nThe DME office, Rawalpindi Institute of Cardiology, needs your bio data for our records. Please fill in the form at this link (about 5 minutes; keep your CNIC and bank details ready):\n{biolink}\nAt the end you can download your filled bio data form as a PDF. Please print it, sign it and hand it to the DME office.\nThis link is personal to you; please do not share it.\nDME Office, RIC";
+const BIO_MSG="Dear {name},\nThe DME&T office, Rawalpindi Institute of Cardiology, needs your bio data for our records. Please fill in the form at this link (about 5 minutes; keep your CNIC and bank details ready):\n{biolink}\nAt the end you can download your filled bio data form as a PDF. Please print it, sign it and hand it to the DME&T office.\nThis link is personal to you; please do not share it.\nDME Office, RIC";
 {const _rp=recPgt;recPgt=function(p){const r=_rp(p);if(p.bioToken)r.vars.biolink=bioLink(p);return r}}
 const bioStat=()=>{const A=verified().filter(p=>CUR.get(p.id)?.active);return{A,have:A.filter(p=>bioHas(p.bio)),sent:A.filter(p=>!bioHas(p.bio)&&p.bioToken),none:A.filter(p=>!bioHas(p.bio)&&!p.bioToken)}};
 function bioCampaignPanel(){if(isViewer())return"";const s=bioStat();if(!s.A.length)return"";
@@ -36,18 +36,18 @@ document.addEventListener("click",e=>{const a=e.target.closest('[data-act="bio-l
 /* the public bio-data page (?bio=token) */
 let BIOPUB=null;
 async function bioPublicPage(t){document.body.classList.add("public");let d;try{const r=await SYNC.sb.rpc("dme_public_bio",{p_t:t});d=r.data}catch(e){}
- if(!d||d.error)return pubShell(`<div class="panel fbform">${formHead(null,"Bio data","Department of Medical Education")}<p>This link is not valid any more. It may already have been used. Ask the DME office for a new link.</p></div>`);
+ if(!d||d.error)return pubShell(`<div class="panel fbform">${formHead(null,"Bio data","Department of Medical Education and Training")}<p>This link is not valid any more. It may already have been used. Ask the DME&T office for a new link.</p></div>`);
  BIOPUB={t,d,fam:(d.bio&&d.bio.family&&d.bio.family.length?d.bio.family:[{rel:"Father"},{rel:"Mother"}]).map(f=>({...f}))};bioPubRender()}
 function bioPubRender(done){const{d}=BIOPUB,b=d.bio||{};
- if(done)return pubShell(`<div class="panel fbform">${formHead(null,"Bio data received","Department of Medical Education")}<p>Thank you, Dr. ${esc(d.name)}. Your bio data is now with the DME office.</p>
-  <div class="flag ok" style="display:grid;gap:8px"><b>Download your bio data form</b><span>Print it, sign it and hand it to the DME office.</span><button class="btn primary" data-act="biopub-pdf" style="justify-self:start">Download bio data form (PDF)</button><span class="subt" id="biopub-err"></span></div></div>`);
+ if(done)return pubShell(`<div class="panel fbform">${formHead(null,"Bio data received","Department of Medical Education and Training")}<p>Thank you, Dr. ${esc(d.name)}. Your bio data is now with the DME&T office.</p>
+  <div class="flag ok" style="display:grid;gap:8px"><b>Download your bio data form</b><span>Print it, sign it and hand it to the DME&T office.</span><button class="btn primary" data-act="biopub-pdf" style="justify-self:start">Download bio data form (PDF)</button><span class="subt" id="biopub-err"></span></div></div>`);
  const f=(n,l,o={})=>`<label class="f"><span class="${o.opt?"":"req"}">${l}${o.h?` <span class="h">${o.h}</span>`:o.opt?` <span class="h">optional</span>`:""}</span>${o.area?`<textarea name="${n}" rows="2">${esc(o.v||"")}</textarea>`:`<input name="${n}" ${o.type?`type="${o.type}"`:""} value="${esc(o.v||"")}" ${o.ph?`placeholder="${o.ph}"`:""}>`}</label>`;
  const fam=BIOPUB.fam.map((m,i)=>`<fieldset class="pfsec famrow"><legend>Family member ${i+1}${i>0?` <button type="button" class="btn link" data-bpfdel="${i}">Remove</button>`:""}</legend>
   <div class="grid2"><label class="f"><span class="${i===0?"req":""}">Name</span><input data-bpf="${i}.name" value="${esc(m.name||"")}"></label><label class="f"><span>Relation</span><select data-bpf="${i}.rel">${opt(["",...BIO_REL],m.rel||"")}</select></label></div>
   <div class="grid2"><label class="f"><span>CNIC</span><input data-bpf="${i}.cnic" value="${esc(m.cnic||"")}" placeholder="xxxxx-xxxxxxx-x"></label><label class="f"><span>Age</span><input data-bpf="${i}.age" inputmode="numeric" value="${esc(m.age??"")}"></label></div>
   <div class="grid2"><label class="f"><span>Passport no.</span><input data-bpf="${i}.passport" value="${esc(m.passport||"")}"></label><label class="f"><span>Other nationality</span><input data-bpf="${i}.nat" value="${esc(m.nat||"")}"></label></div></fieldset>`).join("");
- pubShell(`<form class="panel fbform" id="bioform" novalidate>${formHead(null,"Bio data form","Form RIC-RWP-HRM-F-04 · Department of Medical Education")}
-  <div class="flag info"><b>Dr. ${esc(d.name)}</b> · ${esc(d.code||"")} · ${esc(d.spec||"")}<br>Father's name: ${esc(d.father||"not on file")} · CNIC: ${esc(d.cnic||"not on file")} · Domicile: ${esc(d.domicile||"not on file")}<br><span class="subt">If any of these is wrong, tell the DME office.</span></div>
+ pubShell(`<form class="panel fbform" id="bioform" novalidate>${formHead(null,"Bio data form","Form RIC-RWP-HRM-F-04 · Department of Medical Education and Training")}
+  <div class="flag info"><b>Dr. ${esc(d.name)}</b> · ${esc(d.code||"")} · ${esc(d.spec||"")}<br>Father's name: ${esc(d.father||"not on file")} · CNIC: ${esc(d.cnic||"not on file")} · Domicile: ${esc(d.domicile||"not on file")}<br><span class="subt">If any of these is wrong, tell the DME&T office.</span></div>
   <fieldset class="pfsec"><legend>Personal</legend><div class="grid2">${f("dob","Date of birth",{type:"date",v:b.dob})}<label class="f"><span class="req">Marital status</span><select name="marital">${opt(["",...BIO_MARITAL],b.marital||"")}</select></label></div>
    <div class="grid2">${f("religion","Religion",{v:b.religion,ph:"e.g. Islam"})}${f("sect","Sect",{opt:1,v:b.sect})}</div>
    <div class="grid2">${f("passport","Passport number",{opt:1,v:b.passport})}${f("otherNat","Other nationality",{opt:1,h:"if any",v:b.otherNat})}</div></fieldset>
@@ -82,7 +82,7 @@ document.addEventListener("click",async e=>{if(!BIOPUB)return;const t=e.target;
  try{let path=null;if(ph){path=`pgt/bio-${Date.now()}-${Math.random().toString(36).slice(2,7)}/photo.${(ph.name.split(".").pop()||"jpg").toLowerCase().replace(/[^a-z0-9]/g,"")}`;const{error}=await SYNC.sb.storage.from("dme-uploads").upload(path,ph,{contentType:ph.type});if(error)throw new Error("upload")}
   const mob2=m2?(m2.length===10?"0"+m2:m2).replace(/^(\d{4})(\d{7})$/,"$1-$2"):null;
   const{data,error}=await SYNC.sb.rpc("dme_submit_bio",{p_t:BIOPUB.t,p_bio:bio,p_mobile2:mob2,p_photo:path});if(error||!data)throw new Error("send");
-  if(data.error){b.disabled=false;b.textContent="Submit bio data";return bad(data.error==="not_found"?"This link has already been used. Ask the DME office for a new one.":"Some details are not valid. Check the form.")}
+  if(data.error){b.disabled=false;b.textContent="Submit bio data";return bad(data.error==="not_found"?"This link has already been used. Ask the DME&T office for a new one.":"Some details are not valid. Check the form.")}
   BIOPUB.bio=bio;BIOPUB.photo=ph||null;BIOPUB.mobile2=mob2;bioPubRender(true);window.scrollTo(0,0)}
  catch(x){b.disabled=false;b.textContent="Submit bio data";bad(x.message==="upload"?"The photo could not be uploaded. Try again, or submit without it.":"Could not send. Check the connection and try again.")}});
 /* re-draw the form without losing what was typed */
@@ -104,7 +104,7 @@ setInterval(()=>{const o=document.querySelector("#overlay .qrfull [data-act='ws-
 VIEW_ACTS.add("ws-attqr");
 let ATTPUB=null;
 async function attPublicPage(id){document.body.classList.add("public");let d=null;try{const r=await SYNC.sb.rpc("dme_att_info",{p_id:id});d=r.data}catch(e){}ATTPUB={id,d};attPubRender()}
-function attPubRender(res){const d=ATTPUB.d;if(!d||d.error)return pubShell(`<div class="panel fbform">${formHead(null,"Workshop check-in","Department of Medical Education")}<p>This check-in link is not valid.</p></div>`);
+function attPubRender(res){const d=ATTPUB.d;if(!d||d.error)return pubShell(`<div class="panel fbform">${formHead(null,"Workshop check-in","Department of Medical Education and Training")}<p>This check-in link is not valid.</p></div>`);
  const head=formHead(null,d.title||"Workshop",`${d.date?fd(d.date):""}${d.venue?" · "+esc(d.venue):""} · Attendance`);
  if(res&&res.ok)return pubShell(`<div class="panel fbform">${head}<div class="flag ok" style="display:grid;gap:6px;text-align:center;padding:24px"><b style="font-size:22px">${res.already?"Already checked in":"Welcome"}, ${esc(res.name||"")}</b><span>${res.already?"Your attendance was recorded earlier.":"Your attendance is recorded. Enjoy the workshop."}</span></div></div>`);
  if(!d.open)return pubShell(`<div class="panel fbform">${head}<p>Check-in is not open at the moment. It opens at the start of the workshop.</p><button class="btn" data-act="att-retry">Try again</button></div>`);

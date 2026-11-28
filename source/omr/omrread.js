@@ -1,4 +1,4 @@
-/* RIC DME OMR reader. Pure JS on a grayscale image {w,h,d:Uint8Array}; runs in the browser and in node.
+/* RIC DME&T OMR reader. Pure JS on a grayscale image {w,h,d:Uint8Array}; runs in the browser and in node.
    1. find the black squares (4 corners + 6 per side), 2. map sheet millimetres to pixels band by band,
    3. measure each bubble, 4. decide answers and flag anything doubtful. */
 const OMR_MK={corner:[[11.5,11.5],[198.5,11.5],[11.5,267.5],[198.5,267.5]],side:[44,79,112,149,186,223],lx:11.5,rx:198.5};

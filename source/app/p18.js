@@ -8,7 +8,7 @@ function contactImportPanel(){if(!isAdmin())return"";const miss=verified().filte
  <label class="f">Data file<input type="file" id="ci-file" accept=".json,application/json"></label><p class="status" id="ci-st"></p></div>`}
 document.addEventListener("change",async e=>{if(e.target.id!=="ci-file"||!e.target.files[0])return;const st=document.getElementById("ci-st");
  let j;try{j=JSON.parse(await e.target.files[0].text())}catch(x){st.textContent="That file could not be read.";st.className="status warn";return}
- const src=(j.seed&&j.seed.pgts)||j.pgts;if(!Array.isArray(src)){st.textContent="That is not the DME data file.";st.className="status warn";return}
+ const src=(j.seed&&j.seed.pgts)||j.pgts;if(!Array.isArray(src)){st.textContent="That is not the DME&T data file.";st.className="status warn";return}
  const F=["mobile","email","cnic","pmdc","father"];let people=0,fields=0;
  src.forEach(s=>{const p=DB.pgts.find(x=>x.id===s.id)||DB.pgts.find(x=>x.name.toLowerCase()===String(s.name||"").toLowerCase()&&x.spec===s.spec);if(!p)return;let n=0;
   F.forEach(k=>{if(s[k]&&!p[k]){p[k]=s[k];n++}});if(n){people++;fields+=n}});
@@ -41,7 +41,7 @@ function updPanel(){if(!isAdmin())return"";const u=UI.upd;
 document.addEventListener("change",async e=>{if(e.target.id!=="upd-file"||!e.target.files[0])return;let j;
  try{j=JSON.parse(await e.target.files[0].text())}catch(x){toast("That file could not be read");return}
  if(j.kind==="dme-exam-results"){exrInit(j);e.target.value="";const y=window.scrollY;render();window.scrollTo(0,y);return}
- if(j.kind!=="dme-pgt-update"&&j.kind!=="dme-update"){toast("That is not a DME update file");return}
+ if(j.kind!=="dme-pgt-update"&&j.kind!=="dme-update"){toast("That is not a DME&T update file");return}
  UI.upd={title:j.title||"Update",j,plan:updPlan(j)};const y=window.scrollY;render();window.scrollTo(0,y)});
 document.addEventListener("click",e=>{const a=e.target.closest("[data-act]");if(!a)return;
  if(a.dataset.act==="upd-x"){UI.upd=null;const y=window.scrollY;render();window.scrollTo(0,y)}

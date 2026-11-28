@@ -53,8 +53,8 @@ const bkAge=()=>{const b=DB.settings&&DB.settings.lastBackup;return b&&b.at?Math
 async function bkDownload(btn){if(btn)btn.disabled=true;
  try{let rows;if(LIVE&&SYNC&&SYNC.sb){toast("Collecting every record…");rows=await pullAll()}else rows=dbRows();
   const now=new Date(),stamp=iso(now)+"-"+String(now.getHours()).padStart(2,"0")+String(now.getMinutes()).padStart(2,"0");
-  const out={app:"RIC DME Office",kind:"full backup",at:now.toISOString(),by:ME,records:rows.length,collections:[...new Set(rows.map(r=>r.coll))],rows};
-  await (DL||BROWSER_DL).save({filename:`DME backup ${stamp}.json`,data:new Blob([JSON.stringify(out)],{type:"application/json"})});
+  const out={app:"RIC DME&T Office",kind:"full backup",at:now.toISOString(),by:ME,records:rows.length,collections:[...new Set(rows.map(r=>r.coll))],rows};
+  await (DL||BROWSER_DL).save({filename:`DME&T backup ${stamp}.json`,data:new Blob([JSON.stringify(out)],{type:"application/json"})});
   DB.settings.lastBackup={at:now.toISOString(),by:ME,records:rows.length};log(`Full backup downloaded (${rows.length} records)`);persist();render();toast("Backup downloaded. Keep it somewhere safe, e.g. Google Drive.")}
  catch(e){toast("The backup could not be made: "+(e.message||e))}finally{if(btn)btn.disabled=false}}
 function bkPanel(){const b=DB.settings.lastBackup,a=bkAge();
@@ -95,7 +95,7 @@ document.addEventListener("click",e=>{const b=e.target.closest('[data-act="wsp-p
 /* ---------- 4. proposal link on WhatsApp ---------- */
 const focalOne=nm=>{const n=String(nm||"").replace(/^(prof\.?\s*)?(dr\.?\s*)?/i,"").trim().toLowerCase();return n?DB.faculty.find(f=>facName(f).toLowerCase()===String(nm).trim().toLowerCase()||String(f.name||"").toLowerCase()===n):null};
 const focalFac=w=>{const L=String(w.focal||"").split(/\s*(?:,|&|\band\b)\s*/i).map(focalOne).filter(Boolean);return L.find(f=>waNum(f.mobile||f.mobile2))||L[0]||null};
-function propMsg(w){return`Assalam o Alaikum ${w.focal||""},\n\nThe DME office requests the proposal for the workshop "${w.title}" planned for ${mLabel(w.month)}${w.dept?" ("+w.dept+")":""}.\n\nPlease fill in the proposal form here:\n${pubLink("prop",w)}\n\nRegards,\nDME Office, Rawalpindi Institute of Cardiology`}
+function propMsg(w){return`Assalam o Alaikum ${w.focal||""},\n\nThe DME&T office requests the proposal for the workshop "${w.title}" planned for ${mLabel(w.month)}${w.dept?" ("+w.dept+")":""}.\n\nPlease fill in the proposal form here:\n${pubLink("prop",w)}\n\nRegards,\nDME Office, Rawalpindi Institute of Cardiology`}
 function propSend(w,num){const url=`https://wa.me/${num}?text=${encodeURIComponent(propMsg(w))}`;window.open(url,"_blank","noopener");
  if(w.stage===0){const t=document.createElement("button");t.dataset.act="ws-sent";t.hidden=true;document.getElementById("main").append(t);t.click();t.remove()}
  else{log(`Proposal link sent again on WhatsApp to ${w.focal||"focal person"}: ${w.title}`,"ws-"+w.id);persist()}}
@@ -167,7 +167,7 @@ function navEditSheet(who){const me=meObj(),adm=isAdmin(),tgt=who?DB.staff.find(
  const hid=self?navHidden():(tgt.menuHide||[]),items=NAVG.filter(n=>asT(n[1])&&n[1]!=="overview");let g=null,rows="";
  items.forEach(([grp,k,l])=>{if(grp!==g){rows+=`<div class="lbl" style="font-weight:700;margin-top:8px">${esc(grp||"General")}</div>`;g=grp}rows+=`<label class="check2"><input type="checkbox" data-mh="${k}" ${hid.includes(k)?"":"checked"}> ${esc(l)}</label>`});
  openSheet(self?"Pages in my menu":`Menu for ${tgt.name}`,`${adm?`<label class="f">Menu for<select id="mh-who">${opt(DB.staff.map(s=>[s.name,s.name+(s.desig?" · "+s.desig:"")]),tgt.name)}</select></label>`:""}
-  <p class="subt" style="margin:0">Untick the pages ${self?"you don't use":tgt.name+" doesn't use"}. ${self?"They leave the menu but still open from links and Search.":"This is their starting menu; they can change it for themselves."} Access rights are set in Settings → DME team.</p>
+  <p class="subt" style="margin:0">Untick the pages ${self?"you don't use":tgt.name+" doesn't use"}. ${self?"They leave the menu but still open from links and Search.":"This is their starting menu; they can change it for themselves."} Access rights are set in Settings → DME&T team.</p>
   <div style="display:grid;gap:4px">${rows}</div>`,()=>{const off=[...document.querySelectorAll("#sheetform [data-mh]")].filter(c=>!c.checked).map(c=>c.dataset.mh);
   if(self){lsSet(navLocalK(),off);if(adm){me.menuHide=off}}else{tgt.menuHide=off;log(`Menu pages set for ${tgt.name}`)}toast("Menu updated");return true},"Save menu")}
 document.addEventListener("click",e=>{if(e.target.closest('[data-act="nav-edit"]')){e.preventDefault();navEditSheet()}});

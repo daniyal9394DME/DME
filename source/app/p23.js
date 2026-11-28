@@ -2,7 +2,7 @@
 /* =====================================================================
    V20 · ROTATING TRAINEES (PGTs from other institutes on short
    rotations at RIC): daily attendance, a self-service attendance kiosk
-   for the DME office computer, and the experience certificate
+   for the DME&T office computer, and the experience certificate
    ===================================================================== */
 const ROT_UNITS=["Cardiac Surgery","CT Angiography / Cardiac Imaging","Cardiology","Cath Lab","Echocardiography","CCU","Cardiac Anaesthesia","Paediatric Cardiology","Paediatric Cardiac Surgery","Electrophysiology"];
 const ROT_PROGS=["FCPS","MS","MD","MCPS","Diploma","House job","Other"];
@@ -61,8 +61,8 @@ function vRot(){const v=visList().find(x=>x.id===route.id);if(!v)return`<div cla
  <div class="cols side"><div class="panel"><h3>Attendance</h3><p class="subt" style="margin:0 0 8px">${can?"Tap a day to change it: Present › Absent › Leave › Holiday › clear.":""} <span class="lg a-P">P</span> present <span class="lg a-A">A</span> absent <span class="lg a-L">L</span> leave <span class="lg a-H">H</span> holiday / off</p><div class="attcals">${months.map(cal).join("")}</div></div>
   <div style="display:grid;gap:18px;align-content:start"><div class="panel"><h3>Details</h3><dl class="kv"><dt>Parent institute</dt><dd>${esc(v.inst||"—")}</dd><dt>Programme</dt><dd>${esc(v.program||"—")} ${esc(v.spec||"")}${v.year?", year "+esc(v.year):""}</dd><dt>Rotation unit</dt><dd>${esc(v.unit||"—")}</dd><dt>Supervisor at RIC</dt><dd>${esc(rotFac(v)||v.supName||"—")}</dd>${v.father?`<dt>Father's name</dt><dd>${esc(v.father)}</dd>`:""}
    <dt>Rotation</dt><dd>${fd(v.start)} – ${fd(v.end)}${v.left?`<div class="d-red">Left on ${fd(v.left)}</div>`:""}</dd>${v.cnic?`<dt>CNIC</dt><dd>${esc(v.cnic)}</dd>`:""}${v.pmdc?`<dt>PMDC</dt><dd>${esc(v.pmdc)}</dd>`:""}<dt>Mobile</dt><dd>${esc(v.mobile||"—")}</dd>${v.email?`<dt>Email</dt><dd>${esc(v.email)}</dd>`:""}${v.letter?`<dt>Rotation letter</dt><dd>${esc(v.letter)}</dd>`:""}${v.notes?`<dt>Notes</dt><dd>${esc(v.notes)}</dd>`:""}</dl></div>
-   ${can?`<div class="panel"><h3>Attendance PIN</h3><p style="margin:0"><span class="code" style="font-size:22px;letter-spacing:.2em">${esc(v.pin)}</span></p><p class="subt" style="margin:4px 0 8px">The trainee enters this on the attendance kiosk in the DME office.</p>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">${waNum(v.mobile)?`<a class="btn small" target="_blank" rel="noopener" href="https://wa.me/${waNum(v.mobile)}?text=${encodeURIComponent(`Dear Dr. ${v.name},\nWelcome to the Rawalpindi Institute of Cardiology for your ${v.unit} rotation (${fd(v.start)} to ${fd(v.end)}).\nPlease mark your attendance every day on the attendance computer in the Medical Education Department. Your PIN is ${v.pin}.\nDME Office, RIC`)}">Send PIN on WhatsApp</a>`:""}<button class="btn small" data-act="rot-pin" data-id="${v.id}">New PIN</button></div></div>`:""}
+   ${can?`<div class="panel"><h3>Attendance PIN</h3><p style="margin:0"><span class="code" style="font-size:22px;letter-spacing:.2em">${esc(v.pin)}</span></p><p class="subt" style="margin:4px 0 8px">The trainee enters this on the attendance kiosk in the DME&T office.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">${waNum(v.mobile)?`<a class="btn small" target="_blank" rel="noopener" href="https://wa.me/${waNum(v.mobile)}?text=${encodeURIComponent(`Dear Dr. ${v.name},\nWelcome to the Rawalpindi Institute of Cardiology for your ${v.unit} rotation (${fd(v.start)} to ${fd(v.end)}).\nPlease mark your attendance every day on the attendance computer in the Department of Medical Education and Training. Your PIN is ${v.pin}.\nDME Office, RIC`)}">Send PIN on WhatsApp</a>`:""}<button class="btn small" data-act="rot-pin" data-id="${v.id}">New PIN</button></div></div>`:""}
    ${rotDocsHtml(v)}${v.cert?`<div class="panel"><h3>Certificate</h3><p style="margin:0">${esc(v.cert.no)} · issued ${fd(v.cert.at)}</p><p class="subt" style="margin:4px 0 0">Attendance on the certificate: ${v.cert.P} of ${v.cert.work} days (${v.cert.pct}%)</p></div>`:""}</div></div>`}
 
 /* ---------- add / edit ---------- */
@@ -93,7 +93,7 @@ function sheetRotCert(v){const s=rotStats(v),st=rotState(v);
  ${s.pct!=null&&s.pct<75?`<div class="flag">Attendance is ${s.pct}%, below 75%.</div>`:""}
  <dl class="kv"><dt>Rotation</dt><dd>${esc(v.unit)}, ${fd(v.start)} – ${fd(v.left||v.end)}</dd><dt>Attendance</dt><dd>${s.P} of ${s.work} working days (${s.pct??0}%)${s.L?`, ${s.L} on leave`:""}</dd></dl>
  <label class="f">Conduct<select name="conduct">${opt(["satisfactory","good","excellent","—"],v.cert?.conduct||"satisfactory")}</select></label>
- <label class="f">Signed by<input name="signer" value="${esc(v.cert?.signer||SELF)}"></label><label class="f">Designation<input name="sdesig" value="${esc(v.cert?.sdesig||"Director of Medical Education")}"></label>
+ <label class="f">Signed by<input name="signer" value="${esc(v.cert?.signer||SELF)}"></label><label class="f">Designation<input name="sdesig" value="${esc(v.cert?.sdesig||"Director of Medical Education and Training")}"></label>
  <label class="check"><input type="checkbox" name="supsig" ${v.cert?.supsig!==false&&v.sup?"checked":""} ${v.sup?"":"disabled"}> Add a signature line for the supervisor${v.sup?` (${esc(rotFac(v))})`:""}</label>
  ${v.cert?`<p class="subt" style="margin:0">Certificate no. ${esc(v.cert.no)}, first issued ${fd(v.cert.at)}. Downloading again keeps the same number.</p>`:""}`,()=>{
   const yr=TODAY.getFullYear(),seq=visList().filter(x=>x.cert&&x.cert.no.includes(`/${yr}/`)).length+1;
@@ -102,7 +102,7 @@ function sheetRotCert(v){const s=rotStats(v),st=rotState(v);
   log(`Experience certificate ${v.cert.no} for Dr. ${v.name}`,"rot-"+v.id);rotCertPdf(v).catch(e=>toast(e.message||"Could not make the PDF"));return true},v.cert?"Download PDF":"Issue and download")}
 async function rotCertPdf(v){await bioLoadPdf();const{jsPDF}=window.jspdf;const d=new jsPDF({unit:"pt",format:"a4"}),W=595,c=v.cert,L=64,R=W-64;
  const logo=document.querySelector('img[alt="RIC logo"]')?.src;if(logo&&logo.startsWith("data:"))try{d.addImage(logo,"JPEG",W/2-32,40,64,64)}catch(e){}
- d.setFont("times","bold");d.setFontSize(16);d.text("RAWALPINDI INSTITUTE OF CARDIOLOGY",W/2,126,{align:"center"});d.setFont("times","normal");d.setFontSize(11.5);d.text("Department of Medical Education & Training · Rawal Road, Rawalpindi",W/2,143,{align:"center"});
+ d.setFont("times","bold");d.setFontSize(16);d.text("RAWALPINDI INSTITUTE OF CARDIOLOGY",W/2,126,{align:"center"});d.setFont("times","normal");d.setFontSize(11.5);d.text("Department of Medical Education and Training · Rawal Road, Rawalpindi",W/2,143,{align:"center"});
  d.setDrawColor(109,31,43);d.setLineWidth(1.4);d.line(L,154,R,154);
  d.setFontSize(10.5);d.text(`No. ${c.no}`,L,180);d.text(`Dated: ${fd(iso(TODAY))}`,R,180,{align:"right"});
  d.setFont("times","bold");d.setFontSize(15);d.text("EXPERIENCE CERTIFICATE",W/2,222,{align:"center"});d.setLineWidth(.6);d.setDrawColor(0);const tw=d.getTextWidth("EXPERIENCE CERTIFICATE");d.line(W/2-tw/2,225,W/2+tw/2,225);
@@ -114,10 +114,10 @@ async function rotCertPdf(v){await bioLoadPdf();const{jsPDF}=window.jspdf;const 
  const sy=Math.max(y+80,560);d.setLineWidth(.5);
  if(c.supsig&&v.sup){d.line(L,sy,L+190,sy);d.setFont("times","bold");d.setFontSize(11.5);d.text(rotFac(v),L,sy+15);d.setFont("times","normal");d.text(`Supervisor, ${v.unit}`,L,sy+30);d.text("Rawalpindi Institute of Cardiology",L,sy+45)}
  d.line(R-200,sy,R,sy);d.setFont("times","bold");d.text(c.signer,R,sy+15,{align:"right"});d.setFont("times","normal");d.text(c.sdesig,R,sy+30,{align:"right"});d.text("Rawalpindi Institute of Cardiology",R,sy+45,{align:"right"});
- d.setFontSize(8.5);d.setTextColor(110);d.text(`Attendance recorded daily in the DME Office attendance register. Certificate no. ${c.no}.`,W/2,800,{align:"center"});
+ d.setFontSize(8.5);d.setTextColor(110);d.text(`Attendance recorded daily in the DME&T Office attendance register. Certificate no. ${c.no}.`,W/2,800,{align:"center"});
  d.save(`Experience certificate - Dr ${v.name.replace(/[^A-Za-z0-9 ]+/g,"")}.pdf`)}
 
-/* ---------- attendance kiosk (DME office computer) ---------- */
+/* ---------- attendance kiosk (DME&T office computer) ---------- */
 UI.kio={sel:null,pin:"",msg:null};
 const kioskOn=()=>{try{return sessionStorage.getItem("dme-kiosk")==="1"}catch(e){return false}};
 function vKiosk(){try{sessionStorage.setItem("dme-kiosk","1")}catch(e){}document.body.classList.add("kiosk");const t=iso(TODAY),K=UI.kio;
@@ -127,7 +127,7 @@ function vKiosk(){try{sessionStorage.setItem("dme-kiosk","1")}catch(e){}document
  if(K.sel){const v=cur.find(x=>x.id===K.sel);if(!v){K.sel=null;return vKiosk()}
   return`<div class="kio"><h2>${esc(visName(v))}</h2><p class="subt">Enter your 4-digit PIN</p><div class="kio-pin">${[0,1,2,3].map(i=>`<span class="${K.pin.length>i?"f":""}"></span>`).join("")}</div>
   <div class="kio-pad">${[1,2,3,4,5,6,7,8,9,"✕",0,"⌫"].map(k=>`<button data-kio="${k}">${k}</button>`).join("")}</div><button class="btn link" data-kio="back">Not you? Go back</button></div>`}
- return`<div class="kio"><div class="kio-h"><img src="${esc(document.querySelector('img[alt="RIC logo"]')?.src||"")}" alt=""><div><h2>Daily attendance</h2><p>Rotating trainees and observers · Department of Medical Education</p></div><div class="kio-clock"><b>${now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}</b>${now.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"})}</div></div>
+ return`<div class="kio"><div class="kio-h"><img src="${esc(document.querySelector('img[alt="RIC logo"]')?.src||"")}" alt=""><div><h2>Daily attendance</h2><p>Rotating trainees and observers · Department of Medical Education and Training</p></div><div class="kio-clock"><b>${now.toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})}</b>${now.toLocaleDateString("en-GB",{weekday:"long",day:"numeric",month:"long"})}</div></div>
   <p class="subt" style="text-align:center">Tap your name, then enter your PIN.</p>
   <div class="kio-names">${cur.map(v=>{const m=v.att?.[t];return`<button data-kio-sel="${v.id}" class="${m?.s==="P"?"done":""}"><b>${esc(visName(v))}</b><span>${esc(v.unit)}${m?.s==="P"?` · marked ${m.t}`:""}</span></button>`}).join("")||`<p class="subt">No rotating trainees or observers today.</p>`}</div>
   <button class="btn link kio-exit" data-kio="exit">Exit kiosk (staff)</button></div>`}
@@ -140,7 +140,7 @@ document.addEventListener("click",e=>{if(route.v!=="kiosk")return;const s=e.targ
  if(k==="⌫"){K.pin=K.pin.slice(0,-1);render();return}if(K.pin.length>=4)return;K.pin+=k;
  if(K.pin.length<4){render();return}
  const v=visList().find(x=>x.id===K.sel),t=iso(TODAY);if(!v)return;
- if(K.pin!==String(v.pin)){K.fails=(K.fails||0)+1;return kioMsg(false,"Wrong PIN","Try again, or ask the DME office.")}
+ if(K.pin!==String(v.pin)){K.fails=(K.fails||0)+1;return kioMsg(false,"Wrong PIN","Try again, or ask the DME&T office.")}
  if(v.att?.[t]?.s==="P")return kioMsg(true,`Already marked, ${visName(v)}`,`Marked present at ${v.att[t].t}`);
  markAtt(v,t,"P","Kiosk");persist();kioMsg(true,`Thank you, ${visName(v)}`,`Marked present at ${v.att[t].t} · ${fd(t)}`)});
 document.addEventListener("keydown",e=>{if(route.v!=="kiosk"||!UI.kio.sel)return;if(/^\d$/.test(e.key)){const b=document.querySelector(`[data-kio="${e.key}"]`);if(b)b.click()}if(e.key==="Backspace"){const b=document.querySelector('[data-kio="⌫"]');if(b)b.click()}});
@@ -180,12 +180,12 @@ async function rotPublicPage(){document.body.classList.add("public");
  try{const{data}=await SYNC.sb.rpc("dme_public_lists");ROTPUB.sups=[...new Set((data&&data.faculty||[]).map(f=>f.n))].sort();ROTPUB.cfg={...FORM_DEF.rot,...((data&&data.forms&&data.forms.rot)||{})}}catch(e){ROTPUB.cfg={...FORM_DEF.rot}}
  rotPubRender()}
 function rotPubRender(done){
- if(done)return pubShell(`<div class="panel fbform">${formHead(null,"Registration received","Rotating trainees · Department of Medical Education")}
-  <p>Thank you, Dr. ${esc(done.name)}. Your rotation in <b>${esc(done.unit)}</b> from ${fd(done.start)} to ${fd(done.end)} is now recorded with the DME office.</p>
-  <div class="flag ok" style="display:grid;gap:4px"><span>Your attendance PIN</span><b style="font-size:32px;letter-spacing:.25em;font-family:var(--f-mono)">${esc(done.pin)}</b><span class="subt">Write it down. Mark your attendance every working day on the attendance computer in the Medical Education Department.</span></div>
-  <p class="subt">Bring your original movement order to the DME office on your first day.</p></div>`);
+ if(done)return pubShell(`<div class="panel fbform">${formHead(null,"Registration received","Rotating trainees · Department of Medical Education and Training")}
+  <p>Thank you, Dr. ${esc(done.name)}. Your rotation in <b>${esc(done.unit)}</b> from ${fd(done.start)} to ${fd(done.end)} is now recorded with the DME&T office.</p>
+  <div class="flag ok" style="display:grid;gap:4px"><span>Your attendance PIN</span><b style="font-size:32px;letter-spacing:.25em;font-family:var(--f-mono)">${esc(done.pin)}</b><span class="subt">Write it down. Mark your attendance every working day on the attendance computer in the Department of Medical Education and Training.</span></div>
+  <p class="subt">Bring your original movement order to the DME&T office on your first day.</p></div>`);
  const C=ROTPUB.cfg||FORM_DEF.rot;
- if(!formIsOpen(C))return pubShell(`<div class="panel fbform">${formHead(null,"Rotation registration","Department of Medical Education")}<p>Online registration for rotations is closed at the moment.</p>${C.msg?`<p style="white-space:pre-line">${esc(C.msg)}</p>`:""}${C.contact?`<p class="subt">Contact: ${esc(C.contact)}</p>`:""}</div>`);
+ if(!formIsOpen(C))return pubShell(`<div class="panel fbform">${formHead(null,"Rotation registration","Department of Medical Education and Training")}<p>Online registration for rotations is closed at the moment.</p>${C.msg?`<p style="white-space:pre-line">${esc(C.msg)}</p>`:""}${C.contact?`<p class="subt">Contact: ${esc(C.contact)}</p>`:""}</div>`);
  const f=(n,l,o={})=>`<label class="f"><span class="${o.opt?"":"req"}">${l}${o.h?` <span class="h">${o.h}</span>`:o.opt?` <span class="h">optional</span>`:""}</span><input name="${n}" ${o.type?`type="${o.type}"`:""} ${o.ph?`placeholder="${o.ph}"`:""} ${o.list?`list="${o.list}"`:""} ${o.mode?`inputmode="${o.mode}"`:""}></label>`;
  pubShell(`<form class="panel fbform" id="rotform" novalidate>${formHead(null,"Rotation registration","For postgraduate trainees from other institutes joining RIC for a rotation")}${C.msg?`<div class="flag info" style="white-space:pre-line">${esc(C.msg)}</div>`:""}
   <fieldset class="pfsec"><legend>About you</legend>${f("name","Full name",{h:'without "Dr."',ph:"e.g. Ahmed Raza"})}${f("father","Father's name",{opt:1})}
@@ -224,13 +224,13 @@ document.addEventListener("click",async e=>{const lb=e.target.closest("[data-rpl
    const{error}=await SYNC.sb.storage.from("dme-uploads").upload(path,x,{contentType:x.type||undefined});if(error)throw new Error("upload");docs[k]=path}
   b.textContent="Sending…";const p={name,father:g("father"),cnic:cn,pmdc:g("pmdc"),mobile:mob.slice(0,4)+"-"+mob.slice(4),email:g("email"),inst:g("inst"),program:g("program"),spec:g("spec"),year:g("year"),unit,start:g("start"),end:g("end"),supName:g("supName"),letter:g("letter"),docs};
   const{data,error}=await SYNC.sb.rpc("dme_submit_rot",{p});if(error||!data)throw new Error("send");
-  if(data.error){b.disabled=false;b.textContent="Submit";return bad(data.error==="duplicate"?"You are already registered for a rotation at RIC on these dates. Contact the DME office.":data.error==="closed"?"Online registration has just closed. Contact the DME office.":"Some details are missing or not valid. Check the form.")}
+  if(data.error){b.disabled=false;b.textContent="Submit";return bad(data.error==="duplicate"?"You are already registered for a rotation at RIC on these dates. Contact the DME&T office.":data.error==="closed"?"Online registration has just closed. Contact the DME&T office.":"Some details are missing or not valid. Check the form.")}
   rotPubRender({...p,pin:data.pin});window.scrollTo(0,0)}
  catch(x){b.disabled=false;b.textContent="Submit";bad(x.message==="upload"?"A document could not be uploaded. Check the connection and try again.":"Could not send. Check the connection and try again.")}});
 /* staff side: link, new-registration badge, documents */
 const rotNew=v=>v.src==="form"&&!v.checked;
 function rotLinkPanel(){if(isViewer())return"";const n=rotOnly().filter(rotNew).length;
- return`<div class="panel" style="display:grid;gap:8px"><div class="toolbar"><span class="subt">Registration link for rotating trainees</span><input id="rotlink" readonly value="${esc(rotLink())}" style="flex:1;min-width:220px;font-family:var(--f-mono);font-size:13px"><button class="btn small" data-act="rot-copylink">Copy link</button>${waNum?`<a class="btn small" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("Rotation registration, Rawalpindi Institute of Cardiology (Department of Medical Education). Please register before your first day and upload your movement order:\n"+rotLink())}">Share on WhatsApp</a>`:""}</div>
+ return`<div class="panel" style="display:grid;gap:8px"><div class="toolbar"><span class="subt">Registration link for rotating trainees</span><input id="rotlink" readonly value="${esc(rotLink())}" style="flex:1;min-width:220px;font-family:var(--f-mono);font-size:13px"><button class="btn small" data-act="rot-copylink">Copy link</button>${waNum?`<a class="btn small" target="_blank" rel="noopener" href="https://wa.me/?text=${encodeURIComponent("Rotation registration, Rawalpindi Institute of Cardiology (Department of Medical Education and Training). Please register before your first day and upload your movement order:\n"+rotLink())}">Share on WhatsApp</a>`:""}</div>
   ${n?`<div class="flag info">${n} new online registration${n>1?"s":""}: check the movement order, then press <b>Documents checked</b> on the profile.</div>`:""}</div>`}
 function rotDocsHtml(v){const D=[["movement","Movement order"],["pmdc","PMDC certificate"]];if(!v.docs&&v.src!=="form")return"";
  return`<div class="panel"><h3>Documents</h3><div class="docs">${D.map(([k,l])=>{const pth=v.docs&&v.docs[k];return`<div class="doc"><b>${l}</b>${pth?`<button class="btn link" data-act="doc-open" data-path="${esc(pth)}">Open</button>`:k==="pmdc"?"Not uploaded (optional)":"Not uploaded"}</div>`}).join("")}</div>

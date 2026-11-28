@@ -19,7 +19,7 @@ function qrCanvas(url,size){if(typeof qrcode!=="function")throw new Error("QR co
 function qrPoster(url,title,caption){const W=1240,H=1754,c=document.createElement("canvas");c.width=W;c.height=H;const g=c.getContext("2d");
  g.fillStyle="#fff";g.fillRect(0,0,W,H);g.fillStyle="#6D1F2B";g.fillRect(0,0,W,24);g.fillRect(0,H-24,W,24);g.textAlign="center";
  const lg=document.querySelector('img[alt="RIC logo"]');if(lg&&lg.complete&&lg.naturalWidth){try{g.drawImage(lg,W/2-80,60,160,160)}catch(e){}}
- g.fillStyle="#231A17";g.font="600 46px Georgia,serif";g.fillText("RAWALPINDI INSTITUTE OF CARDIOLOGY",W/2,280);g.fillStyle="#6E625A";g.font="32px Arial,sans-serif";g.fillText("Department of Medical Education & Training",W/2,330);
+ g.fillStyle="#231A17";g.font="600 46px Georgia,serif";g.fillText("RAWALPINDI INSTITUTE OF CARDIOLOGY",W/2,280);g.fillStyle="#6E625A";g.font="32px Arial,sans-serif";g.fillText("Department of Medical Education and Training",W/2,330);
  const wrap=(t,font,max,y,lh,col)=>{g.font=font;g.fillStyle=col;const words=String(t||"").split(/\s+/);let line="",lines=[];words.forEach(w=>{const tt=line?line+" "+w:w;if(g.measureText(tt).width>max&&line){lines.push(line);line=w}else line=tt});if(line)lines.push(line);lines=lines.slice(0,3);lines.forEach((l,i)=>g.fillText(l,W/2,y+i*lh));return y+lines.length*lh};
  let y=wrap(title,"bold 62px Arial,sans-serif",W-160,440,74,"#6D1F2B");if(caption)y=wrap(caption,"36px Arial,sans-serif",W-200,y+14,46,"#231A17");
  const q=qrCanvas(url,900),qs=Math.min(900,H-y-330);g.drawImage(q,(W-qs)/2,y+30,qs,qs);

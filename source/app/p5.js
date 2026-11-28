@@ -3,6 +3,7 @@
    ===================================================================== */
 const SECTIONS=[["tasks","Tasks"],["pgts","PGTs"],["leaves","Leave and left training"],["verify","Verification"],["faculty","Faculty"],["supervisors","Supervisors"],["credentials","Faculty updates"],["workshops","Workshops"],["exams","Exams"],["orientation","Orientation"],["settings","Settings"],["audit","Audit log"]];
 const DESIGS={
+ "Director of Medical Education and Training":{role:"Admin",seeAll:true,sec:SECTIONS.map(s=>s[0])},
  "Director of Medical Education":{role:"Admin",seeAll:true,sec:SECTIONS.map(s=>s[0])},
  "Executive Director":{role:"Viewer",seeAll:true,sec:SECTIONS.map(s=>s[0]).filter(k=>k!=="settings")},
  "Training Officer":{role:"Editor",seeAll:true,sec:["tasks","pgts","leaves","verify","faculty","supervisors","credentials","workshops","exams","orientation","audit"]},
@@ -31,7 +32,7 @@ function navToggle(){if(matchMedia("(min-width:1100px)").matches){document.body.
 try{if(localStorage.getItem("ric-dme-nav")==="0")document.body.classList.add("navcollapsed")}catch(e){}
 
 /* ---------- team (settings) ---------- */
-function teamPanel(){return`<div class="panel flush" id="set-staff"><div class="head" style="padding:14px 16px 0"><div><h3 style="margin:0">DME team and logins</h3><p class="subt" style="margin:4px 0 0">Each person signs in with their own account and sees only the sections you allow. Tasks: people who can see all tasks see everyone's; others see only their own.</p></div>${isAdmin()?`<button class="btn primary small" data-act="tm-add">Add person</button>`:""}</div>
+function teamPanel(){return`<div class="panel flush" id="set-staff"><div class="head" style="padding:14px 16px 0"><div><h3 style="margin:0">DME&T team and logins</h3><p class="subt" style="margin:4px 0 0">Each person signs in with their own account and sees only the sections you allow. Tasks: people who can see all tasks see everyone's; others see only their own.</p></div>${isAdmin()?`<button class="btn primary small" data-act="tm-add">Add person</button>`:""}</div>
  <div class="tblwrap" style="margin-top:10px"><table><thead><tr><th>Name</th><th>Designation</th><th>Login email</th><th>Sign-in</th><th>Access</th><th>Tasks</th><th>Conduct records</th><th>Sections</th><th class="num">Open tasks</th><th></th></tr></thead><tbody>
  ${DB.staff.map((s,i)=>`<tr><td><b style="font-weight:600">${esc(s.name)}</b>${s.me?' <span class="subt">you</span>':""}</td><td>${esc(s.desig||"—")}</td><td class="code">${esc(s.email)||"—"}</td><td>${signinCell(s,i)}</td><td><span class="pill ${s.role==="Admin"?"p-pend":s.role==="Editor"?"p-rot":"p-done"}">${s.role}</span></td><td>${s.role==="Admin"||s.seeAll?"Everyone's":"Own only"}</td><td>${s.role==="Admin"||s.conduct?"Can view and add":"No access"}</td>
   <td class="wrapcell" style="min-width:220px">${s.role==="Admin"?"All sections":(s.sections||[]).map(k=>(SECTIONS.find(x=>x[0]===k)||[k,k])[1]).join(", ")||"Overview only"}</td><td class="num">${DB.tasks.filter(t=>t.assignee===s.name&&t.status!=="Done").length}</td>
@@ -41,7 +42,7 @@ function sheetTeam(st){const n=!st;st=st||{name:"",desig:"Training Officer",emai
  const known=Object.keys(DESIGS);const custom=!known.includes(st.desig);
  openSheet(n?"Add person":`Edit · ${st.name}`,`
  <label class="f">Name<input name="n" value="${esc(st.name)}" placeholder="e.g. Mr. Ahmed Raza"></label>
- <label class="f">Designation<select name="dg" id="tm-dg">${opt([...known.filter(d=>!st.me||d===st.desig).filter(d=>st.me||d!=="Director of Medical Education"),["__c","Other designation…"]],custom?"__c":st.desig)}</select></label>
+ <label class="f">Designation<select name="dg" id="tm-dg">${opt([...known.filter(d=>!st.me||d===st.desig||(/^Director of Medical Education/.test(d)&&/^Director of Medical Education/.test(st.desig||""))).filter(d=>st.me||!/^Director of Medical Education/.test(d)),["__c","Other designation…"]],custom?"__c":st.desig)}</select></label>
  <label class="f" id="tm-cw" ${custom?"":"hidden"}>Other designation<input name="dgc" value="${custom?esc(st.desig):""}" placeholder="e.g. Computer Operator"></label>
  <label class="f">Login email <span class="h">they sign in with this</span><input type="email" name="e" value="${esc(st.email)}"></label>
  ${st.me?"":`<div class="grid2"><label class="f">Access<select name="r">${opt([["Editor","Editor · add and edit"],["Viewer","Viewer · read only"],["Admin","Admin · everything"]],st.role)}</select></label>
@@ -54,12 +55,12 @@ function sheetTeam(st){const n=!st;st=st||{name:"",desig:"Training Officer",emai
  const old=st.name;const rec={name:nm,desig:dg,email:fv("e").toLowerCase()};
  if(!st.me&&rec.email&&(n||rec.email!==(st.email||"").toLowerCase()||!st.invite))rec.invite=newInvite();
  if(!st.me){rec.role=fv("r");rec.seeAll=fv("sa")==="1";rec.conduct=fv("cd")==="1";rec.sections=[...document.querySelectorAll('#sheetform [name="sec"]:checked')].map(x=>x.value)}
- if(n){DB.staff.push(rec);log(`Added ${nm} (${dg}) to the DME team`);if(rec.invite)setTimeout(()=>toast(`Invite code for ${nm}: ${rec.invite}`),50)}else{Object.assign(st,rec);if(old!==nm){DB.tasks.forEach(t=>{if(t.assignee===old)t.assignee=nm});if(ME===old)ME=nm}log(`Edited ${nm} (${dg})`)}
+ if(n){DB.staff.push(rec);log(`Added ${nm} (${dg}) to the DME&T team`);if(rec.invite)setTimeout(()=>toast(`Invite code for ${nm}: ${rec.invite}`),50)}else{Object.assign(st,rec);if(old!==nm){DB.tasks.forEach(t=>{if(t.assignee===old)t.assignee=nm});if(ME===old)ME=nm}log(`Edited ${nm} (${dg})`)}
  toast("Saved");return true})}
 function teamAction(a,b){if(!isAdmin())return;const i=+b.dataset.i;
  if(a==="tm-add")return sheetTeam();
  if(a==="tm-code"){const s=DB.staff[i];if(b.dataset.armed!=="1"){b.dataset.armed="1";b.textContent="Tap again: their current login stops working";return}s.invite=newInvite();log(`New invite code issued for ${s.name}`);persist();render();toast(`New invite code for ${s.name}: ${s.invite}`);return}if(a==="tm-edit")return sheetTeam(DB.staff[i]);
- if(a==="tm-rm"){const s=DB.staff[i],n=DB.tasks.filter(t=>t.assignee===s.name&&t.status!=="Done").length;if(n){toast(`${s.name} has ${n} open tasks. Reassign them first.`);return}if(b.dataset.armed!=="1"){b.dataset.armed="1";b.textContent="Confirm";return}DB.staff.splice(i,1);log(`Removed ${s.name} from the DME team`);persist();render()}}
+ if(a==="tm-rm"){const s=DB.staff[i],n=DB.tasks.filter(t=>t.assignee===s.name&&t.status!=="Done").length;if(n){toast(`${s.name} has ${n} open tasks. Reassign them first.`);return}if(b.dataset.armed!=="1"){b.dataset.armed="1";b.textContent="Confirm";return}DB.staff.splice(i,1);log(`Removed ${s.name} from the DME&T team`);persist();render()}}
 
 /* ---------- Overview (cards) ---------- */
 function card(title,count,href,body,cls=""){return`<section class="ocard ${cls}"><header><h3>${title}${count!=null?` <span class="oc-n">${count}</span>`:""}</h3>${href?`<a href="#${href}">View all</a>`:""}</header>${body}</section>`}
@@ -122,7 +123,7 @@ function vOverview(){
   ${kp("verify",pend.length,"To verify",`${V.length} PGTs on record`,"verify",pend.length?"attn":"")}
   ${kp("tasks",openT.length,seeAll()?"Open tasks":"My open tasks",`${late.length} overdue`,"tasks",late.length?"attn":"")}
   ${kp("workshops",`${W.filter(w=>w.month.startsWith(yr)&&w.stage>=5).length}<span class="of"> / ${W.filter(w=>w.month.startsWith(yr)).length}</span>`,`Workshops held in ${yr}`,`${W.filter(w=>w.stage<5).length} upcoming`,"workshops")}
-  ${isAdmin()?kp("workshops",`<span class="money">${money(fund)}</span>`,"DME fund",`${100-(S.director_share??60)}% of workshop net income`,"workshops"):""}
+  ${isAdmin()?kp("workshops",`<span class="money">${money(fund)}</span>`,"DME&T fund",`${100-(S.director_share??60)}% of workshop net income`,"workshops"):""}
  </div>
  ${att.length?`<div><h3 class="sech">Needs attention</h3><div class="agrid">${att.map(([s,n,k,l,sub,h,f])=>`<a class="acard k-${k}" href="${h.startsWith("#")?h:"#"+h}" ${f?`data-go-filter="${h}:${f}"`:""}><span class="an">${n}</span><span class="al">${l[0].toUpperCase()+l.slice(1)}</span>${sub?`<span class="subt">${esc(sub)}</span>`:""}</a>`).join("")}</div></div>`:`<div class="flag ok">Nothing needs attention today.</div>`}
  <div class="ogrid">${cards.join("")}</div>
@@ -377,7 +378,7 @@ function defPfQ(){const L=true;return[
  Q("audience","Target audience","cb",{opts:AUD2.slice(),other:true,req:L,section:"Audience"}),
  Q("seats","Maximum seats","num",{req:L,map:1,section:"Audience"}),
  Q("ricSeats","Seats reserved for RIC","num",{section:"Audience"}),
- Q("fee","Suggested registration fee","dd",{opts:["Free","PKR 1,000","PKR 2,000","PKR 3,000","PKR 5,000"],other:true,map:1,section:"Audience",d:"Final fee is decided by the Office of the Executive Director and the DME"}),
+ Q("fee","Suggested registration fee","dd",{opts:["Free","PKR 1,000","PKR 2,000","PKR 3,000","PKR 5,000"],other:true,map:1,section:"Audience",d:"Final fee is decided by the Office of the Executive Director and the DME&T"}),
  Q("objectives","Learning objectives","list",{req:L,section:"Learning plan",d:"One per line, each starting with an action verb (demonstrate, interpret, perform…)"}),
  Q("assessment","Assessment method","cb",{opts:["Pre/post MCQ test","Skills checklist / DOPS","OSCE station","Case presentation","No formal assessment"],req:L,section:"Learning plan"}),
  Q("handouts","Handouts or reading material","mc",{opts:["Printed","Digital (PDF)","Both","None"],req:L,section:"Learning plan"}),
@@ -417,7 +418,7 @@ function fbPanel(w,S){const blocks=S.qs.filter(x=>x.n&&x.q.type!=="scale"&&!(["p
  <div class="legend"><span><i style="background:var(--bad)"></i>Lowest</span><span><i style="background:var(--gold)"></i>Middle</span><span><i style="background:var(--ok)"></i>Highest</span></div>`:""}
  ${blocks.length?`<div class="cols three">${blocks.map(x=>`<div><b style="font-size:13.5px">${esc(x.q.t)}</b> <span class="subt">${x.n} answered</span>${x.counts?cbars(x):x.avg!=null?`<p style="margin:4px 0 0">Average ${f1(x.avg)}</p>`:`<ul class="cm">${x.texts.slice(0,5).map(([t,n])=>`<li>${esc(t)}${n>1?` <span class="code">×${n}</span>`:""}</li>`).join("")}</ul>`}</div>`).join("")}</div>`:""}</div>`}
 function reportText(w,F,S){const L=[];const yy=(w.date||w.month).slice(2,4),num=w.id.replace(/\D/g,"").padStart(2,"0");
- L.push(`WORKSHOP REPORT: ${w.title.toUpperCase()}`,`Rawalpindi Institute of Cardiology · Department of Medical Education`,``,`1. DETAILS`,`Date: ${fd(w.date)}   Venue: ${w.venue||"RIC"}   Format: ${w.format||"—"}`,`Lead department: ${w.dept}`,`Focal person: ${w.focal||"—"}   Course director: ${w.director||w.focal||"—"}`,``,
+ L.push(`WORKSHOP REPORT: ${w.title.toUpperCase()}`,`Rawalpindi Institute of Cardiology · Department of Medical Education and Training`,``,`1. DETAILS`,`Date: ${fd(w.date)}   Venue: ${w.venue||"RIC"}   Format: ${w.format||"—"}`,`Lead department: ${w.dept}`,`Focal person: ${w.focal||"—"}   Course director: ${w.director||w.focal||"—"}`,``,
  `2. PARTICIPATION`,`Seats ${w.seats??"—"} · registered ${w.reg.registered} · paid ${w.reg.paid} · attended ${w.reg.attended}${w.reg.registered?` (${Math.round(w.reg.attended/w.reg.registered*100)}% of registered)`:""}`,`Certificates issued: ${w.certs}${w.certs?` (RIC/DME/${yy}/${num}/001 to /${String(w.certs).padStart(3,"0")})`:""}`,``,`3. FEEDBACK`);
  if(S){L.push(`${S.n} responses (${S.rate??"—"}% of attendees). Overall ${f1(S.overall)}/5${S.rec!=null?`; ${S.rec}% would recommend`:""}.`);if(S.pre!=null&&S.post!=null)L.push(`Self-rated confidence: ${f1(S.pre)} before, ${f1(S.post)} after.`);
   S.rating.forEach(x=>L.push(`  ${x.q.t}: ${f1(x.avg)}`));if(S.low.length)L.push(`Below 3.5: ${S.low.join("; ")}.`);
@@ -427,7 +428,7 @@ function reportText(w,F,S){const L=[];const yy=(w.date||w.month).slice(2,4),num=
  L.push(``,`4. FINANCIAL STATEMENT (PKR)`,`Income`,`  Registration fees${w.feeCollected!=null?" (amount collected)":w.fee?` (${w.reg.paid} × ${(+w.fee).toLocaleString()})`:" (free workshop)"}: ${F.fees.toLocaleString()}`);
  (w.incomes||[]).forEach(x=>L.push(`  ${x.source}${x.note?" ("+x.note+")":""}: ${(+x.amount).toLocaleString()}`));L.push(`  Total income: ${F.totalIn.toLocaleString()}`,`Expenses`);
  Object.entries(F.byCat).forEach(([c,es])=>{L.push(`  ${c}: ${es.reduce((s,e)=>s+(+e.amount),0).toLocaleString()}`);es.forEach(e=>e.item&&L.push(`    - ${e.item}: ${(+e.amount).toLocaleString()}`))});
- L.push(`  Total expenses: ${F.totalOut.toLocaleString()}`,`Net income: ${F.net.toLocaleString()}`,F.net>0?`Distribution: course director ${w.director||w.focal||""} ${F.share}% = ${F.dir.toLocaleString()}; DME fund ${100-F.share}% = ${F.dme.toLocaleString()}`:`Distribution: none (net income is not positive)`,``,`Prepared by: ${SELF}, Director of Medical Education, Rawalpindi Institute of Cardiology`);
+ L.push(`  Total expenses: ${F.totalOut.toLocaleString()}`,`Net income: ${F.net.toLocaleString()}`,F.net>0?`Distribution: course director ${w.director||w.focal||""} ${F.share}% = ${F.dir.toLocaleString()}; DME&T fund ${100-F.share}% = ${F.dme.toLocaleString()}`:`Distribution: none (net income is not positive)`,``,`Prepared by: ${SELF}, Director of Medical Education, Rawalpindi Institute of Cardiology`);
  return L.join("\n")}
 function reportDoc(w,F,S){const pct=w.reg.registered?Math.round(w.reg.attended/w.reg.registered*100):null;
  return`<article class="panel report"><div class="head"><div><div class="code">Post-workshop report${w.stage===5?" · draft":" · final"}</div><h2 style="font-size:22px">${esc(w.title)}</h2></div><div class="actions"><button class="btn small" data-act="ws-copyrep">Copy report as text</button>${xbtn("ws:"+w.id)}</div></div>
@@ -442,12 +443,12 @@ function reportDoc(w,F,S){const pct=w.reg.registered?Math.round(w.reg.attended/w
   <tr class="tot"><td>Total income</td><td class="num">${money(F.totalIn)}</td></tr>
   ${Object.entries(F.byCat).map(([c,es])=>`<tr><td>${esc(c)}${es.some(e=>e.item)?`<div class="subt">${es.map(e=>esc(e.item||"")).filter(Boolean).join(" · ")}</div>`:""}</td><td class="num">− ${money(es.reduce((s,e)=>s+(+e.amount),0))}</td></tr>`).join("")}
   <tr class="tot"><td>Total expenses</td><td class="num">− ${money(F.totalOut)}</td></tr><tr class="tot"><td>Net income</td><td class="num">${money(F.net)}</td></tr>
-  <tr><td>Course director · ${esc(w.director||w.focal)||"—"} (${F.share}%)</td><td class="num"><b>${money(F.dir)}</b></td></tr><tr><td>DME fund (${100-F.share}%)</td><td class="num"><b>${money(F.dme)}</b></td></tr></tbody></table></div>
- <p class="subt" style="margin:0">Prepared by ${SELF}, Director of Medical Education</p></article>`}
+  <tr><td>Course director · ${esc(w.director||w.focal)||"—"} (${F.share}%)</td><td class="num"><b>${money(F.dir)}</b></td></tr><tr><td>DME&T fund (${100-F.share}%)</td><td class="num"><b>${money(F.dme)}</b></td></tr></tbody></table></div>
+ <p class="subt" style="margin:0">Prepared by ${SELF}, Director of Medical Education and Training</p></article>`}
 EXPORTS.ws=id=>{const w=DB.workshops.find(x=>x.id===id),F=fin(w);
  const resp=(w.fbResp||[]).map(r=>{const o={"Submitted":new Date(r.at).toLocaleString("en-GB")};w.fbq.forEach(q=>o[q.t]=qText(q,r.a?.[q.k]));return o});
- const finRows=[["Item","Category","Amount (PKR)"],["Registration fees","Income",F.fees],...(w.incomes||[]).map(x=>[x.source+(x.note?" · "+x.note:""),"Income",x.amount]),["Total income","",F.totalIn],...w.expenses.map(e=>[e.item||e.cat,e.cat,-e.amount]),["Total expenses","",-F.totalOut],["Net income","",F.net],[`Course director (${F.share}%)`,"",F.dir],[`DME fund (${100-F.share}%)`,"",F.dme]];
- const prop=w.proposal?[["Field","Proposed","Affirmed by DME"],...w.pfq.map(q=>[q.t,qText(q,w.proposal.submitted.values[q.k]),qText(q,w.proposal.final[q.k])])]:[["No proposal submitted"]];
+ const finRows=[["Item","Category","Amount (PKR)"],["Registration fees","Income",F.fees],...(w.incomes||[]).map(x=>[x.source+(x.note?" · "+x.note:""),"Income",x.amount]),["Total income","",F.totalIn],...w.expenses.map(e=>[e.item||e.cat,e.cat,-e.amount]),["Total expenses","",-F.totalOut],["Net income","",F.net],[`Course director (${F.share}%)`,"",F.dir],[`DME&T fund (${100-F.share}%)`,"",F.dme]];
+ const prop=w.proposal?[["Field","Proposed","Affirmed by DME&T"],...w.pfq.map(q=>[q.t,qText(q,w.proposal.submitted.values[q.k]),qText(q,w.proposal.final[q.k])])]:[["No proposal submitted"]];
  return{file:`${w.title} ${w.date||w.month}`,sheets:[{name:"Report",rows:reportText(w,F,fbSummary(w)).split("\n").map(l=>[l])},{name:"Finance",rows:finRows},sheetFrom("Feedback responses",resp),{name:"Proposal",rows:prop}]}};
 
 /* ---- participant feedback view ---- */
@@ -506,16 +507,16 @@ function formEditAction(a,b){const w=DB.workshops.find(x=>x.id===route.id),key={
 const fbEditAction=formEditAction,pfEditAction=formEditAction;
 const vFbEdit=()=>vFormEdit("fb"),vPfEdit=()=>vFormEdit("pf");
 
-/* ---- proposal: focal person view, DME review ---- */
+/* ---- proposal: focal person view, DME&T review ---- */
 UI.pfDone=null;
 const stripOther=v=>typeof v==="string"?v.replace(/^Other:\s*/,""):v;
 function vPfill(){const w=DB.workshops.find(x=>x.id===route.id);if(!w)return`<div class="panel">Not found.</div>`;
  const back=`<div class="flag info">Focal person view. This is what opens from the proposal link. <a href="#ws-${w.id}">Back to the workshop</a></div>`;
- if(UI.pfDone===w.id)return back+`<div class="panel fbform"><h2>Proposal submitted</h2><p>The DME office has received the proposal for <b>${esc(w.title)}</b>. They will review it and confirm the final details.</p><div class="actions"><a class="btn primary" href="#prop-${w.id}">Review it as DME</a></div></div>`;
- if(w.stage>=3)return back+`<div class="panel fbform"><h2>${esc(w.title)}</h2><p>This proposal has been approved. Contact the DME office for any change.</p></div>`;
+ if(UI.pfDone===w.id)return back+`<div class="panel fbform"><h2>Proposal submitted</h2><p>The DME&T office has received the proposal for <b>${esc(w.title)}</b>. They will review it and confirm the final details.</p><div class="actions"><a class="btn primary" href="#prop-${w.id}">Review it as DME&T</a></div></div>`;
+ if(w.stage>=3)return back+`<div class="panel fbform"><h2>${esc(w.title)}</h2><p>This proposal has been approved. Contact the DME&T office for any change.</p></div>`;
  const fnames=DB.faculty.map(facName);const pre=w.proposal?.submitted?.values||{title:w.title,dept:w.dept,focal:fnames.includes(w.focal)?w.focal:"",director:fnames.includes(w.director)?w.director:""};
  return back+`<form class="panel fbform" id="pfform" novalidate>${formHead(w,"Workshop proposal",`Form RIC/ME&amp;T/F-06 · calendar slot ${mLabel(w.month)} · submit at least ${DB.settings.proposal_weeks||8} weeks before`)}
- ${w.returned?`<div class="flag">Returned by the DME office: ${esc(w.returned)}</div>`:""}${formHtml(w.pfq,pre,"pf-",false)}
+ ${w.returned?`<div class="flag">Returned by the DME&T office: ${esc(w.returned)}</div>`:""}${formHtml(w.pfq,pre,"pf-",false)}
  <label class="check2"><input type="checkbox" id="pf-decl"> The Head of Department has been informed and supports this workshop. The information is accurate.</label>
  <div class="err" id="pferr" role="alert"></div><button class="btn primary" type="button" data-act="pf-submit" style="justify-self:start">Submit proposal</button></form>`}
 function submitPf(){const w=DB.workshops.find(x=>x.id===route.id),fm=document.getElementById("pfform"),er=document.getElementById("pferr");const{vals:v,missing}=formRead(fm,w.pfq,"pf-");
@@ -530,10 +531,10 @@ function vProp(){const w=DB.workshops.find(x=>x.id===route.id);if(!w)return`<div
  const back=`<div><a href="#ws-${w.id}" class="btn link" style="padding-left:0">← ${esc(w.title)}</a></div>`;
  if(!w.proposal)return back+`<div class="panel empty">No proposal has been submitted yet. Send the proposal link from the workshop page.</div>`;
  const P0=w.proposal,qs=w.pfq,ed=qs.filter(q=>JSON.stringify(P0.final[q.k]??"")!==JSON.stringify(P0.submitted.values[q.k]??""));
- return back+`<div class="head"><div><h2>Proposal · ${esc(w.title)}</h2><p>Submitted by ${esc(P0.submitted.by)} on ${fdt(P0.submitted.at)}${P0.versions>1?` · version ${P0.versions}`:""}. The DME office has the final say: edit the affirmed column, then ${w.stage===2?"approve":"save"}. The workshop runs on the affirmed version.</p></div>
+ return back+`<div class="head"><div><h2>Proposal · ${esc(w.title)}</h2><p>Submitted by ${esc(P0.submitted.by)} on ${fdt(P0.submitted.at)}${P0.versions>1?` · version ${P0.versions}`:""}. The DME&T office has the final say: edit the affirmed column, then ${w.stage===2?"approve":"save"}. The workshop runs on the affirmed version.</p></div>
   <div class="actions">${xbtn("ws:"+w.id)}${w.stage===2?`<button class="btn danger" data-act="ws-return">Return with comments</button>`:""}<button class="btn" data-act="pr-save">${w.stage>=3?"Save and update workshop":"Save affirmed version"}</button>${w.stage===2?`<button class="btn primary" data-act="pr-approve">Approve affirmed proposal</button>`:""}</div></div>
- <div class="flag ${ed.length?"":"info"}">${ed.length?`${ed.length} field${ed.length>1?"s":""} changed by the DME office: ${ed.map(q=>esc(q.t)).join(", ")}`:"No changes yet. The affirmed version matches what was proposed."}${w.stage>=3?" · Approved":""}</div>
- <div class="panel flush" id="propform"><div class="tblwrap"><table class="prop"><thead><tr><th>Question</th><th>Proposed by focal person</th><th>Affirmed by DME</th></tr></thead><tbody>
+ <div class="flag ${ed.length?"":"info"}">${ed.length?`${ed.length} field${ed.length>1?"s":""} changed by the DME&T office: ${ed.map(q=>esc(q.t)).join(", ")}`:"No changes yet. The affirmed version matches what was proposed."}${w.stage>=3?" · Approved":""}</div>
+ <div class="panel flush" id="propform"><div class="tblwrap"><table class="prop"><thead><tr><th>Question</th><th>Proposed by focal person</th><th>Affirmed by DME&T</th></tr></thead><tbody>
  ${qs.map(q=>{const ch=ed.includes(q);return`<tr class="${ch?"changed":""}"><td><b>${esc(q.t)}</b><div class="subt">${esc(q.section)}${ch?" · edited":""}${q.map?" · used by the app":""}</div></td><td class="wrapcell">${qShow(q,P0.submitted.values[q.k])}</td><td>${qCtrl(q,P0.final[q.k],"af-"+q.k)}</td></tr>`}).join("")}
  </tbody></table></div></div>`}
 const feeNum=v=>{if(qEmpty(v))return null;if(typeof v==="number")return v;if(/free/i.test(v))return 0;const d=String(v).replace(/[^\d]/g,"");return d?+d:null};
@@ -543,7 +544,7 @@ function propAction(a){const w=DB.workshops.find(x=>x.id===route.id);const{vals}
  const before=JSON.stringify(w.proposal.final);Object.assign(w.proposal.final,vals);const changed=before!==JSON.stringify(w.proposal.final);
  if(a==="pr-approve"){if(!w.proposal.final.date){toast("Set the affirmed date before approving");return}if(!(+w.proposal.final.seats>0)){toast("Set the affirmed number of seats");return}
   applyProposal(w);w.stage=3;wlog(w,`Affirmed proposal approved · ${fd(w.date)}, ${w.seats} seats, ${w.fee?money(w.fee):"free"}`);persist();toast("Proposal approved");go("ws-"+w.id);return}
- if(changed){if(w.stage>=3)applyProposal(w);wlog(w,"Affirmed proposal edited by DME"+(w.stage>=3?"; workshop details updated":""));persist();toast("Saved")}else toast("No change to save");render()}
+ if(changed){if(w.stage>=3)applyProposal(w);wlog(w,"Affirmed proposal edited by DME&T"+(w.stage>=3?"; workshop details updated":""));persist();toast("Saved")}else toast("No change to save");render()}
 
 /* ---- example proposal for the sample workshop ---- */
 function exampleProposal(){const v={title:"Basics of ECG Interpretation",dept:"General Cardiology",collab:["Cardiac Imaging"].filter(()=>false),date:"2026-09-19",altDate:"2026-09-26",length:"Half day (up to 4 hours)",venue:"Auditorium",format:"Lectures + hands-on",focal:"Other: Example focal person",focalDesig:"Assistant Professor",focalMobile:"0300-0000000",director:"Other: Example course director",faculty:[{name:"Example faculty 1",desig:"Assistant Professor",inst:PB_RIC,role:"Lecturer / speaker"},{name:"Example faculty 2",desig:"Senior Registrar",inst:PB_RIC,role:"Station facilitator"}],audience:["Cardiology PGTs","Medical officers","Nurses"],seats:50,ricSeats:15,fee:"PKR 3,000",objectives:["Use a systematic approach to read a 12-lead ECG","Recognise common arrhythmias","Identify acute ischaemia patterns"],assessment:["Pre/post MCQ test"],handouts:"Printed",cme:"Yes",schedule:[{day:1,type:"reg",start:"09:00",end:"09:30",topic:"",by:""},{day:1,type:"lecture",start:"09:30",end:"10:15",topic:"Basics of the 12-lead ECG",by:"Example faculty 1"},{day:1,type:"break",start:"10:15",end:"10:30",topic:"",by:""},{day:1,type:"rotation",start:"10:30",end:"12:30",topic:"A: Lead placement, B: Arrhythmias, C: Ischaemia patterns",by:"Example faculty 2"},{day:1,type:"close",start:"12:30",end:"13:00",topic:"Case quiz",by:""}],equip:["Consumables","Projector and sound"],resources:[{item:"ECG paper and electrodes (sets)",qty:50,unit:240}],estCost:"PKR 25,000 to 50,000",sponsor:"Catering",sponsorName:"Example sponsor"};

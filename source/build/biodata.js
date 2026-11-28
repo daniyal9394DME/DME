@@ -1,7 +1,7 @@
 
 /* =====================================================================
    BIO DATA FORM (RIC-RWP-HRM-F-04) — shared by the PGT registration
-   form and the DME Office app. Builds a filled PDF in the layout of
+   form and the DME&T Office app. Builds a filled PDF in the layout of
    the paper form. Needs jsPDF (window.jspdf).
    ===================================================================== */
 const BIO_MARITAL=["Single","Married","Divorced","Widowed"];
@@ -59,7 +59,7 @@ async function bioPdf(r,photo,meta){await bioLoadPdf();const{jsPDF}=window.jspdf
  doc.text(doc.splitTextToSize("I hereby undertake that I have read above information (provided by me) and I will responsible if declared false/fake at any stage.",W),L,y);
  const sy=Math.max(y+58,700);doc.setLineWidth(.6);doc.line(R-130,sy,R,sy);doc.setFontSize(10.5);doc.text("Employee's Signature",R-65,sy+13,{align:"center"});
  if(meta&&(meta.at||meta.ref)){doc.setFont("helvetica","normal");doc.setFontSize(7.5);doc.setTextColor(90);
-  doc.text(`Filled online through the RIC DME PGT registration${meta.at?" on "+meta.at:""}${meta.ref?", ref. "+meta.ref:""}. Undertaking accepted online; sign above when printed.`,L,sy+13,{maxWidth:R-L-150});doc.setTextColor(0)}
+  doc.text(`Filled online through the RIC DME&T PGT registration${meta.at?" on "+meta.at:""}${meta.ref?", ref. "+meta.ref:""}. Undertaking accepted online; sign above when printed.`,L,sy+13,{maxWidth:R-L-150});doc.setTextColor(0)}
  doc.setDrawColor(0);doc.setLineWidth(.5);doc.line(L,752,R-60,752);doc.setFont("helvetica","normal");doc.setFontSize(10);doc.text("RIC-RWP-HRM-F-04",L,766);
  return doc}
 function bioFileName(r){return"Bio-data-"+String(r.name||"PGT").replace(/^dr\.?\s*/i,"").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"")+".pdf"}

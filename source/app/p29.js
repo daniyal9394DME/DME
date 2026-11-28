@@ -33,14 +33,14 @@ async function surApi(fn,args){
  if(!formIsOpen(formCfg("sur")))return{error:"closed"};if(!p||dg(args.p_key).length<10)return{error:"not_found"};
  if(fn==="dme_sur_who")return{ok:true,name:p.name,spec:p.spec,program:p.program,code:p.code,survey:p.survey||null};
  const s={...args.p};delete s.files;s.at=new Date().toISOString();if(p.survey)p.surveyHist=[p.survey,...(p.surveyHist||[])].slice(0,5);p.survey=s;log(`Training status form submitted by Dr. ${p.name}`,"pgt-"+p.id);return{ok:true,name:p.name}}
-function surRender(done,err){const C=SURPUB.cfg||FORM_DEF.sur,head=formHead(null,"Training status","Postgraduate trainees · Department of Medical Education");
- if(done)return surShell(`<div class="panel fbform">${head}<div class="flag ok" style="display:grid;gap:6px;text-align:center;padding:22px"><b style="font-size:21px">Thank you, Dr. ${esc(done.name)}</b><span>Your training status is recorded with the DME office. You can open the form again to update it at any time.</span></div></div>`);
+function surRender(done,err){const C=SURPUB.cfg||FORM_DEF.sur,head=formHead(null,"Training status","Postgraduate trainees · Department of Medical Education and Training");
+ if(done)return surShell(`<div class="panel fbform">${head}<div class="flag ok" style="display:grid;gap:6px;text-align:center;padding:22px"><b style="font-size:21px">Thank you, Dr. ${esc(done.name)}</b><span>Your training status is recorded with the DME&T office. You can open the form again to update it at any time.</span></div></div>`);
  if(!formIsOpen(C))return surShell(`<div class="panel fbform">${head}<p>This form is closed at the moment.</p>${C.msg?`<p style="white-space:pre-line">${esc(C.msg)}</p>`:""}${C.contact?`<p class="subt">Contact: ${esc(C.contact)}</p>`:""}</div>`);
  const W=SURPUB.who;
  if(!W)return surShell(`<form class="panel fbform" id="surid" novalidate>${head}${C.msg?`<div class="flag info" style="white-space:pre-line">${esc(C.msg)}</div>`:""}
   ${surPickHtml()}
   <label class="f"><span class="req">Your mobile number or CNIC</span><input name="key" inputmode="numeric" placeholder="03xx-xxxxxxx or 37405-xxxxxxx-x" value="${esc(SURPUB.key)}" style="font-size:18px"></label>
-  <p class="qd" style="margin:0">The mobile number or CNIC the DME office has on record.</p>
+  <p class="qd" style="margin:0">The mobile number or CNIC the DME&T office has on record.</p>
   <div class="err" id="surerr" role="alert">${err?esc(err):""}</div><button class="btn primary" type="button" data-act="sur-who" style="justify-self:start;font-size:17px;padding:11px 22px">Continue</button>${C.contact?`<p class="subt" style="margin:0">Questions? ${esc(C.contact)}</p>`:""}</form>`);
  const s=W.survey||{},R=s.reg||{},res=s.res||{kind:surUHS(W)?"thesis":"diss",steps:{}},rad=(n,o,v)=>`<div class="chips srad">${o.map(([k,l])=>`<label class="chip"><input type="radio" name="${n}" value="${k}" ${v===k?"checked":""}> ${l}</label>`).join("")}</div>`;
  const N0=surNoReg(W)?0:1;
@@ -92,7 +92,7 @@ document.addEventListener("click",async e=>{const b=e.target.closest('[data-act=
   if(code.replace(/\D/g,"").length<4)return er(SURPUB.byId||!SURPUB.list?"Enter your PGT ID (e.g. PGT/24/1/06) or exam roll number.":"Search for your name and tap it.");if(key.replace(/\D/g,"").length<10)return er("Enter your 11-digit mobile number or 13-digit CNIC.");
   b.disabled=true;b.textContent="Checking…";let r=null;try{r=await surApi("dme_sur_who",{p_code:code,p_key:key})}catch(x){}
   SURPUB.code=code;SURPUB.key=key;if(r&&r.ok){SURPUB.who=r;return surRender()}
-  return surRender(null,!r?"Could not connect. Check the internet and try again.":r.error==="closed"?"The form has just closed.":(SURPUB.sel?"This mobile number or CNIC does not match our record for Dr. "+SURPUB.sel.n+". Use the mobile number":"We could not match these details. Check your PGT ID and use the mobile number")+" you gave the DME office, or try your CNIC. If it still does not work, see the DME desk.")}
+  return surRender(null,!r?"Could not connect. Check the internet and try again.":r.error==="closed"?"The form has just closed.":(SURPUB.sel?"This mobile number or CNIC does not match our record for Dr. "+SURPUB.sel.n+". Use the mobile number":"We could not match these details. Check your PGT ID and use the mobile number")+" you gave the DME&T office, or try your CNIC. If it still does not work, see the DME&T desk.")}
  const fm=document.getElementById("surform"),g=n=>(fm.querySelector(`[name="${n}"]`)?.value||"").trim(),rv=n=>fm.querySelector(`[name="${n}"]:checked`)?.value||"",fl=n=>fm.querySelector(`[name="${n}"]`)?.files?.[0]||null;
  const prev=SURPUB.who.survey||{},files={};
  let reg=null;if(!surNoReg(SURPUB.who)){reg={have:rv("reg_have")};if(!reg.have)return er("Answer question 1: do you have your RTMC registration certificate?");

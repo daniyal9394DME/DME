@@ -14,8 +14,8 @@ const MSG_TPL=[
  ["exam","Exam reminder","Dear {name},\nThe six-monthly internal examination is on [date] at [time], [venue]. Your roll number is {roll}. Please bring your CNIC and arrive 30 minutes early.\nDME Office, RIC"],
  ["orient","Orientation invitation","Dear {name},\nYou are invited to the PGT orientation on [date] at [time] in [venue]. Attendance is compulsory.\nDME Office, RIC"],
  ["ws","Workshop reminder","Dear {name},\nThis is a reminder for the workshop {workshop} on {date}. Registration opens at [time] in [venue].\nDME Office, RIC"],
- ["docs","Missing documents","Dear {name} ({pgtid}),\nPlease send the following to the DME office by [date]: [documents].\nDME Office, RIC"],
- ["cred","Credential renewal","Dear {name},\nOur records show your [certificate] needs renewal. Kindly share the updated certificate with the DME office.\nDME Office, RIC"]];
+ ["docs","Missing documents","Dear {name} ({pgtid}),\nPlease send the following to the DME&T office by [date]: [documents].\nDME Office, RIC"],
+ ["cred","Credential renewal","Dear {name},\nOur records show your [certificate] needs renewal. Kindly share the updated certificate with the DME&T office.\nDME Office, RIC"]];
 UI.msg={recs:[],text:"",sent:{},src:""};
 function msgSet(recs,src){UI.msg={recs,text:UI.msg.text||"",sent:{},src};go("messages")}
 const msgFill=(t,r)=>t.replace(/\{(\w+)\}/g,(m,k)=>r.vars[k]!=null&&r.vars[k]!==""?r.vars[k]:m);
